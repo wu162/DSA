@@ -1,0 +1,7 @@
+JapanAntiInfantryVehicleMICROCONTROL ()
+JapanMissileMechaAdvancedMICROCONTROL ()
+JapanAntiAirVehicleTech1MICROCONTROL ()
+JapanFortressShipMICROCONTROL ()
+JapanAntiAirShipMICROCONTROL ()
+SovietScoutVehicleMICROCONTROL ()
+BIGSHIPCONTROL ()

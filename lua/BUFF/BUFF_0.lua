@@ -1,0 +1,1 @@
+gongsu1=FindAttributeModifier("AttributeModifer_JapanEmperorsResolve_L1")
