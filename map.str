@@ -46,6 +46,14 @@ SCRIPT:T38break
 "天使三塔陷落，天界守护者已降生，恶魔军队获得载具治疗，授权恶魔T4"
 end
 
+SCRIPT:Sea1Tower2break
+"天使海二塔陷落，恶魔军队获得船坞治疗"
+end
+
+SCRIPT:Sea2Tower2break
+"恶魔海二塔陷落，天使军队获得船坞治疗"
+end
+
 HOTSPOT:music2(no)
 "Change Music"
 end
