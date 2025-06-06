@@ -16,3 +16,5 @@ for i = 1 , 3 , 1 do
         ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING","Player_"..i , enableT4Ship[j], 1)
     end
 end
+
+exAddTextToPublicBoard('恶魔方摧毁海3塔，立即释放一次达摩克利斯之剑(不消耗释放次数)!',10)
