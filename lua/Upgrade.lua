@@ -67,8 +67,19 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_CelestialEMG")
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得电磁炮!")
     elseif techInstanceId == PlayerTech_Celestial_PowerSealOffId then
-        ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, CelestialBattery, 1)
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name解锁了蓄元鼎建造权限!")
+        local round = exCounterGetByName("lvc")
+        if round >= 3 then
+            ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", pName, "CelestialBattery", 1)
+            exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得电能纳贡，解锁蓄元鼎建造权限!")
+        else
+            SchedulerModule.call_every_x_frame(function(pName)
+                local round1 = exCounterGetByName("lvc")
+                if round1 >= 3 then
+                    ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", pName, "CelestialBattery", 1)
+                end
+            end, 30, nil, {playerName})
+            exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得电能纳贡，第3回合后解锁蓄元鼎建造权限!")
+        end
     elseif techInstanceId == ProductionBonus then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", 'PlayerA_' .. i, 'AlliedWallPiece', computerPlayer .. '/team' .. computerPlayer, "jiaoyidian")
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得经济提升!")

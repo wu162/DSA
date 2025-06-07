@@ -9,7 +9,7 @@ FilterCelestialBattery=CreateObjectFilter({
 SchedulerModule.call_every_x_frame(function()
     local obj, count = ObjectFindObjects(nil, nil, FilterCelestialBattery)
     for i = 1 , count , 1 do
-        ExecuteAction("NAMED_DAMAGE", obj[i], 23);
+        ExecuteAction("NAMED_DAMAGE", obj[i], 29);
     end
 
 end, 30, nil)

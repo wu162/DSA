@@ -20,7 +20,7 @@ if countD>countA then
     if devil_max >= 1800 then
         devil_max = devil_max / 2;
     else
-        devil_max=400
+        devil_max=200
     end
 elseif countD<countA then
     local previous = SetWorldBuilderThisPlayer(1)
@@ -39,7 +39,7 @@ elseif countD<countA then
     if angel_max >= 1800 then
         angel_max = angel_max / 2;
     else
-        angel_max=400
+        angel_max=200
     end
     if devil_max<4200 then
         devil_max=devil_max+400
