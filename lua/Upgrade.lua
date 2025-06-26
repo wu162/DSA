@@ -69,7 +69,7 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
     elseif techInstanceId == PlayerTech_Celestial_PowerSealOffId then
         local round = exCounterGetByName("lvc")
         if round >= 3 then
-            ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", pName, "CelestialBattery", 1)
+            ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "CelestialBattery", 1)
             exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得电能纳贡，解锁蓄元鼎建造权限!")
         else
             SchedulerModule.call_every_x_frame(function(pName)

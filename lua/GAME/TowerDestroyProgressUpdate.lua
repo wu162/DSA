@@ -1,0 +1,1 @@
+g_TowerDestroyProgress = g_TowerDestroyProgress + 1

@@ -91,15 +91,15 @@ UNITLIST [index] = "JapanAntiStructureVehicle"
 index = index + 1 ;
 UNITLIST [index] = "JapanMissileMechaAdvanced"
 index = index + 1 ;
-UNITLIST [index] = "CelestialAntiStructureVehicle"  
+UNITLIST [index] = "CelestialAntiStructureVehicle"
 index = index + 1 ;
-UNITLIST [index] = "CelestialLongRangeMissileVehicle_B"  
+UNITLIST [index] = "CelestialLongRangeMissileVehicle_B"
 index = index + 1 ;
-UNITLIST [index] = "SovietMortarCycle"  
+UNITLIST [index] = "SovietMortarCycle"
 index = index + 1 ;
-UNITLIST [index] = "AlliedAntiStructureVehicle"    
+UNITLIST [index] = "AlliedAntiStructureVehicle"
 index = index + 1 ;
-UNITLIST [index] = "prismtank"  
+UNITLIST [index] = "prismtank"
 index = index + 1 ;
 --exMessageAppendToMessageArea("indexLIGHTVEH"..index)
 step2 = index-1
@@ -200,7 +200,7 @@ UNITLIST [index] = "CelestialAntiNavyShipTech3"
 index = index + 1 ;
 UNITLIST [index] = "JapanAntiVehicleShip"
 index = index + 1 ;
-UNITLIST [index] = "JapanNavyScoutShip"  
+UNITLIST [index] = "JapanNavyScoutShip"
 index = index + 1 ;
 UNITLIST [index] = "JapanAntiNavyShipTech3"
 index = index + 1 ;
@@ -214,72 +214,72 @@ UNITLIST [index] = "SovietAntiNavyShipTech1"
 index = index + 1 ;
 UNITLIST [index] = "JapanFortressShip"
 index = index + 1 ;
-UNITLIST [index] = "JapanGigaFortressShip"
-index = index + 1 ;
+--UNITLIST [index] = "JapanGigaFortressShip"
+--index = index + 1 ;
 --exMessageAppendToMessageArea("indexAIR"..index)
 step4 = index-1
 UNITLIST [index] = "SovietBomberAircraft"
 index = index + 1 ;
 step5= index-1
 -----------------------------------------
-for playindex = 1 , 6 , 1 do 
+for playindex = 1 , 6 , 1 do
     UNITCOUNT[playindex] = {}
-for unitindex = 1 , unitcountmax , 1 do 
-    UNITCOUNT[playindex][unitindex] = 0 ;
+    for unitindex = 1 , unitcountmax , 1 do
+        UNITCOUNT[playindex][unitindex] = 0 ;
+    end
 end
-end
---exMessageAppendToMessageArea("浜岀淮鏁扮粍瀹屾瘯")
+--exMessageAppendToMessageArea("二维数组完毕")
 ----------------------------------------------
-for i = 1 , unitcountmax , 1 do  
-FilterLIST[i]=CreateObjectFilter({
-    Rule="ANY",
-    Relationship="SAME_PLAYER",
-    IncludeThing = {
-    UNITLIST[i],
-    },
-  })
+for i = 1 , unitcountmax , 1 do
+    FilterLIST[i]=CreateObjectFilter({
+        Rule="ANY",
+        Relationship="SAME_PLAYER",
+        IncludeThing = {
+            UNITLIST[i],
+        },
+    })
 end
---exMessageAppendToMessageArea("杩囨护鍣ㄥ畬姣?)
+--exMessageAppendToMessageArea("过滤器完毕")
 ----------------------------------------------------------------
 function unitgetcountanddelet (playindex)
     --exMessageAppendToMessageArea("unitgetcountanddelet")
     for unitindex = 1 , unitcountmax , 1 do
-    local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
-    --exMessageAppendToMessageArea("count:"..count)
-    if count > 0 then
-        ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1 ;
-    UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + count 
-    --exMessageAppendToMessageArea("ID:".. UNITLIST[unitindex])
-    --exMessageAppendToMessageArea("GET:".. UNITCOUNT[playindex][unitindex])
-    for i = 1 , count , 1  do
-        ExecuteAction("NAMED_DELETE",TAR[i])
+        local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
+        --exMessageAppendToMessageArea("count:"..count)
+        if count > 0 then
+            ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1 ;
+            UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + count
+            --exMessageAppendToMessageArea("ID:".. UNITLIST[unitindex])
+            --exMessageAppendToMessageArea("GET:".. UNITCOUNT[playindex][unitindex])
+            for i = 1 , count , 1  do
+                ExecuteAction("NAMED_DELETE",TAR[i])
+            end
+        end
     end
-    end
+    --exMessageAppendToMessageArea("unitgetcountanddeletdone")
 end
---exMessageAppendToMessageArea("unitgetcountanddeletdone")
-end
---exMessageAppendToMessageArea("瀹氫箟鍑芥暟1瀹屾瘯")
+--exMessageAppendToMessageArea("定义函数1完毕")
 -------------------------------------------------------------------------------
 function unitgenerate ()
     ----exMessageAppendToMessageArea("unitgenerate")
-    for playindex = 1 , 6 , 1 do 
-if  EvaluateCondition("PLAYER_HAS_OBJECT_COMPARISON", "Player_"..playindex, 4 , 0 , "allunit") then
-    unitgetcountanddelet (playindex)
-    --exMessageAppendToMessageArea("unitgeneratedone")
-end
+    for playindex = 1 , 6 , 1 do
+        if  EvaluateCondition("PLAYER_HAS_OBJECT_COMPARISON", "Player_"..playindex, 4 , 0 , "allunit") then
+            unitgetcountanddelet (playindex)
+            --exMessageAppendToMessageArea("unitgeneratedone")
+        end
     end
 end
---exMessageAppendToMessageArea("瀹氫箟鍑芥暟2瀹屾瘯")
+--exMessageAppendToMessageArea("定义函数2完毕")
 
 
 bigshiplimitc = {}
 
 function bigshiplimit()
     --exMessageAppendToMessageArea("ACT")
-for i = 1 , 6 , 1 do
-    bigshiplimitc[i] = UNITCOUNT[i][step35+4] +  UNITCOUNT[i][step35+1] +  UNITCOUNT[i][step35+2] +  UNITCOUNT[i][step35+3]
-    --exMessageAppendToMessageArea(" bigshiplimitc[i]".. bigshiplimitc[i])
-    exCounterSetByName("bigshiplimit"..i,  bigshiplimitc[i]);
-end
+    for i = 1 , 6 , 1 do
+        bigshiplimitc[i] = UNITCOUNT[i][step35+4] +  UNITCOUNT[i][step35+1] +  UNITCOUNT[i][step35+2] +  UNITCOUNT[i][step35+3]
+        --exMessageAppendToMessageArea(" bigshiplimitc[i]".. bigshiplimitc[i])
+        exCounterSetByName("bigshiplimit"..i,  bigshiplimitc[i]);
+    end
 end
 

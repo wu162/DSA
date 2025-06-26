@@ -11,7 +11,7 @@ local enableT4Ship = {
     [9] = 'JapanGigaFortressShipEgg',
 }
 
-for i = 1 , 3 , 1 do
+for i = 4 , 6 , 1 do
     for j = 1, 9, 1 do
         ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING","Player_"..i , enableT4Ship[j], 1)
     end
@@ -20,7 +20,7 @@ end
 exAddTextToPublicBoard('恶魔方摧毁海3塔，立即释放一次达摩克利斯之剑(不消耗释放次数)!',10)
 
 SchedulerModule.delay_call(function()
-    ExecuteAction("CREATE_UNNAMED_ON_TEAM_AT_WAYPOINT", "Sea3ProtectShip8", "JapanFortressShip", "PlyrCreeps/teamPlyrCreeps", "seaTower8");
-    local Sea3ProtectShip8 = GetObjectByScriptName("Sea3ProtectShip8");
-    ExecuteAction("UNIT_SET_HEALTH", "Sea3ProtectShip8", 10000);
+    ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "Sea3ProtectShip7", "JapanFortressShip", "PlyrCivilian/teamPlyrCivilian", "seaTower7");
+    local Sea3ProtectShip7 = GetObjectByScriptName("Sea3ProtectShip7");
+    ExecuteAction("UNIT_SET_HEALTH", "Sea3ProtectShip7", 10000);
 end, 15 * 16)
