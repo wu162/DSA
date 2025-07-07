@@ -33,6 +33,63 @@ devil_money = 0
 devil_surrender = 0
 angel_surrender = 0
 
+g_AlliedSuperWeaponBuilt = {
+    [1] = 0,
+    [2] = 0,
+    [3] = 0,
+    [4] = 0,
+    [5] = 0,
+    [6] = 0,
+}
+
+g_ProductionBonus_JapanGet = {
+    [1] = 0,
+    [2] = 0,
+    [3] = 0,
+    [4] = 0,
+    [5] = 0,
+    [6] = 0,
+}
+
+g_ProductionBonus_JapanWeaponEnable = {
+    [1] = 1,
+    [2] = 1,
+    [3] = 1,
+    [4] = 1,
+    [5] = 1,
+    [6] = 1,
+}
+
+g_VehicleFilter = CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    Include="VEHICLE",
+})
+
+g_CelestialSuperWeapon_Get = {
+    [1] = 0,
+    [2] = 0,
+    [3] = 0,
+    [4] = 0,
+    [5] = 0,
+    [6] = 0,
+}
+
+g_CelestialSuperWeapon_CelestialWeaponEnable = {
+    [1] = 1,
+    [2] = 1,
+    [3] = 1,
+    [4] = 1,
+    [5] = 1,
+    [6] = 1,
+}
+
+g_VehicleInfantryAircraftFilter = CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    Include="INFANTRY VEHICLE AIRCRAFT",
+})
+
 function onCenterTopBtnClickEvent(playerName, btnIndex)
     local cutMCV = 3
 
@@ -131,41 +188,88 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
             exCenterTopBtnShowForPlayer(playerName, 1, 'Button_PlayerPower_IronCurtain', '铁幕演说\n进行铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒(已使用)')
         end
     end
-    if playerName == "Player_" .. 1 and btnIndex == 3 and Player1CD3 == 0 then
+    if playerName == "Player_" .. 1 and btnIndex == 3 and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player1CD3 == 0 then
         exEnableWBScript("PlyrCivilian/devilASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player1CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
     end
-    if playerName == "Player_" .. 2 and btnIndex == 3 and Player2CD3 == 0 then
+    if playerName == "Player_" .. 2 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player2CD3 == 0 then
         exEnableWBScript("PlyrCivilian/devilASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player2CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
     end
-    if playerName == "Player_" .. 3 and btnIndex == 3 and Player3CD3 == 0 then
+    if playerName == "Player_" .. 3 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player3CD3 == 0 then
         exEnableWBScript("PlyrCivilian/devilASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player3CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
     end
-    if playerName == "Player_" .. 4 and btnIndex == 3 and Player4CD3 == 0 then
+    if playerName == "Player_" .. 4 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player4CD3 == 0 then
         exEnableWBScript("PlyrCreeps/angelASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player4CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
     end
-    if playerName == "Player_" .. 5 and btnIndex == 3 and Player5CD3 == 0 then
+    if playerName == "Player_" .. 5 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player5CD3 == 0 then
         exEnableWBScript("PlyrCreeps/angelASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player5CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
     end
-    if playerName == "Player_" .. 6 and btnIndex == 3 and Player6CD3 == 0 then
+    if playerName == "Player_" .. 6 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player6CD3 == 0 then
         exEnableWBScript("PlyrCreeps/angelASuper");
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
         Player6CD3 = 3
         exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
+    end
+    if btnIndex == 3 and g_ProductionBonus_JapanGet[g_PlayerNameToIndex[playerName]] == 1 then
+        local playerIndex = g_PlayerNameToIndex[playerName];
+        g_ProductionBonus_JapanWeaponEnable[playerIndex] = 0;
+        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
+
+        local filterObj = T74;
+        if playerIndex >= 4 then
+            filterObj = T84;
+        end
+        local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleFilter)
+        for i = 1, count, 1 do
+            local current = matchedObjects[i]
+            local x,y,z = ObjectGetPosition(current)
+            ObjectCreateAndFireTempWeaponToTarget(filterObj, "PlayerPowerPointDefenseDronesWeapon_Individual", {
+                X=x, Y=y, Z=z
+            }, current)
+        end
+
+        SchedulerModule.delay_call(function(pName)
+            local playerIndex2 = g_PlayerNameToIndex[pName];
+            g_ProductionBonus_JapanWeaponEnable[playerIndex2] = 1;
+            exCenterTopBtnSetEnableForPlayer(pName, 3, 1);
+        end, 2700 , {playerName})
+
+    end
+    if btnIndex == 3 and g_CelestialSuperWeapon_Get[g_PlayerNameToIndex[playerName]] == 1 then
+        local playerIndex = g_PlayerNameToIndex[playerName];
+        g_CelestialSuperWeapon_CelestialWeaponEnable[playerIndex] = 0;
+        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
+
+        local filterObj = T74;
+        if playerIndex >= 4 then
+            filterObj = T84;
+        end
+        local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleInfantryAircraftFilter)
+        for i = 1, count, 1 do
+            local current = matchedObjects[i]
+            ObjectLoadAttributeModifier(current, "AttributeMod_lightningTroop_Lv1", 270)
+        end
+
+        SchedulerModule.delay_call(function(pName)
+            local playerIndex2 = g_PlayerNameToIndex[pName];
+            g_CelestialSuperWeapon_CelestialWeaponEnable[playerIndex2] = 1;
+            exCenterTopBtnSetEnableForPlayer(pName, 3, 1);
+        end, 3300 , {playerName})
+
     end
     if playerName == "Player_" .. 2 and btnIndex == 2 and Player2CD2 < 2 then
         exMessageAppendToMessageArea("恶魔方竟然让时间停止！")

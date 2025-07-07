@@ -3,7 +3,7 @@ UNITLIST = {}
 UNITCOUNT = {}
 P = {}
 ANYUNITCOUNT = {}
-unitcountmax = 200
+--unitcountmax = 200
 for i = 1 , 8 , 1 do
     P[i] = GetObjectByScriptName("P"..i) ;
     ANYUNITCOUNT[i] = 0 ;
@@ -40,11 +40,13 @@ UNITLIST [index] = "SovietScoutInfantry"
 index = index + 1 ;
 UNITLIST [index] = "AlliedAntiVehicleInfantry"
 index = index + 1 ;
+UNITLIST [index] = "CelestialInfiltrationInfantry"
+index = index + 1 ;
 --exMessageAppendToMessageArea("indexINFANT"..index)
 step1 = index-1 ;
 --index = 51
-UNITLIST [index] = "AlliedAntiAirVehicleTech1"
-index = index + 1 ;
+--UNITLIST [index] = "AlliedAntiAirVehicleTech1"
+--index = index + 1 ;
 UNITLIST [index] = "AlliedAntiInfantryVehicle"
 index = index + 1 ;
 UNITLIST [index] = "AlliedAntiVehicleVehicleTech1"
@@ -71,8 +73,8 @@ UNITLIST [index] = "JapanAntiVehicleVehicleTech1"
 index = index + 1 ;
 UNITLIST [index] = "JapanSentinelVehicle"
 index = index + 1 ;
-UNITLIST [index] = "SovietAntiAirShip"
-index = index + 1 ;
+-- UNITLIST [index] = "SovietAntiAirShip"
+-- index = index + 1 ;
 UNITLIST [index] = "SovietAntiInfantryVehicle"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiVehicleVehicleTech1"
@@ -149,8 +151,8 @@ UNITLIST [index] = "AlliedSupportAircraft"
 index = index + 1 ;
 UNITLIST [index] = "AlliedFighterAircraft"
 index = index + 1 ;
-UNITLIST [index] = "CelestialAdvanceAircraftTech4"
-index = index + 1 ;
+-- UNITLIST [index] = "CelestialAdvanceAircraftTech4"
+-- index = index + 1 ;
 UNITLIST [index] = "CelestialBomberAircraft"
 index = index + 1 ;
 UNITLIST [index] = "CelestialFighterAircraft"
@@ -176,6 +178,8 @@ index = index + 1 ;
 UNITLIST [index] = "SovietInterceptorAircraft"
 index = index + 1 ;
 UNITLIST [index] = "CelestialSupportAircraft"
+index = index + 1 ;
+UNITLIST [index] = "CelestialAdvanceAircraftTech4"
 index = index + 1 ;
 step35 = index-1
 UNITLIST [index] = "JapanAntiStructureShip"
@@ -221,6 +225,12 @@ step4 = index-1
 UNITLIST [index] = "SovietBomberAircraft"
 index = index + 1 ;
 step5= index-1
+UNITLIST [index] = "SovietAntiAirShip"
+index = index + 1 ;
+UNITLIST [index] = "AlliedAntiAirVehicleTech1"
+index = index + 1 ;
+step6= index-1
+unitcountmax = index-1
 -----------------------------------------
 for playindex = 1 , 6 , 1 do
     UNITCOUNT[playindex] = {}
@@ -245,9 +255,12 @@ function unitgetcountanddelet (playindex)
     --exMessageAppendToMessageArea("unitgetcountanddelet")
     for unitindex = 1 , unitcountmax , 1 do
         local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
-        --exMessageAppendToMessageArea("count:"..count)
+
         if count > 0 then
-            ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1 ;
+
+            --exMessageAppendToMessageArea("count:"..count)
+
+            ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + count ;
             UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + count
             --exMessageAppendToMessageArea("ID:".. UNITLIST[unitindex])
             --exMessageAppendToMessageArea("GET:".. UNITCOUNT[playindex][unitindex])
@@ -271,15 +284,16 @@ function unitgenerate ()
 end
 --exMessageAppendToMessageArea("定义函数2完毕")
 
-
+CAIRTECH4limitc = {}
 bigshiplimitc = {}
 
 function bigshiplimit()
     --exMessageAppendToMessageArea("ACT")
     for i = 1 , 6 , 1 do
         bigshiplimitc[i] = UNITCOUNT[i][step35+4] +  UNITCOUNT[i][step35+1] +  UNITCOUNT[i][step35+2] +  UNITCOUNT[i][step35+3]
+        CAIRTECH4limitc[i] = UNITCOUNT[i][step35]
         --exMessageAppendToMessageArea(" bigshiplimitc[i]".. bigshiplimitc[i])
         exCounterSetByName("bigshiplimit"..i,  bigshiplimitc[i]);
+        exCounterSetByName("CAIRTECH4limit"..i,  CAIRTECH4limitc[i]);
     end
 end
-

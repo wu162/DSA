@@ -60,5 +60,9 @@ SchedulerModule.delay_call(function()
     ExecuteAction("NAMED_DELETE", object);
     object = GetObjectByScriptName("t534")
     ExecuteAction("NAMED_DELETE", object);
-end, 13)
 
+    object = GetObjectByScriptName("overlord7")
+    ExecuteAction("NAMED_DELETE", object);
+    object = GetObjectByScriptName("overlord8")
+    ExecuteAction("NAMED_DELETE", object);
+end, 13)

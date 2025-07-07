@@ -1,5 +1,15 @@
 devil_max = 200
 angel_max = 200
+
+g_GameMode = 1;
+g_EnableDeathModeEffect = 0;
+
+g_GameModeName = {
+    [1] = "正常模式",
+    [2] = "死亡模式",
+    [3] = "缩小模式",
+}
+
 function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
     local round = exCounterGetByName("lvc")
     local start = exCounterGetByName("start")
@@ -235,6 +245,19 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
         end, 15 * 60 * 3, {playerName})
     end
 
+    if dialogId == 201 then
+        g_GameMode = btnIndex;
+        exMessageAppendToMessageArea('已选择游戏模式' .. g_GameModeName[g_GameMode])
+        if g_GameMode == 3 then
+            -- 进一步选择是否启用死亡模式效果
+            exShowCustomBtnChoiceDialogForPlayer(playerName, 202, "是否启用死亡模式效果\n(只有1个塔,科技全开)", '启用', '不启用', '', '', '', '', '')
+        end
+
+        exEnableWBScript("readyForStartCam");
+    end
+    if dialogId == 202 then
+        g_EnableDeathModeEffect = 1;
+    end
 
     SetworldBuilderThisPlayer(previous)
 end
