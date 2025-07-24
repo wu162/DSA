@@ -17,7 +17,7 @@ for i = 1 , 3 , 1 do
     end
 end
 
-exAddTextToPublicBoard('恶魔方摧毁海3塔，立即释放一次达摩克利斯之剑(不消耗释放次数)!',10)
+exAddTextToPublicBoard('恶魔方摧毁敌方海3塔，立即释放一次达摩克利斯之剑(不消耗释放次数)!',10)
 
 SchedulerModule.delay_call(function()
     ExecuteAction("CREATE_UNNAMED_ON_TEAM_AT_WAYPOINT", "Sea3ProtectShip8", "JapanFortressShip", "PlyrCreeps/teamPlyrCreeps", "seaTower8");

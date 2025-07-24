@@ -233,6 +233,13 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         if playerIndex >= 4 then
             filterObj = T84;
         end
+
+        local sideName = "天使"
+        if playerIndex <= 3 then
+            sideName = "恶魔"
+        end
+        exMessageAppendToMessageArea(format("%s $p%dName使用了由帝国机械化组装协议提供的纳米护盾！", sideName, playerIndex))
+
         local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleFilter)
         for i = 1, count, 1 do
             local current = matchedObjects[i]
@@ -258,6 +265,13 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         if playerIndex >= 4 then
             filterObj = T84;
         end
+
+        local sideName = "天使"
+        if playerIndex <= 3 then
+            sideName = "恶魔"
+        end
+        exMessageAppendToMessageArea(format("%s $p%dName使用了由止戈立场提供的全图士气提升技能！", sideName, playerIndex))
+
         local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleInfantryAircraftFilter)
         for i = 1, count, 1 do
             local current = matchedObjects[i]

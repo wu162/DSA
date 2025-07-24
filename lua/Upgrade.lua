@@ -8,6 +8,7 @@ AdvancedMissilePacks = FastHash('PlayerTech_Japan_AdvancedMissilePacks')
 ElectromagneticGun = FastHash('PlayerTech_Celestial_ElectromagneticGun')
 ProductionBonus = FastHash('PlayerTech_ProductionBonus_Allies')
 PlayerTech_Celestial_PowerSealOffId = FastHash('PlayerTech_Celestial_PowerSealOff')
+PlayerTech_ProductionBonus_SovietId = FastHash('PlayerTech_ProductionBonus_Soviet')
 PlayerTech_ProductionBonus_JapanId = FastHash('PlayerTech_ProductionBonus_Japan')
 exTogglePlayerGetTechEvent(1)
 
@@ -83,11 +84,14 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
         end
     elseif techInstanceId == ProductionBonus then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", 'PlayerA_' .. i, 'AlliedWallPiece', computerPlayer .. '/team' .. computerPlayer, "jiaoyidian")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得经济提升!")
+        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得盟军自由贸易协议，取得经济提升!")
     elseif techInstanceId == PlayerTech_ProductionBonus_JapanId then
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得机械化组装，解锁全体坦克护盾技能");
+        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得帝国机械化组装协议，解锁全体坦克护盾技能");
         exCenterTopBtnShowForPlayer(playerName, 3, "Button_PlayerPower_PointDefenseDrones", "全体坦克护盾\n为所有己方坦克套上纳米护盾\n冷却时间200秒")
         g_ProductionBonus_JapanGet[g_PlayerNameToIndex[playerName]] = 1
+    elseif techInstanceId == PlayerTech_ProductionBonus_SovietId then
+        -- 通知一下大家 苏联大生产好了
+        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得苏联大生产协议，全体单位降价");
     end
     SetWorldBuilderThisPlayer(previous)
 
