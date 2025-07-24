@@ -14,220 +14,100 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
     local round = exCounterGetByName("lvc")
     local start = exCounterGetByName("start")
     local previous = SetWorldBuilderThisPlayer(1)
-    if playerName == "Player_1" and btnIndex == 1 and dialogId == 101 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_2', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_1', '-1000')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
+
+    -- 试图重构一下之前的那堆复制粘贴的代码
+    -- 首先弄清楚目前各种 hard coded 的数字代表什么
+    -- Player_1, Player_2, Player_N, ...
+    -- btnIndex：
+    --   1 和 2 分别代表向队友转移资金
+    --   4 代表购买投资
+    --   5 代表贷款
+    -- 此外看起来每个玩家都有自己的 dialogId：Player_1 是 101，Player_2 是 102，Player_3 是 103，。。。
+
+    -- 那么，我们可以首先获取玩家序号
+    local playerIndex = g_PlayerNameToIndex[playerName]
+    -- 处理交易市场对话框
+    local marketDialogId = 100 + playerIndex
+    if dialogId == marketDialogId then
+        -- 首先，除非玩家退出交易市场，否则等玩家执行完操作之后，我们还要重新显示交易市场对话框
+        -- 因此首先准备好下一次显示交易市场对话框的内容（也就是 exShowCustomBtnChoiceDialogForPlayer 的参数）
+        function showNextMarketDialog(playerName, playerIndex, transferToA_Index, transferToB_Index)
+            local investedMax = devil_max
+            local investedMoney = devil_money
+            if playerIndex >= 4 then
+                investedMax = angel_max
+                investedMoney = angel_money
+            end
+            local nextTitle = format('欢迎进入交易市场\n投资金额(上限%d):%d', investedMax, investedMoney)
+            local roles = { '恶魔攻击单元', '恶魔时空管理员', '恶魔空军司令', 
+                           '天使攻击单元', '天使时空管理员', '天使空军司令' }
+            local nextInvestmentText = '购买100恶魔投资'
+            if playerIndex >= 4 then
+                nextInvestmentText = '购买100天使投资'
+            end
+            exShowCustomBtnChoiceDialogForPlayer(playerName, 100 + playerIndex, nextTitle,
+                format('向%s转移1000资金', roles[transferToA_Index]),
+                format('向%s转移1000资金', roles[transferToB_Index]),
+                '回到战场', nextInvestmentText, '', '', '')
         end
-    end
-    if playerName == "Player_1" and btnIndex == 2 and dialogId == 101 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_3', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_1', '-1000')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
+        -- 假如是 Player_1，他应该转账给 Player_2 和 3；假如是 2，则应该转账给 1 和 3
+        -- 假如是 4，应该转账给 5 和 6；假如是 6，则应该转账给 4 和 5
+        local transferToA_Index, transferToB_Index
+        if playerIndex == 1 or playerIndex == 4 then
+            transferToA_Index = playerIndex + 1
+            transferToB_Index = playerIndex + 2
+        elseif playerIndex == 2 or playerIndex == 5 then
+            transferToA_Index = playerIndex - 1
+            transferToB_Index = playerIndex + 1
+        elseif playerIndex == 3 or playerIndex == 6 then
+            transferToA_Index = playerIndex - 2
+            transferToB_Index = playerIndex - 1
         end
-    end
-    if playerName == "Player_2" and btnIndex == 1 and dialogId == 102 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_1', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_2', '-1000')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_2" and btnIndex == 2 and dialogId == 102 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_3', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_2', '-1000')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_3" and btnIndex == 1 and dialogId == 103 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_1', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_3', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_3" and btnIndex == 2 and dialogId == 103 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_2', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_3', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_4" and btnIndex == 1 and dialogId == 104 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_4', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_4" and btnIndex == 2 and dialogId == 104 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_6', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_4', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_5" and btnIndex == 1 and dialogId == 105 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_4', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_5" and btnIndex == 2 and dialogId == 105 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_6', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_6" and btnIndex == 1 and dialogId == 106 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_4', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_6', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_6" and btnIndex == 2 and dialogId == 106 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 1000 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '1000')
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_6', '-1000')
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_1" and btnIndex == 4 and dialogId == 101 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and devil_money < devil_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_1', '-100')
-            devil_money = devil_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_2" and btnIndex == 4 and dialogId == 102 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and devil_money < devil_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_2', '-100')
-            devil_money = devil_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_3" and btnIndex == 4 and dialogId == 103 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and devil_money < devil_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_3', '-100')
-            devil_money = devil_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', '', '', '')
-        end
-    end
-    if playerName == "Player_4" and btnIndex == 4 and dialogId == 104 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and angel_money < angel_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_4', '-100')
-            angel_money = angel_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_5" and btnIndex == 4 and dialogId == 105 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and angel_money < angel_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '-100')
-            angel_money = angel_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-        end
-    end
-    if playerName == "Player_6" and btnIndex == 4 and dialogId == 106 then
-        local money = exPlayerGetCurrentMoney(playerName)
-        if money >= 100 and angel_money < angel_max and start > 600 then
-            ExecuteAction('PLAYER_GIVE_MONEY', 'Player_5', '-100')
-            angel_money = angel_money + 100
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
-            exAddTextToPublicBoardForPlayer(playerName, '投资成功', 5)
-        else
-            exAddTextToPublicBoardForPlayer(playerName, '条件不满足!', 5)
-            exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', '', '', '')
+
+        -- 处理转账
+        if btnIndex == 1 or btnIndex == 2 then
+            local transferTargetIndex = transferToA_Index
+            if btnIndex == 2 then
+                transferTargetIndex = transferToB_Index
+            end
+            local transferTargetName = "Player_" .. transferTargetIndex
+            local money = exPlayerGetCurrentMoney(playerName)
+            if money >= 1000 then
+                ExecuteAction('PLAYER_GIVE_MONEY', transferTargetName, '1000')
+                ExecuteAction('PLAYER_GIVE_MONEY', playerName, '-1000')
+                exAddTextToPublicBoardForPlayer(playerName, '转移成功', 5)
+            else
+                exAddTextToPublicBoardForPlayer(playerName, '您的余额不足', 5)
+            end
+            -- 重新显示交易市场对话框
+            showNextMarketDialog(playerName, playerIndex, transferToA_Index, transferToB_Index)
+        elseif btnIndex == 4 then
+            -- 处理购买投资
+            local money = exPlayerGetCurrentMoney(playerName)
+            local isInvestementMax = false
+            if playerIndex <= 3 and devil_money >= devil_max then
+                isInvestementMax = true
+            elseif playerIndex >= 4 and angel_money >= angel_max then
+                isInvestementMax = true
+            end
+            if isInvestementMax then
+                exAddTextToPublicBoardForPlayer(playerName, '投资失败：投资已达到上限', 5)
+            elseif start <= 600 then
+                exAddTextToPublicBoardForPlayer(playerName, '投资失败：只能在每个回合刚开始时投资', 5)
+            elseif money < 100 then
+                exAddTextToPublicBoardForPlayer(playerName, '投资失败：余额不足', 5)
+            else
+                if playerIndex <= 3 then
+                    devil_money = devil_money + 100
+                    exAddTextToPublicBoardForPlayer(playerName, '投资成功，当前投资金额：' .. devil_money, 5)
+                else
+                    angel_money = angel_money + 100
+                    exAddTextToPublicBoardForPlayer(playerName, '投资成功，当前投资金额：' .. angel_money, 5)
+                end
+                ExecuteAction('PLAYER_GIVE_MONEY', playerName, '-100')
+            end
+            -- 重新显示交易市场对话框
+            showNextMarketDialog(playerName, playerIndex, transferToA_Index, transferToB_Index)
         end
     end
 
