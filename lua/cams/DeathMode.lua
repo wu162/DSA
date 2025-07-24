@@ -66,3 +66,17 @@ SchedulerModule.delay_call(function()
     object = GetObjectByScriptName("overlord8")
     ExecuteAction("NAMED_DELETE", object);
 end, 13)
+
+for i = 1, 6 do
+    local playerName = "Player_" .. i
+    ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "alliedsuperweapon", 1)
+end
+
+for i = 1, 6, 1 do
+    local playerName = "Player_" .. i
+    if EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName,"PlayerTech_Celestial") then
+        ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "extraPower1"..tostring(i), "CelestialPowerPlant", playerName.."/team"..playerName, "navelYard" .. i);
+        ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "extraPower2"..tostring(i), "CelestialPowerPlant", playerName.."/team"..playerName, "navelYard" .. i);
+        ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "extraPower3"..tostring(i), "CelestialPowerPlant", playerName.."/team"..playerName, "navelYard" .. i);
+    end
+end
