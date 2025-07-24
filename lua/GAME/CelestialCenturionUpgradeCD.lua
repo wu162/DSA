@@ -9,8 +9,9 @@ CelestialCenturionUpgradeUseCount = {
 
 SchedulerModule.call_every_x_frame(function()
     for i = 1, 6, 1 do
-        if g_PlayerSpellBookId[i] ~= 0 and exObjectGetSpecialCountDownFrame(i, "SpecialPower_CelestialCenturionUpgrade") >= 2220 then
-            ExecuteAction("NAMED_SET_SPECIAL_POWER_COUNTDOWN", GetObjectById(i), "SpecialPower_CelestialCenturionUpgrade", 8);
+        local spellbookId = g_PlayerSpellBookId[i]
+        if spellbookId ~= 0 and exObjectGetSpecialCountDownFrame(spellbookId, "SpecialPower_CelestialCenturionUpgrade") >= 2220 then
+            ExecuteAction("NAMED_SET_SPECIAL_POWER_COUNTDOWN", GetObjectById(spellbookId), "SpecialPower_CelestialCenturionUpgrade", 8);
         end
     end
 

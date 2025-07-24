@@ -7,8 +7,15 @@ g_PlayerSpellBookId = {
     [6] = 0,
 }
 
-for i = 1, 6, 1 do
+for i = 1, 32, 1 do
     if exObjectGetInstanceId(i) == 1627485 then
-        g_PlayerSpellBookId[i] = i
+        local name = ObjectPlayerScriptName(i)
+        -- 检测是否是 Player_ 开头
+        if strsub(name, 1, 7) == "Player_" then
+            local playerIndex = tonumber(strsub(name, 8))
+            if playerIndex >= 1 and playerIndex <= 6 then
+                g_PlayerSpellBookId[playerIndex] = i
+            end
+        end
     end
 end
