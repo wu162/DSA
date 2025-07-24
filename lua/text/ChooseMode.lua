@@ -17,4 +17,4 @@ g_RoomOwnerPlayer = g_objectTeamNameToPlayerName[teamName]
 exShowCustomBtnChoiceDialogForPlayer(g_RoomOwnerPlayer, 201, "选择游戏模式", '正常模式', '死亡模式', '缩小模式', '', '', '', '')
 
 
-SetworldBuilderThisPlayer(previous)
+SetWorldBuilderThisPlayer(previous)

@@ -151,5 +151,5 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
         end
     end
 
-    SetworldBuilderThisPlayer(previous)
+    SetWorldBuilderThisPlayer(previous)
 end

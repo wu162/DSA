@@ -210,7 +210,7 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialAuxiliaryAimingSystem")
                     exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得穿云定海!")
                 end
-                SetworldBuilderThisPlayer(previous)
+                SetWorldBuilderThisPlayer(previous)
             end
         elseif i > 3 then
             if playerName == 'Player_' .. i then
@@ -288,7 +288,7 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialAuxiliaryAimingSystem")
                     exMessageAppendToMessageArea("天使$p" .. i .. "Name获得穿云定海!")
                 end
-                SetworldBuilderThisPlayer(previous)
+                SetWorldBuilderThisPlayer(previous)
             end
         end
     end
