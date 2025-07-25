@@ -90,7 +90,27 @@ g_VehicleInfantryAircraftFilter = CreateObjectFilter({
     Include="INFANTRY VEHICLE AIRCRAFT",
 })
 
+-- 避免连着点两下
+g_CenterTopButtonClickCooldown = {
+    ['Player_1'] = {},
+    ['Player_2'] = {},
+    ['Player_3'] = {},
+    ['Player_4'] = {},
+    ['Player_5'] = {},
+    ['Player_6'] = {},
+}
+
 function onCenterTopBtnClickEvent(playerName, btnIndex)
+
+    -- 先处理一下按钮冷却
+    if g_CenterTopButtonClickCooldown[playerName] == nil then
+        g_CenterTopButtonClickCooldown[playerName] = {}
+    end
+    if g_CenterTopButtonClickCooldown[playerName][btnIndex] then
+        -- 假如之前请求了按钮冷却、并且按钮依然正在冷却中，直接返回
+        return
+    end
+
     local cutMCV = 3
 
     local debtStr = "";
@@ -139,9 +159,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         for j = 1, count, 1 do
             ObjectLoadAttributeModifier(TAR[j], "AttributeModifier_IronCurtain", 225)
         end
+        exCenterTopBtnSetEnableForPlayer(playerName, 1, 0) -- 先禁用（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown[playerName][1] = true
         if Player2CD1 >= 2 then
-            exCenterTopBtnSetEnableForPlayer(playerName, 1, 0)
             exCenterTopBtnShowForPlayer(playerName, 1, 'Button_PlayerPower_IronCurtain', '铁幕演说\n进行铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player2CD1 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 6 and btnIndex == 1 and Player6CD1 == 0 then
@@ -183,9 +212,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         for j = 1, count, 1 do
             ObjectLoadAttributeModifier(TAR[j], "AttributeModifier_IronCurtain", 225)
         end
+        exCenterTopBtnSetEnableForPlayer(playerName, 1, 0) -- 先禁用（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown[playerName][1] = true
         if Player5CD1 >= 2 then
-            exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
             exCenterTopBtnShowForPlayer(playerName, 1, 'Button_PlayerPower_IronCurtain', '铁幕演说\n进行铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player5CD1 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 1 and btnIndex == 3 and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player1CD3 == 0 then
@@ -290,9 +328,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
         exEnableWBScript("devilstop");
         Player2CD2 =  Player2CD2 + 1
+        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0) -- 先禁用（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown[playerName][btnIndex] = true
         if Player2CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0)
             exCenterTopBtnShowForPlayer(playerName, btnIndex, 'AUA_Timebelt', '时空管理局\n借助未来科技的力量时停对方单位13s(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player2CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 5 and btnIndex == 2 and Player5CD2 < 2 then
@@ -300,9 +347,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
         exEnableWBScript("angelstop");
         Player5CD2 = Player5CD2 + 1
+        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0) -- 先禁用（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown[playerName][btnIndex] = true
         if Player5CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0)
             exCenterTopBtnShowForPlayer(playerName, btnIndex, 'AUA_Timebelt', '时空管理局\n借助未来科技的力量时停对方单位13s(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player5CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 3 and btnIndex == 2 and Player3CD2 < 2 then
@@ -311,9 +367,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
         exEnableWBScript("devil_air");
         Player3CD2 = Player3CD2 + 1
+        exCenterTopBtnSetEnableForPlayer('Player_3', 2, 0) -- 先禁用按钮（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown['Player_3'][2] = true
         if Player3CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer('Player_3', 2, 0)
             exCenterTopBtnShowForPlayer('Player_3', 2, 'Button_SovietInterceptorAircraft', '空军元帅\n请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player3CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 6 and btnIndex == 2 and Player6CD2 < 2 then
@@ -322,9 +387,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
         exEnableWBScript("angel_air");
         Player6CD2 = Player6CD2 + 1
+        exCenterTopBtnSetEnableForPlayer('Player_6', 2, 0) -- 先禁用按钮（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown['Player_6'][2] = true
         if Player6CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer('Player_6', 2, 0)
             exCenterTopBtnShowForPlayer('Player_6', 2, 'Button_SovietInterceptorAircraft', '空军元帅\n请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player6CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 1 and btnIndex == 2 and Player1CD2 < 2 then
@@ -332,9 +406,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
         exEnableWBScript("devil_nemesisplay");
         Player1CD2 = Player1CD2 + 1
+        exCenterTopBtnSetEnableForPlayer('Player_1', 2, 0) -- 先禁用按钮（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown['Player_1'][2] = true
         if Player1CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer('Player_1', 2, 0)
             exCenterTopBtnShowForPlayer('Player_1', 2, 'Button_CelestialPantaOrbitalStrike', '达摩克利斯之剑\n请求太空的卫星对敌方启用15秒的精准卫星打击(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player1CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 4 and btnIndex == 2 and Player4CD2 < 2 then
@@ -342,9 +425,18 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
         exEnableWBScript("angel_nemesisplay");
         Player4CD2 = Player4CD2 + 1
+        exCenterTopBtnSetEnableForPlayer('Player_4', 2, 0) -- 先禁用按钮（无论还有没有使用次数）
+        g_CenterTopButtonClickCooldown['Player_4'][2] = true
         if Player4CD2 >= 2 then
-            exCenterTopBtnSetEnableForPlayer('Player_4', 2, 0)
             exCenterTopBtnShowForPlayer('Player_4', 2, 'Button_CelestialPantaOrbitalStrike', '达摩克利斯之剑\n请求太空的卫星对敌方启用15秒的精准卫星打击(已使用)')
+        else
+            -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
+            SchedulerModule.delay_call(function(pName, bIndex)
+                g_CenterTopButtonClickCooldown[pName][bIndex] = false
+                if Player4CD2 < 2 then
+                    exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
+                end
+            end, 150, {playerName, btnIndex})
         end
     end
     if playerName == "Player_" .. 1 and btnIndex == 6 and Player1CD6 == 0 then
