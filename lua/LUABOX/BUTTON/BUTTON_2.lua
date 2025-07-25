@@ -251,12 +251,24 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
         if g_GameMode == 3 then
             -- 进一步选择是否启用死亡模式效果
             exShowCustomBtnChoiceDialogForPlayer(playerName, 202, "是否启用死亡模式效果\n(只有1个塔,科技全开)", '启用', '不启用', '', '', '', '', '')
+        else
+            exEnableWBScript("readyForStartCam");
+        end
+    end
+    if dialogId == 202 then
+        if btnIndex == 1 then
+            g_EnableDeathModeEffect = 1;
+            exMessageAppendToMessageArea("同时启用了死亡模式效果")
         end
 
         exEnableWBScript("readyForStartCam");
     end
-    if dialogId == 202 then
-        g_EnableDeathModeEffect = 1;
+    if dialogId == 301 then
+        if btnIndex == 1 then
+            MsgCommand_BanSea()
+        elseif btnIndex == 2 then
+            MsgCommand_BanInfantry()
+        end
     end
 
     SetworldBuilderThisPlayer(previous)

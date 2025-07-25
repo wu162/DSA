@@ -24,3 +24,7 @@ SchedulerModule.delay_call(function()
     local Sea3ProtectShip8 = GetObjectByScriptName("Sea3ProtectShip8");
     ExecuteAction("UNIT_SET_HEALTH", "Sea3ProtectShip8", 10000);
 end, 15 * 16)
+
+if g_GameMode == 3 then
+    exWaypointSetPos("PLANEREBORN8", 5327, 4484, 200)
+end
