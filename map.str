@@ -150,3 +150,16 @@ end
 angel_surrender
 "天使投降投票中"
 end
+
+SCRIPT:CelestialBatteryHelp
+"蓄元鼎会在一段时间后自动掉血死亡，并返还大量资金"
+end
+SCRIPT:CelestialLaserTowerHelp
+"每使用一次天火塔，后续所有回合加入1个迅雷天罡"
+end
+SCRIPT:JapanAmbushHelp
+"每使用一次帽子协议，后续所有回合加入5个坦克杀手"
+end
+SCRIPT:CelestialReinforcementHelp
+"每使用一次三子归边，后续所有回合加入对应的部队"
+end

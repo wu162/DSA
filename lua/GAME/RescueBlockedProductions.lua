@@ -113,12 +113,24 @@ function RescueBlockedProductions_DoRescue(playerName, disallowedUnitHashes)
                                 -- 恢复归属
                                 local factory = GetObjectById(factoryId)
                                 ExecuteAction("NAMED_TRANSFER_OWNERSHIP_PLAYER", factory, playerName)
+                            else
+                                exMessageAppendToMessageArea(format("ERROR: Factory %s for player %s is no longer alive after rescue attempt.", tostring(factoryId), tostring(playerName)))
                             end
                             local engineer = GetObjectByScriptName(engineerName)
                             if ObjectIsAlive(engineer) then
                                 ExecuteAction("NAMED_KILL", engineer)
                             end
                         end, 25, {playerName, ObjectGetId(factory), engineerName})
+
+                        SchedulerModule.delay_call(function(playerName, factoryId, engineerName)
+                            if ObjectIsAlive(factoryId) then
+                                -- 确保归属恢复过来了
+                                local factory = GetObjectById(factoryId)
+                                ExecuteAction("NAMED_TRANSFER_OWNERSHIP_PLAYER", factory, playerName)
+                            else
+                                exMessageAppendToMessageArea(format("ERROR: Factory %s for player %s is no longer alive after rescue attempt.", tostring(factoryId), tostring(playerName)))
+                            end
+                        end, 75, {playerName, ObjectGetId(factory), engineerName})
                     end
                 end
             end

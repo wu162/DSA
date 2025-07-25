@@ -1,5 +1,24 @@
 g_UnitCreateEventFunc = {}
 
+function ShowTimedHelp(ownerPlayerName, name, localizedText, x, y, z)
+    name = format("%s_%s", ownerPlayerName, name)
+    ExecuteAction("NAMED_DELETE", name)
+    ExecuteAction("UNIT_SPAWN_NAMED_LOCATION_ORIENTATION", name, "MultiplayerBeacon", format("%s/team%s", ownerPlayerName, ownerPlayerName), {
+        X = x,
+        Y = y,
+        Z = z,
+    }, 0)
+    ExecuteAction("NAMED_SHOW_INFOBOX", name, localizedText, 0, "")
+    SchedulerModule.delay_call(function(id)
+        -- 这里使用 id 而不是 name 是因为 name 有可能被重复利用
+        -- 我们并不希望删除新的同名对象
+        -- 我们只需要删除之前的这个 id 对应的对象就行了
+        if ObjectIsAlive(id) then
+            ExecuteAction("NAMED_DELETE", GetObjectById(id))
+        end
+    end, 100, {GetObjectById(GetObjectByScriptName(name))})
+end
+
 function limitCelestialBattery(createdObjId, createdObjInstanceId, ownerPlayerName)
     SchedulerModule.delay_call(function(id)
         if ObjectIsAlive(id) then
@@ -8,7 +27,14 @@ function limitCelestialBattery(createdObjId, createdObjInstanceId, ownerPlayerNa
     end, 15, {createdObjId})
 end
 
+function CelestialBatteryBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    local x, y, z = ObjectGetPosition(createdObjId)
+    ShowTimedHelp(ownerPlayerName, "CelestialBatteryHelp", "SCRIPT:CelestialBatteryHelp", x, y, z)
+end
+
 function CelestialLaserTowerBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    local x, y, z = ObjectGetPosition(createdObjId)
+    ShowTimedHelp(ownerPlayerName, "CelestialLaserTowerHelp", "SCRIPT:CelestialLaserTowerHelp", x, y, z)
     SchedulerModule.delay_call(function(id)
         if ObjectIsAlive(id) then
             local teamName = ObjectTeamName(GetObjectById(id))
@@ -17,6 +43,11 @@ function CelestialLaserTowerBorn(createdObjId, createdObjInstanceId, ownerPlayer
             ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", playerName, 'CelestialAntiInfantryInfantryAdvanced', playerName .. '/team' .. playerName, 'commonSpawn')
         end
     end, 5, {createdObjId})
+end
+
+function CelestialSpaceReinforceMarkerBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    local x, y, z = ObjectGetPosition(createdObjId)
+    ShowTimedHelp(ownerPlayerName, "CelestialReinforcementHelp", "SCRIPT:CelestialReinforcementHelp", x, y, z)
 end
 
 function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
@@ -67,6 +98,8 @@ g_UnitCreateEventFunc[FastHash("CelestialAlliesElectricitySale_ForAlliedTurbine"
 g_UnitCreateEventFunc[FastHash("CelestialAlliesElectricitySale_ForSovietAdvancedPower")] = limitCelestialBattery
 
 g_UnitCreateEventFunc[FastHash("CelestialLaserTower")] = CelestialLaserTowerBorn
+g_UnitCreateEventFunc[FastHash("CelestialBattery")] = CelestialBatteryBorn
+g_UnitCreateEventFunc[FastHash("CelestialSpaceReinforceMarker")] = CelestialSpaceReinforceMarkerBorn
 
 g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCenturionUpgradeBorn
 
@@ -79,6 +112,8 @@ g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCe
 --exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForAlliedTurbine")
 --exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForSovietAdvancedPower")
 exObjectRegisterCreateEvent("CelestialLaserTower")
+exObjectRegisterCreateEvent("CelestialBattery")
+exObjectRegisterCreateEvent("CelestialSpaceReinforceMarker")
 
 exObjectRegisterCreateEvent("CelestialCenturionUpgradeObject")
 
