@@ -1,1 +1,3 @@
-boardact ()
+if boardact then
+    boardact ()
+end
