@@ -11,7 +11,6 @@ g_ShrinkFilter2 = CreateObjectFilter({
 })
 
 function ShrinkMode_Setting()
-    -- TODO 修复bug
     if g_EnableDeathModeEffect == 1 then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "ShrinkMode741", 'SovietBaseDefenseAdvanced', 'PlyrCivilian/teamPlyrCivilian', 'TD7_2')
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "ShrinkMode742", 'SovietHeavyAntiAirMissileTurret', 'PlyrCivilian/teamPlyrCivilian', 'TD7_2')
@@ -56,6 +55,9 @@ function ShrinkMode_Setting()
     ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_5", "AlliedAntiNavalScout", 0)
     ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_6", "AlliedAntiNavalScout", 0)
 
+    exWaypointSetPos("PLANEREBORN8", 4300, 4484, 200)
+    exWaypointSetPos("PLANEREBORN7", 2684, 4512, 200)
+
 
 end
 
@@ -75,12 +77,14 @@ function ShrinkMode_Apply()
     for i = 1, count, 1 do
         local current = matchedObjects[i]
         ObjectLoadAttributeModifier(current,'AttributeModifier_JapanNanoEnhanceDroneReinforcement', 9999)
+        ObjectLoadAttributeModifier(current,'AttributeModifier_BoxHealSuperUp', 9999)
     end
 
     matchedObjects, count = ObjectFindObjects(T84, nil, g_ShrinkFilter2)
     for i = 1, count, 1 do
         local current = matchedObjects[i]
         ObjectLoadAttributeModifier(current,'AttributeModifier_JapanNanoEnhanceDroneReinforcement', 9999)
+        ObjectLoadAttributeModifier(current,'AttributeModifier_BoxHealSuperUp', 9999)
     end
 
 end

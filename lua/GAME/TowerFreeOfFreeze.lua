@@ -15,3 +15,18 @@ object = GetObjectByScriptName("T83")
 ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
 object = GetObjectByScriptName("T84")
 ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+
+object = GetObjectByScriptName("T71F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+object = GetObjectByScriptName("T72F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+object = GetObjectByScriptName("T73F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+
+object = GetObjectByScriptName("T81F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+object = GetObjectByScriptName("T82F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+object = GetObjectByScriptName("T83F")
+ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", object,"IN_SHIELD_SPHERE", 1)
+

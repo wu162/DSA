@@ -71,13 +71,13 @@ g_UnitCreateEventFunc[FastHash("CelestialLaserTower")] = CelestialLaserTowerBorn
 g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCenturionUpgradeBorn
 
 
-exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
-exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
-exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")
-exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialPower")
-exObjectRegisterCreateEvent("CelestialElectricitySale_ForAlliedTurbine")
-exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForAlliedTurbine")
-exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForSovietAdvancedPower")
+--exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
+--exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
+--exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")
+--exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialPower")
+--exObjectRegisterCreateEvent("CelestialElectricitySale_ForAlliedTurbine")
+--exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForAlliedTurbine")
+--exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForSovietAdvancedPower")
 exObjectRegisterCreateEvent("CelestialLaserTower")
 
 exObjectRegisterCreateEvent("CelestialCenturionUpgradeObject")
