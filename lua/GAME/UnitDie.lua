@@ -1,6 +1,6 @@
 g_UnitDieEventFunc = {}
 
-CELESTIAL_BATTERY_DIE_MONEY = 700
+CELESTIAL_BATTERY_DIE_MONEY = 1100
 function CelestialBatteryDie(dyingObjId, attackerId, dyingObjInstanceId, attackerInstanceId, ownerPlayerName)
     if not EvaluateCondition("UNIT_HAS_OBJECT_STATUS", GetObjectById(dyingObjId), "UNPACKING") then
         local x, y, z = ObjectGetPosition(GetObjectById(dyingObjId))
