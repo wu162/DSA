@@ -120,10 +120,10 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
     end
 
     if playerName == "Player_" .. 3 and btnIndex == 1 and Player3CD1 == 0 then
-        exMessageAppendToMessageArea("恶魔方召唤了青龙核心战斗舰！")
-        ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
         local counterValue = exCounterGetByName("lvc");
         if counterValue > cutMCV then
+            exMessageAppendToMessageArea("恶魔方召唤了青龙核心战斗舰！")
+            ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
             local x1, y1, z1 = ObjectGetPosition(T74);
             local sign = 1
             local deltay = 100
@@ -137,11 +137,11 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
                     ExecuteAction("CREATE_OBJECT", 'CelestialMCV', 'PlyrCivilian/ATTACK', { X = x1, Y = y1 + realy, Z = z1 }, "0")
                 end
                 exEnableWBScript("MCVhealthD");
-            end
+            end    
+            Player3CD1 = 1
+            exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
+            exCenterTopBtnShowForPlayer(playerName, 1, 'CEL_DragonShipLand', '龙行天下\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘(已使用)')
         end
-        Player3CD1 = 1
-        exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
-        exCenterTopBtnShowForPlayer(playerName, 1, 'CEL_DragonShipLand', '龙行天下\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘(已使用)')
     end
     if playerName == "Player_" .. 1 and btnIndex == 1 and Player1CD1 == 0 then
         exMessageAppendToMessageArea("恶魔方使用了局部杀伤性武器！")
@@ -174,10 +174,10 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
         end
     end
     if playerName == "Player_" .. 6 and btnIndex == 1 and Player6CD1 == 0 then
-        exMessageAppendToMessageArea("天使方召唤了青龙核心战斗舰！")
-        ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
         local counterValue = exCounterGetByName("lvc");
         if counterValue > cutMCV then
+            exMessageAppendToMessageArea("天使方召唤了青龙核心战斗舰！")
+            ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
             local x1, y1, z1 = ObjectGetPosition(T84);
             local sign = 1
             local deltay = 100
@@ -191,10 +191,10 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
                 end
                 exEnableWBScript("MCVhealthA");
             end
+            Player6CD1 = 1
+            exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
+            exCenterTopBtnShowForPlayer(playerName, 1, 'CEL_DragonShipLand', '龙行天下\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘(已使用)')
         end
-        Player6CD1 = 1
-        exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
-        exCenterTopBtnShowForPlayer(playerName, 1, 'CEL_DragonShipLand', '龙行天下\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘(已使用)')
     end
     if playerName == "Player_" .. 4 and btnIndex == 1 and Player4CD1 == 0 then
         exMessageAppendToMessageArea("天使方使用了局部杀伤性武器！")
