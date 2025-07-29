@@ -216,8 +216,8 @@ UNITLIST [index] = "AlliedAntiNavyShipTech1"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiNavyShipTech1"
 index = index + 1 ;
-UNITLIST [index] = "JapanFortressShip"
-index = index + 1 ;
+--UNITLIST [index] = "JapanFortressShip"
+--index = index + 1 ;
 --UNITLIST [index] = "JapanGigaFortressShip"
 --index = index + 1 ;
 --exMessageAppendToMessageArea("indexAIR"..index)

@@ -89,6 +89,41 @@ function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, owner
     end, 25, {createdObjId})
 end
 
+function AlliedSuperWeaponBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    exCenterTopBtnShowForPlayer(ownerPlayerName, 3,'AUA_Aegis_Shield','超时空突袭(冷却三回合)\n打开时空裂缝让T2主战坦克和幻影坦克突袭敌方后排并获得短暂的铁幕')
+    g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[ownerPlayerName]] = 1
+
+    SchedulerModule.delay_call(function(id, playerName)
+        ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "AlliedSuperWeapon", 0)
+        if ObjectIsAlive(id) then
+            ExecuteAction("NAMED_DELETE", GetObjectById(id))
+        end
+    end, 10, {createdObjId, ownerPlayerName})
+
+end
+
+g_UnitCount = {
+    [FastHash("JapanGigaFortressShipEgg")] = {
+        [1] = 0,
+        [2] = 0,
+        [3] = 0,
+        [4] = 0,
+        [5] = 0,
+        [6] = 0,
+    }
+}
+
+function UnitCountFunc(createdObjId, createdObjInstanceId, ownerPlayerName)
+    SchedulerModule.delay_call(function(id, instanceId, playerName)
+        local count = g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]];
+        g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]] = count + 1;
+        if ObjectIsAlive(id) then
+            ExecuteAction("NAMED_DELETE", GetObjectById(id))
+        end
+    end, 8, {createdObjId, createdObjInstanceId, ownerPlayerName})
+
+end
+
 g_UnitCreateEventFunc[FastHash("CelestialElectricitySale_ForCelestialPower")] = limitCelestialBattery
 g_UnitCreateEventFunc[FastHash("CelestialElectricitySale_ForCelestialAdvancedPower")] = limitCelestialBattery
 g_UnitCreateEventFunc[FastHash("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")] = limitCelestialBattery
@@ -102,7 +137,9 @@ g_UnitCreateEventFunc[FastHash("CelestialBattery")] = CelestialBatteryBorn
 g_UnitCreateEventFunc[FastHash("CelestialSpaceReinforceMarker")] = CelestialSpaceReinforceMarkerBorn
 
 g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCenturionUpgradeBorn
+g_UnitCreateEventFunc[FastHash("AlliedSuperWeapon")] = AlliedSuperWeaponBorn
 
+g_UnitCreateEventFunc[FastHash("JapanGigaFortressShipEgg")] = UnitCountFunc
 
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
@@ -116,6 +153,8 @@ exObjectRegisterCreateEvent("CelestialBattery")
 exObjectRegisterCreateEvent("CelestialSpaceReinforceMarker")
 
 exObjectRegisterCreateEvent("CelestialCenturionUpgradeObject")
+exObjectRegisterCreateEvent("AlliedSuperWeapon")
+exObjectRegisterCreateEvent("JapanGigaFortressShipEgg")
 
 function onUnitCreateEvent(createdObjId, createdObjInstanceId, ownerPlayerName)
     g_UnitCreateEventFunc[createdObjInstanceId](createdObjId, createdObjInstanceId, ownerPlayerName)

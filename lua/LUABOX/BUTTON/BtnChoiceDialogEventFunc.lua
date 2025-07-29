@@ -3,6 +3,7 @@ angel_max = 200
 
 g_GameMode = 1;
 g_EnableDeathModeEffect = 0;
+g_DisableSeaArmy = 0;
 
 g_GameModeName = {
     [1] = "正常模式",
@@ -129,16 +130,26 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
         g_GameMode = btnIndex;
         exMessageAppendToMessageArea('已选择游戏模式' .. g_GameModeName[g_GameMode])
         if g_GameMode == 3 then
-            -- 进一步选择是否启用死亡模式效果
+            -- 启用了缩小模式，进一步选择是否启用死亡模式效果
             exShowCustomBtnChoiceDialogForPlayer(playerName, 202, "是否启用死亡模式效果\n(只有1个塔,科技全开)", '启用', '不启用', '', '', '', '', '')
         else
-            exEnableWBScript("readyForStartCam");
+            exShowCustomBtnChoiceDialogForPlayer(playerName, 203, "是否禁止生成海军", '禁止', '不禁止', '', '', '', '', '')
+            --exEnableWBScript("readyForStartCam");
         end
     end
     if dialogId == 202 then
         if btnIndex == 1 then
             g_EnableDeathModeEffect = 1;
             exMessageAppendToMessageArea("同时启用了死亡模式效果")
+        end
+
+        exShowCustomBtnChoiceDialogForPlayer(playerName, 203, "是否禁止生成海军", '禁止', '不禁止', '', '', '', '', '')
+        --exEnableWBScript("readyForStartCam");
+    end
+    if dialogId == 203 then
+        if btnIndex == 1 then
+            g_DisableSeaArmy = 1;
+            exMessageAppendToMessageArea("房主已禁止生成海军")
         end
 
         exEnableWBScript("readyForStartCam");
