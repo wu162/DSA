@@ -29,7 +29,8 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
     -- 处理交易市场对话框
     local marketDialogId = 100 + playerIndex
     if dialogId == marketDialogId then
-        BtnChoiceDialogEventFunc_HandleMarketDialogEvent(playerName)
+        BtnChoiceDialogEventFunc_HandleMarketDialogEvent(playerName, btnIndex)
+        return
     end
 
     if dialogId == 201 then
@@ -111,6 +112,7 @@ function BtnChoiceDialogEventFunc_ShowNextMarketDialog(playerIndex)
     if playerIndex >= 4 then
         nextInvestmentText = '购买100天使投资'
     end
+    nextInvestmentText = nextInvestmentText .. '\n若回合胜利可获收益'
 
     local debtStr = "";
     if g_PlayerDebtCount[playerName] == 0 then
@@ -129,10 +131,10 @@ function BtnChoiceDialogEventFunc_ShowNextMarketDialog(playerIndex)
     )
 end
 
-function BtnChoiceDialogEventFunc_HandleMarketDialogEvent(playerName)
+function BtnChoiceDialogEventFunc_HandleMarketDialogEvent(playerName, btnIndex)
     local playerIndex = g_PlayerNameToIndex[playerName]
     if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
-        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_HandleMarketDialog 的参数 playerName 无效")
+        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_HandleMarketDialogEvent 的参数 playerName 无效")
         return
     end
     -- 获取回合开始时间计数器
@@ -270,7 +272,7 @@ function BtnChoiceDialogEventFunc_CalculateColor(playerIndex)
         return "黄色"
     elseif hue < 160 then
         return "绿色"
-    elseif hue < 190 then
+    elseif hue < 200 then
         return "青色"
     elseif hue < 270 then
         return "蓝色"

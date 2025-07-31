@@ -39,12 +39,21 @@ function ButtonManager.SetButton(self, buttonData)
         self:_addSharedCooldown(buttonData)
     end
 
-    local isButtonEnabled = 1
-    if not buttonData.IsEnabled or buttonData.IsEnabled == 0 then
-        isButtonEnabled = 0
-    end
     exCenterTopBtnShowForPlayer(playerName, buttonIndex, buttonData.IconId, buttonData.Text)
-    exCenterTopBtnSetEnableForPlayer(playerName, buttonIndex, isButtonEnabled)
+    
+    -- 目前 EnhancerCorona 会在设置按钮的时候自动（在 50 毫秒后）将按钮启用。
+    -- 因此，直接把按钮禁用是没有用的，会在约 50 毫秒后被覆盖。
+    -- 这里使用延时调用来确保按钮状态被正确设置。
+    SchedulerModule.delay_call(function(buttonData)
+        local isButtonEnabled = 1
+        if not buttonData.IsEnabled or buttonData.IsEnabled == 0 then
+            isButtonEnabled = 0
+        end
+        exCenterTopBtnSetEnableForPlayer(buttonData.PlayerName, buttonData.ButtonIndex, isButtonEnabled)
+        if buttonData.IsHighlighted and buttonData.IsHighlighted ~= 0 then
+            exCenterTopBtnToggleHighLightForPlayer(buttonData.PlayerName, buttonData.ButtonIndex, 1)
+        end
+    end, 2, { buttonData })
 end
 
 function ButtonManager.OnClick(self, playerName, buttonIndex)
@@ -59,10 +68,10 @@ function ButtonManager.OnClick(self, playerName, buttonIndex)
     end
 end
 
-function ButtonManager.SharedCooldown(buttonData)
+function ButtonManager.SharedCooldown(self, buttonData)
     local sharedCooldownId = buttonData.SharedCooldownId
     if not sharedCooldownId then
-        exMessageAppendToMessageArea("错误：按钮没有定义共享冷却时间 ID")
+        exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 没有定义共享冷却 ID 却试图触发共享冷却事件", buttonData.PlayerName or "?", buttonData.Title or "未知按钮"))
         return
     end
     local list = self._sharedCooldown[sharedCooldownId]
@@ -242,5 +251,8 @@ function CreateButton(buttonData)
 end
 
 function _ALERT(msg)
-    exAddTextToPublicBoard(msg)
+    exAddTextToPublicBoard(msg, 10)
 end
+dostring("fds klskld skl d slkds")
+local test = { Field = false }
+exAddTextToPublicBoard("not false:" .. tostring(not test.Field), 10)

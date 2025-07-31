@@ -75,6 +75,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         Title = '请选择你的技能组',
         Description = '选择后可获得两个强力技能，请尽快选择',
         IsEnabled = true,
+        IsHighlighted = true,
         OnClick = function(self)
             exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '退出(待会再选)', '', '', '')
             return true
@@ -118,7 +119,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             end
             setglobal(format("%s_surrender", side), 0)
             exEnableWBScript(format("%s/%s_surrender", sideAiPlayer, side))
-            exAddTextToPublicBoard(format("%s$%sName发起了投降", sideName, side), 10)
+            exAddTextToPublicBoard(format("%s$p%dName发起了投降", sideName, self.PlayerIndex), 10)
             local voteText = '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降'
             for i = 1, 3, 1 do
                 local p = sidePlayerIndexOffset + i
