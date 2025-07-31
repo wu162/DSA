@@ -1,3 +1,73 @@
+if not RoundLuaManager then
+    RoundLuaManager = {
+        _onBegin = {},
+        _onEnd = {},
+        _delayedOnBegin = {},
+
+        _begin = function()
+            for i = 1, getn(RoundLuaManager._onBegin) do
+                local data = RoundLuaManager._onBegin[i]
+                if data.Enabled == 1 then
+                    call(data.Callback, data.Arguments, "x")
+                end
+            end
+            -- 处理延迟调用
+            local delayedCalls = RoundLuaManager._delayedOnBegin
+            local d = 1
+            while d <= getn(delayedCalls) do
+                local data = delayedCalls[d]
+                if data.Delay > 0 then
+                    data.Delay = data.Delay - 1
+                    d = d + 1
+                else
+                    call(data.Callback, data.Arguments, "x")
+                    tremove(delayedCalls, d)
+                end
+            end
+        end,
+
+        _end = function()
+            for i = 1, getn(RoundLuaManager._onEnd) do
+                local data = RoundLuaManager._onEnd[i]
+                if data.Enabled == 1 then
+                    call(data.Callback, data.Arguments, "x")
+                end
+            end
+        end,
+    }
+
+    function RoundLuaManager.CallOnEveryRoundBegin(callback, arguments)
+        local id = getn(RoundLuaManager._onBegin) + 1
+        RoundLuaManager._onBegin[id] = {
+            Callback = callback,
+            Arguments = arguments or {},
+            Enabled = 1,
+        }
+        return id
+    end
+
+    function RoundLuaManager.CallOnEveryRoundEnd(callback, arguments)
+        local id = getn(RoundLuaManager._onEnd) + 1
+        RoundLuaManager._onEnd[id] = {
+            Callback = callback,
+            Arguments = arguments or {},
+            Enabled = 1,
+        }
+        return id
+    end
+
+    function RoundLuaManager.DelayCallOnRoundBegin(callback, arguments, delay)
+        tinsert(RoundLuaManager._delayedOnBegin, {
+            Callback = callback,
+            Arguments = arguments or {},
+            Delay = delay or 0,
+        })
+    end
+end
+
+-- 回合结束
+RoundLuaManager._end()
+
 local countD  = GetPlayerAllUnitsValue('PlyrCivilian')
 local  countA = GetPlayerAllUnitsValue('PlyrCreeps')
 if countD>countA then

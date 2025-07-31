@@ -1,55 +1,7 @@
-Player1CD1 = 0
-Player2CD1 = 0
-Player3CD1 = 0
-Player4CD1 = 0
-Player5CD1 = 0
-Player6CD1 = 0
-Player1CD3 = 0
-Player2CD3 = 0
-Player3CD3 = 0
-Player4CD3 = 0
-Player5CD3 = 0
-Player6CD3 = 0
-Player1CD2 = 0
-Player2CD2 = 0
-Player3CD2 = 0
-Player4CD2 = 0
-Player5CD2 = 0
-Player6CD2 = 0
-Player1CD5 = 0
-Player2CD5 = 0
-Player3CD5 = 0
-Player4CD5 = 0
-Player5CD5 = 0
-Player6CD5 = 0
-Player1CD6 = 0
-Player2CD6 = 0
-Player3CD6 = 0
-Player4CD6 = 0
-Player5CD6 = 0
-Player6CD6 = 0
 angel_money = 0
 devil_money = 0
 devil_surrender = 0
 angel_surrender = 0
-
-g_CD1 = {
-    [1] = 0,
-    [2] = 0,
-    [3] = 0,
-    [4] = 0,
-    [5] = 0,
-    [6] = 0,
-}
-
-g_CD2 = {
-    [1] = 0,
-    [2] = 0,
-    [3] = 0,
-    [4] = 0,
-    [5] = 0,
-    [6] = 0,
-}
 
 g_AlliedSuperWeaponBuilt = {
     [1] = 0,
@@ -108,479 +60,477 @@ g_VehicleInfantryAircraftFilter = CreateObjectFilter({
     Include="INFANTRY VEHICLE AIRCRAFT",
 })
 
--- 避免连着点两下
-g_CenterTopButtonClickCooldown = {
-    ['Player_1'] = {},
-    ['Player_2'] = {},
-    ['Player_3'] = {},
-    ['Player_4'] = {},
-    ['Player_5'] = {},
-    ['Player_6'] = {},
-}
-
--- 0 未选择 1 达摩+炸弹   2 铁幕+时停  3 龙船+元帅
-g_ChooseTopBtn12GroupIndex = {
-    [1] = 0,
-    [2] = 0,
-    [3] = 0,
-    [4] = 0,
-    [5] = 0,
-    [6] = 0,
-}
-
-function TopBtnFunc_CallQingLong(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local object = T74;
-    if index > 3 then
-        object = T84
-    end
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local objectPlayer = "PlyrCivilian";
-    if index > 3 then
-        objectPlayer = "PlyrCreeps"
-    end
-
-    local counterValue = exCounterGetByName("lvc");
-
-    if counterValue <=3 then
-        exAddTextToPublicBoardForPlayer(playerName, '当前回合数小于等于3，无法召唤龙船', 5)
-    end
-
-    if counterValue > 3 then
-        exMessageAppendToMessageArea(sideName .. "方召唤了青龙核心战斗舰！")
-        ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
-        local x1, y1, z1 = ObjectGetPosition(object);
-        local sign = 1
-        local deltay = 100
-        local realy = 0
-        for j = 1, counterValue - 3, 1 do
-            if j <= 3 then
-                --exMessageAppendToMessageArea("龙船数量："..i)
-                sign = (sign) * (-1)
-                deltay = deltay * (-1)
-                realy = (realy + deltay) * sign
-                ExecuteAction("CREATE_OBJECT", 'CelestialMCV', objectPlayer.. '/ATTACK', { X = x1, Y = y1 + realy, Z = z1 }, "0")
-            end
-            exEnableWBScript("MCVhealthD");
-        end
-        Player3CD1 = 1
-        exCenterTopBtnSetEnableForPlayer(playerName, 1, 0);
-        exCenterTopBtnShowForPlayer(playerName, 1, 'CEL_DragonShipLand', '龙行天下\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘(已使用)')
-    end
-end
-
-function TopBtnFunc_UseBomb(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local killPlayer = "PlyrCreeps";
-    if index > 3 then
-        killPlayer = "PlyrCivilian"
-    end
-    local areaName = "kw";
-    if index > 3 then
-        areaName = "kb"
-    end
-
-    exMessageAppendToMessageArea(sideName .. "方使用了局部杀伤性武器！")
-    ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
-    Player1CD1 = 1
-    exCenterTopBtnSetEnableForPlayer(playerName, 1, 0)
-    exCenterTopBtnShowForPlayer(playerName, 1, 'Button_SovietTeslaMissile', '局部毁灭武器\n摧毁一大片地区的所有敌方单位(已使用)')
-
-    SchedulerModule.delay_call(function(playerKill1, areaName1)
-        ExecuteAction("UNIT_KILL_ALL_IN_AREA", playerKill1, areaName1);
-        ExecuteAction("SCREEN_SHAKE", 5);
-        ExecuteAction("PLAY_SOUND_EFFECT", "SOV_OrbitalDrop_SatteliteImpactExplosion1");
-    end, 3, {killPlayer, areaName})
-end
-
-function TopBtnFunc_UseIronCurtain(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local object = T74;
-    if index > 3 then
-        object = T84
-    end
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local aiPlayer = "PlyrCivilian";
-    if index > 3 then
-        aiPlayer = "PlyrCreeps"
-    end
-
-    exMessageAppendToMessageArea(sideName .. "方发表了铁幕演说！")
-    g_CD1[index] = g_CD1[index] + 1
-    --Player2CD1 = Player2CD1 + 1
-    ExecuteAction("PLAY_SOUND_EFFECT", "SOV_IronCurtain_Cast")
-    local TAR, count = ObjectFindObjects(object, nil, FilterALLUNIT)
-    for j = 1, count, 1 do
-        ObjectLoadAttributeModifier(TAR[j], "AttributeModifier_IronCurtain", 225)
-    end
-    exCenterTopBtnSetEnableForPlayer(playerName, 1, 0) -- 先禁用（无论还有没有使用次数）
-    g_CenterTopButtonClickCooldown[playerName][1] = true
-    if g_CD1[index] >= 2 then
-        exCenterTopBtnShowForPlayer(playerName, 1, 'Button_PlayerPower_IronCurtain', '铁幕演说\n进行铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒(已使用)')
-    else
-        -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
-        SchedulerModule.delay_call(function(pName, bIndex,idx)
-            g_CenterTopButtonClickCooldown[pName][bIndex] = false
-            if g_CD1[idx] < 2 then
-                exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
-            end
-        end, 150, {playerName, 1, index})
-    end
-
-end
-
-function TopBtnFunc_UseDamo(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local object = T74;
-    if index > 3 then
-        object = T84
-    end
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local aiPlayer = "PlyrCivilian";
-    if index > 3 then
-        aiPlayer = "PlyrCreeps"
-    end
-
-    exMessageAppendToMessageArea(sideName .. "方落下了达摩克利斯之剑！")
-    ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
-    if index <= 3 then
-        exEnableWBScript("devil_nemesisplay");
-    else
-        exEnableWBScript("angel_nemesisplay");
-    end
-
-    g_CD2[index] = g_CD2[index] + 1
-    exCenterTopBtnSetEnableForPlayer(playerName, 2, 0) -- 先禁用按钮（无论还有没有使用次数）
-    g_CenterTopButtonClickCooldown[playerName][2] = true
-    if g_CD2[index] >= 2 then
-        exCenterTopBtnShowForPlayer(playerName, 2, 'Button_CelestialPantaOrbitalStrike', '达摩克利斯之剑\n请求太空的卫星对敌方启用15秒的精准卫星打击(已使用)')
-    else
-        -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
-        SchedulerModule.delay_call(function(pName, bIndex, idx)
-            g_CenterTopButtonClickCooldown[pName][bIndex] = false
-            if g_CD2[idx] < 2 then
-                exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
-            end
-        end, 150, {playerName, 2, index})
-    end
-end
-
-function TopBtnFunc_UseAirForce(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local object = T74;
-    if index > 3 then
-        object = T84
-    end
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local aiPlayer = "PlyrCivilian";
-    if index > 3 then
-        aiPlayer = "PlyrCreeps"
-    end
-
-    exMessageAppendToMessageArea(sideName .. "方请求了空军元帅！")
-    ExecuteAction("PLAY_SOUND_EFFECT", "SOV_SukhoiInterceptor_VoiceAttack")
-    ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
-
-    if index <= 3 then
-        exEnableWBScript("devil_air");
-    else
-        exEnableWBScript("angel_air");
-    end
-
-    g_CD2[index] = g_CD2[index] + 1
-    exCenterTopBtnSetEnableForPlayer(playerName, 2, 0) -- 先禁用按钮（无论还有没有使用次数）
-    g_CenterTopButtonClickCooldown[playerName][2] = true
-    if g_CD2[index] >= 2 then
-        exCenterTopBtnShowForPlayer(playerName, 2, 'Button_SovietInterceptorAircraft', '空军元帅\n请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击(已使用)')
-    else
-        -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
-        SchedulerModule.delay_call(function(pName, bIndex, idx)
-            g_CenterTopButtonClickCooldown[pName][bIndex] = false
-            if g_CD2[idx] < 2 then
-                exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
-            end
-        end, 150, {playerName, 2, index})
-    end
-end
-
-function TopBtnFunc_UseTimeStop(playerName)
-    local index = g_PlayerNameToIndex[playerName];
-    local object = T74;
-    if index > 3 then
-        object = T84
-    end
-    local sideName = "天使";
-    if index > 3 then
-        sideName = "恶魔"
-    end
-    local aiPlayer = "PlyrCivilian";
-    if index > 3 then
-        aiPlayer = "PlyrCreeps"
-    end
-
-    exMessageAppendToMessageArea(sideName .. "方竟然让时间停止！")
-    ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
-
-    if index <= 3 then
-        exEnableWBScript("devilstop");
-    else
-        exEnableWBScript("angelstop");
-    end
-
-    g_CD2[index] = g_CD2[index] + 1
-    exCenterTopBtnSetEnableForPlayer(playerName, 2, 0) -- 先禁用（无论还有没有使用次数）
-    g_CenterTopButtonClickCooldown[playerName][2] = true
-    if g_CD2[index] >= 2 then
-        exCenterTopBtnShowForPlayer(playerName, 2, 'AUA_Timebelt', '时空管理局\n借助未来科技的力量时停对方单位13s(已使用)')
-    else
-        -- 150 帧（10秒）后恢复按钮，避免玩家卡比的时候不小心连点两下
-        SchedulerModule.delay_call(function(pName, bIndex, idx)
-            g_CenterTopButtonClickCooldown[pName][bIndex] = false
-            if g_CD2[idx] < 2 then
-                exCenterTopBtnSetEnableForPlayer(pName, bIndex, 1)
-            end
-        end, 150, {playerName, 2, index})
-    end
-end
-
-function TopBtnFunc12(playerName, btnIndex)
-    local index = g_PlayerNameToIndex[playerName];
-    local groupIndex = g_ChooseTopBtn12GroupIndex[index];
-
-    if groupIndex == 0 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '退出(待会再选)', '', '', '')
-    end
-
-    if groupIndex == 1 then
-        if btnIndex == 1 and g_CD1[index] == 0 then
-            TopBtnFunc_UseBomb(playerName);
-        elseif btnIndex == 2 and g_CD2[index] < 2 then
-            TopBtnFunc_UseDamo(playerName)
-        end
-    elseif groupIndex == 2 then
-        if btnIndex == 1 and g_CD1[index] < 2 then
-            TopBtnFunc_UseIronCurtain(playerName);
-        elseif btnIndex == 2 and g_CD2[index] < 2 then
-            TopBtnFunc_UseTimeStop(playerName)
-        end
-    elseif groupIndex == 3 then
-        if btnIndex == 1 and g_CD1[index] == 0 then
-            TopBtnFunc_CallQingLong(playerName);
-        elseif btnIndex == 2 and g_CD2[index] < 2 then
-            TopBtnFunc_UseAirForce(playerName)
-        end
-    end
-end
-
 function onCenterTopBtnClickEvent(playerName, btnIndex)
+    ButtonManager:OnClick(playerName, btnIndex)
+end
 
-    -- 先处理一下按钮冷却
-    if g_CenterTopButtonClickCooldown[playerName] == nil then
-        g_CenterTopButtonClickCooldown[playerName] = {}
+function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
+    local playerName = "Player_" .. playerIndex
+    local buttons = {}
+    buttons[1] = CreateButton({
+        PlayerName = playerName,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'Button_Toggle_Power',
+        Title = '请选择你的技能组',
+        Description = '选择后可获得两个强力技能，请尽快选择',
+        IsEnabled = true,
+        OnClick = function(self)
+            exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '退出(待会再选)', '', '', '')
+            return true
+        end
+    })
+    if EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Allied") then
+        buttons[3] = CreateChronosphereButton(playerIndex)
+    elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Japan") then
+        buttons[3] = CreateJapanShieldButton(playerIndex)
+    elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Celestial") then
+        buttons[3] = CreateCelestialMoraleButton(playerIndex)
     end
-    if g_CenterTopButtonClickCooldown[playerName][btnIndex] then
-        -- 假如之前请求了按钮冷却、并且按钮依然正在冷却中，直接返回
+    buttons[4] = CreateButton({
+        PlayerName = playerName,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 4,
+        IconId = 'Button_PlayerPower_FreeTrade',
+        Title = '交易市场',
+        Description = '购买理财项目或者定向转移资金',
+        IsEnabled = true,
+        OnClick = function(self)
+            BtnChoiceDialogEventFunc_ShowNextMarketDialog(self.PlayerIndex)
+            return true
+        end
+    })
+    buttons[6] = CreateButton({
+        PlayerName = playerName,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 6,
+        IconId = 'Allied_topmenu_infantry',
+        Title = '投降',
+        Description = '召开一次严肃的会议试图结束游戏',
+        MaxUseCount = 1,
+        SharedCooldownId = 'surrender',
+        SharedCooldownSeconds = 3,
+        IsEnabled = true,
+        OnClick = function(self)
+            local side, sideName, sideAiPlayer, sidePlayerIndexOffset = "devil", "恶魔", "PlyrCivilian", 0
+            if self.PlayerIndex >= 4 then
+                side, sideName, sideAiPlayer, sidePlayerIndexOffset = "angel", "天使", "PlyrCreeps", 3
+            end
+            setglobal(format("%s_surrender", side), 0)
+            exEnableWBScript(format("%s/%s_surrender", sideAiPlayer, side))
+            exAddTextToPublicBoard(format("%s$%sName发起了投降", sideName, side), 10)
+            local voteText = '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降'
+            for i = 1, 3, 1 do
+                local p = sidePlayerIndexOffset + i
+                exShowLongTextDialogForPlayer(format("Player_%d", p), 200 + p, voteText, '投降', '弃权', '战斗')
+            end
+            return true
+        end
+    })
+    
+    for i = 1, 6, 1 do
+        local button = buttons[i]
+        if button then
+            ButtonManager:SetButton(button)
+        end
+    end
+end
+
+function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
+    local buttons = {}
+    if kind == 1 then
+        buttons[1] = CreateDestructionButton(playerIndex)
+        buttons[2] = CreateDamoclesSwordButton(playerIndex)
+    elseif kind == 2 then
+        buttons[1] = CreateIronCurtainButton(playerIndex)
+        buttons[2] = CreateTimeStopButton(playerIndex)
+    elseif kind == 3 then
+        buttons[1] = CreateDragonshipButton(playerIndex)
+        buttons[2] = CreateAirMarshalButton(playerIndex)
+    else
+        exMessageAppendToMessageArea("错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效")
         return
     end
+    ButtonManager:SetButton(buttons[1])
+    ButtonManager:SetButton(buttons[2])
+end
 
-    local index = g_PlayerNameToIndex[playerName];
+function CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
+    local playerName = "Player_" .. playerIndex
+    local button = nil
+    if g_ProductionBonus_JapanGet[playerIndex] == 1 then
+        button = CreateJapanShieldButton(playerIndex)
+    elseif g_CelestialSuperWeapon_Get[playerIndex] == 1 then
+        button = CreateCelestialMoraleButton(playerIndex)
+    elseif g_AlliedSuperWeaponBuilt[playerIndex] == 1 then
+        button = CreateChronosphereButton(playerIndex)
+    end
+    if button then
+        button.Description = button.UnlockedDescription
+        button.IsEnabled = true
+        button:FormatText()
+        ButtonManager:SetButton(button)
+    end
+end
 
+function CreateDestructionButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'Button_SovietTeslaMissile',
+        Title = '局部毁灭武器',
+        Description = '摧毁一大片地区的所有敌方单位，无视铁幕效果',
+        IsEnabled = true,
+        MaxUseCount = 1,
+        SharedCooldownId = "destruction",
+        SharedCooldownSeconds = 5,
+        OnClick = function(self)
+            return RequestDestruction(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateDamoclesSwordButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 2,
+        IconId = 'Button_CelestialPantaOrbitalStrike',
+        Title = '达摩克利斯之剑',
+        Description = '请求太空的卫星对敌方启用15秒的精准卫星打击',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "damoclessword",
+        SharedCooldownSeconds = 10,
+        OnClick = function(self)
+            return RequestDamoclesSword(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateIronCurtainButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'Button_PlayerPower_IronCurtain',
+        Title = '铁幕演说',
+        Description = '发表铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "ironcurtain",
+        SharedCooldownSeconds = 10,
+        OnClick = function(self)
+            return RequestIronCurtain(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateTimeStopButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 2,
+        IconId = 'AUA_Timebelt',
+        Title = '时空管理局',
+        Description = '借助未来科技的力量时停对方单位13秒',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "timestop",
+        SharedCooldownSeconds = 10,
+        OnClick = function(self)
+            return RequestTimeStop(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateDragonshipButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'CEL_DragonShipLand',
+        Title = '龙行天下',
+        Description = '召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘',
+        IsEnabled = true,
+        MaxUseCount = 1,
+        SharedCooldownId = "dragonship",
+        SharedCooldownSeconds = 5,
+        OnClick = function(self)
+            return RequestDragonShip(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateAirMarshalButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 2,
+        IconId = 'Button_SovietInterceptorAircraft',
+        Title = '空军元帅',
+        Description = '请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "airmarshal",
+        SharedCooldownSeconds = 10,
+        OnClick = function(self)
+            return RequestAirMarshal(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateChronosphereButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 3,
+        IconId = 'AUA_Aegis_Shield',
+        Title = '超时空突袭',
+        Description = '请建造盟军小超武「超时空传送仪」以解锁此按钮',
+        UnlockedDescription = '打开时空裂缝让主战坦克突袭敌方后排并获得短暂的铁幕\n冷却时间三回合',
+        IsEnabled = false,
+        MaxUseCount = nil, -- 没有限制
+        CooldownRounds = 3,
+        SharedCooldownId = "alliedsuperweapon",
+        SharedCooldownSeconds = 2,
+        OnClick = function(self)
+            return RequestChronosphere(self.PlayerName, self.ButtonIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateJapanShieldButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 3,
+        IconId = 'Button_PlayerPower_PointDefenseDrones',
+        Title = '全体护盾',
+        Description = '请激活帝国最高机密协议「机械化组装」以解锁此按钮',
+        UnlockedDescription = '为所有己方载具套上纳米护盾\n冷却时间200秒',
+        IsEnabled = false,
+        MaxUseCount = nil, -- 没有限制
+        CooldownSeconds = 200,
+        SharedCooldownId = "japanshield",
+        SharedCooldownSeconds = 5,
+        OnClick = function(self)
+            return RequestJapanShield(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateCelestialMoraleButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 3,
+        IconId = 'CelestialLightningTroop_Lv3',
+        Title = '士气提升',
+        Description = '请建造神州小超武「日晷阵列」（止戈力场）以解锁此按钮',
+        UnlockedDescription = '己方全体单位获得18秒的1.25倍移速和伤害加成\n冷却时间220秒',
+        IsEnabled = false,
+        MaxUseCount = nil, -- 没有限制
+        CooldownSeconds = 220,
+        SharedCooldownId = "celestialmorale",
+        SharedCooldownSeconds = 5,
+        OnClick = function(self)
+            return RequestCelestialMorale(self.PlayerIndex)
+        end
+    }
+    return CreateButton(buttonData)
+end
+
+function RequestDestruction(playerIndex)
+    local sideName = "恶魔"
+    local sideScript = "KW"
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideScript = "KB"
+    end
+    exMessageAppendToMessageArea(format("%s方使用了局部杀伤性武器！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
+    exEnableWBScript(sideScript)
+    return true
+end
+
+function RequestDamoclesSword(playerIndex)
+    local sideName = "恶魔"
+    local sideScript = "devil_nemesisplay"
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideScript = "angel_nemesisplay"
+    end
+    exMessageAppendToMessageArea(format("%s方落下了达摩克利斯之剑！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
+    exEnableWBScript(sideScript)
+    return true
+end
+
+function RequestIronCurtain(playerIndex)
+    local sideName = "恶魔"
+    local referenceObject = T74
+    if playerIndex >= 4 then
+        sideName = "天使"
+        referenceObject = T84
+    end
+    exMessageAppendToMessageArea(format("%s方发表了铁幕演说！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "SOV_IronCurtain_Cast")
+    local units, count = ObjectFindObjects(referenceObject, nil, FilterALLUNIT)
+    for i = 1, count, 1 do
+        ObjectLoadAttributeModifier(units[i], "AttributeModifier_IronCurtain", 225)
+    end
+    return true
+end
+
+function RequestTimeStop(playerIndex)
+    local sideName = "恶魔"
+    local sideScript = "devilstop"
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideScript = "angelstop"
+    end
+    exMessageAppendToMessageArea(format("%s方竟然让时间停止！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
+    exEnableWBScript(sideScript)
+    return true
+end
+
+function RequestDragonShip(playerIndex)
     local cutMCV = 3
-
-    local debtStr = "";
-    if g_PlayerDebtCount[playerName] == 0 then
-        local debtMoney = g_TowerDestroyProgress * 2600 + 4000;
-        debtStr = "向银行贷款 " .. debtMoney .. '\n(将会3分钟无收入)';
+    local counterValue = exCounterGetByName("lvc");
+    if counterValue <= cutMCV then
+        exMessageAppendToMessageArea("龙船召唤失败，回合数不足！")
+        return nil
     end
 
-    if btnIndex == 1 or btnIndex == 2 then
-        TopBtnFunc12(playerName, btnIndex)
+    local sideName = "恶魔"
+    local sideAIPlayer = "PlyrCivilian"
+    local mcvHealthScript = "MCVhealthD"
+    local dragonshipAngle = "0"
+    local tower = T74
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideAIPlayer = "PlyrCreeps"
+        mcvHealthScript = "MCVhealthA"
+        dragonshipAngle = "180"
+        tower = T84
     end
+    local aiTeamName = sideAIPlayer .. '/ATTACK'
 
-    if playerName == "Player_" .. 1 and btnIndex == 3 and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player1CD3 == 0 then
-        exEnableWBScript("PlyrCivilian/devilASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player1CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if playerName == "Player_" .. 2 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player2CD3 == 0 then
-        exEnableWBScript("PlyrCivilian/devilASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player2CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if playerName == "Player_" .. 3 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player3CD3 == 0 then
-        exEnableWBScript("PlyrCivilian/devilASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player3CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if playerName == "Player_" .. 4 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player4CD3 == 0 then
-        exEnableWBScript("PlyrCreeps/angelASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player4CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if playerName == "Player_" .. 5 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player5CD3 == 0 then
-        exEnableWBScript("PlyrCreeps/angelASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player5CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if playerName == "Player_" .. 6 and btnIndex == 3  and g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[playerName]] == 1 and Player6CD3 == 0 then
-        exEnableWBScript("PlyrCreeps/angelASuper");
-        ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
-        Player6CD3 = 3
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-    end
-    if btnIndex == 3 and g_ProductionBonus_JapanGet[g_PlayerNameToIndex[playerName]] == 1 then
-        local playerIndex = g_PlayerNameToIndex[playerName];
-        g_ProductionBonus_JapanWeaponEnable[playerIndex] = 0;
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
-
-        local filterObj = T74;
-        if playerIndex >= 4 then
-            filterObj = T84;
+    exMessageAppendToMessageArea(format("%s方召唤了青龙核心战斗舰！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
+    local x1, y1, z1 = ObjectGetPosition(tower);
+    local sign = 1
+    local deltay = 100
+    local realy = 0
+    for j = 1, counterValue - cutMCV, 1 do
+        if j <= 3 then
+            sign = (sign) * (-1)
+            deltay = deltay * (-1)
+            realy = (realy + deltay) * sign
+            ExecuteAction("CREATE_OBJECT", 'CelestialMCV', aiTeamName, { X = x1, Y = y1 + realy, Z = z1 }, dragonshipAngle)
         end
-
-        local sideName = "天使"
-        if playerIndex <= 3 then
-            sideName = "恶魔"
-        end
-        exMessageAppendToMessageArea(format("%s $p%dName使用了由帝国机械化组装协议提供的纳米护盾！", sideName, playerIndex))
-
-        local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleFilter)
-        for i = 1, count, 1 do
-            local current = matchedObjects[i]
-            local x,y,z = ObjectGetPosition(current)
-            ObjectCreateAndFireTempWeaponToTarget(filterObj, "PlayerPowerPointDefenseDronesWeapon_Individual", {
-                X=x, Y=y, Z=z
-            }, current)
-        end
-
-        SchedulerModule.delay_call(function(pName)
-            local playerIndex2 = g_PlayerNameToIndex[pName];
-            g_ProductionBonus_JapanWeaponEnable[playerIndex2] = 1;
-            exCenterTopBtnSetEnableForPlayer(pName, 3, 1);
-        end, 2700 , {playerName})
-
+        exEnableWBScript(mcvHealthScript)
     end
-    if btnIndex == 3 and g_CelestialSuperWeapon_Get[g_PlayerNameToIndex[playerName]] == 1 then
-        local playerIndex = g_PlayerNameToIndex[playerName];
-        g_CelestialSuperWeapon_CelestialWeaponEnable[playerIndex] = 0;
-        exCenterTopBtnSetEnableForPlayer(playerName, btnIndex, 0);
+    return true
+end
 
-        local filterObj = T74;
-        if playerIndex >= 4 then
-            filterObj = T84;
-        end
+function RequestAirMarshal(playerIndex)
+    local sideName = "恶魔"
+    local sideScript = "devil_air"
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideScript = "angel_air"
+    end
+    exMessageAppendToMessageArea(format("%s方请求了空军元帅！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "SOV_SukhoiInterceptor_VoiceAttack")
+    ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
+    exEnableWBScript(sideScript)
+    return true
+end
 
-        local sideName = "天使"
-        if playerIndex <= 3 then
-            sideName = "恶魔"
-        end
-        exMessageAppendToMessageArea(format("%s $p%dName使用了由止戈立场提供的全图士气提升技能！", sideName, playerIndex))
+function RequestChronosphere(playerIndex)
+    if g_AlliedSuperWeaponBuilt[playerIndex] ~= 1 then
+        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未建造超时空。", playerIndex))
+        return false
+    end
+    local sideName = "恶魔"
+    local sideScript = "PlyrCivilian/devilASuper"
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideScript = "PlyrCreeps/angelASuper"
+    end
+    exMessageAppendToMessageArea(format("%s方使用了超时空突袭！", sideName))
+    ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
+    exEnableWBScript(sideScript)
+    return true
+end
 
-        local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleInfantryAircraftFilter)
-        for i = 1, count, 1 do
-            local current = matchedObjects[i]
-            ObjectLoadAttributeModifier(current, "AttributeMod_lightningTroop_Lv1", 270)
-        end
+function RequestJapanShield(playerIndex)
+    if g_ProductionBonus_JapanGet[playerIndex] ~= 1 then
+        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未获得帝国机械化组装协议。", playerIndex))
+        return false
+    end
+    local sideName = "恶魔"
+    local filterObj = T74
+    if playerIndex >= 4 then
+        sideName = "天使"
+        filterObj = T84
+    end
+    
+    exMessageAppendToMessageArea(format("%s $p%dName使用了由帝国机械化组装协议提供的纳米护盾！", sideName, playerIndex))
+    local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleFilter)
+    if count == 0 then
+        exMessageAppendToMessageArea("错误：没有找到任何坦克单位，无法施加纳米护盾。")
+        return false
+    end
+    for i = 1, count, 1 do
+        local current = matchedObjects[i]
+        local x, y, z = ObjectGetPosition(current)
+        ObjectCreateAndFireTempWeaponToTarget(filterObj, "PlayerPowerPointDefenseDronesWeapon_Individual", {
+            X = x, Y = y, Z = z
+        }, current)
+    end
 
-        SchedulerModule.delay_call(function(pName)
-            local playerIndex2 = g_PlayerNameToIndex[pName];
-            g_CelestialSuperWeapon_CelestialWeaponEnable[playerIndex2] = 1;
-            exCenterTopBtnSetEnableForPlayer(pName, 3, 1);
-        end, 3300 , {playerName})
+    return true
+end
 
+function RequestCelestialMorale(playerIndex)
+    if g_CelestialSuperWeapon_Get[playerIndex] ~= 1 then
+        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未获得止戈立场。", playerIndex))
+        return false
     end
-    if playerName == "Player_" .. 1 and btnIndex == 6 and Player1CD6 == 0 then
-        devil_surrender = 0
-        exEnableWBScript("PlyrCivilian/devil_surrender")
-        exAddTextToPublicBoard("恶魔$p1Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_1', 201, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_2', 202, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_3', 203, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player1CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
+    local sideName = "恶魔"
+    local filterObj = T74
+    if playerIndex >= 4 then
+        sideName = "天使"
+        filterObj = T84
     end
-    if playerName == "Player_" .. 2 and btnIndex == 6 and Player2CD6 == 0 then
-        devil_surrender = 0
-        exEnableWBScript("PlyrCivilian/devil_surrender")
-        exAddTextToPublicBoard("恶魔$p2Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_1', 201, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_2', 202, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_3', 203, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player2CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
+    
+    exMessageAppendToMessageArea(format("%s $p%dName使用了由止戈立场提供的全图士气提升技能！", sideName, playerIndex))
+    local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleInfantryAircraftFilter)
+    if count == 0 then
+        exMessageAppendToMessageArea("错误：没有找到任何单位，无法施加士气提升。")
+        return false
     end
-    if playerName == "Player_" .. 3 and btnIndex == 6 and Player3CD6 == 0 then
-        devil_surrender = 0
-        exEnableWBScript("PlyrCivilian/devil_surrender")
-        exAddTextToPublicBoard("恶魔$p3Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_1', 201, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_2', 202, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_3', 203, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player3CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
+    for i = 1, count, 1 do
+        local current = matchedObjects[i]
+        ObjectLoadAttributeModifier(current, "AttributeMod_lightningTroop_Lv1", 270)
     end
-    if playerName == "Player_" .. 4 and btnIndex == 6 and Player4CD6 == 0 then
-        angel_surrender = 0
-        exEnableWBScript("PlyrCreeps/angel_surrender")
-        exAddTextToPublicBoard("天使$p4Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_4', 204, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_5', 205, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_6', 206, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player4CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
-    end
-    if playerName == "Player_" .. 5 and btnIndex == 6 and Player5CD6 == 0 then
-        angel_surrender = 0
-        exEnableWBScript("PlyrCreeps/angel_surrender")
-        exAddTextToPublicBoard("天使$p5Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_4', 204, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_5', 205, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_6', 206, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player5CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
-    end
-    if playerName == "Player_" .. 6 and btnIndex == 6 and Player6CD6 == 0 then
-        angel_surrender = 0
-        exEnableWBScript("PlyrCreeps/angel_surrender")
-        exAddTextToPublicBoard("天使$p6Name发起了投降", 10)
-        exShowLongTextDialogForPlayer('Player_4', 204, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_5', 205, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        exShowLongTextDialogForPlayer('Player_6', 206, '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降', '投降', '弃权', '战斗')
-        Player6CD6 = 1
-        exCenterTopBtnShowForPlayer(playerName, 6, 'Allied_topmenu_infantry', '投降\n召开一次严肃的会议试图结束游戏(已使用)')
-    end
-    if playerName == "Player_1" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 101, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔时空管理员转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', debtStr, '', '')
-    elseif playerName == "Player_2" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 102, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔空军司令转移1000资金', '回到战场', '购买100恶魔投资', debtStr, '', '')
-    elseif playerName == "Player_3" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 103, '欢迎进入交易市场\n投资金额(上限' .. devil_max .. '):' .. devil_money, '向恶魔攻击单元转移1000资金', '向恶魔时空管理员转移1000资金', '回到战场', '购买100恶魔投资', debtStr, '', '')
-    elseif playerName == "Player_4" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 104, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使时空管理员转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', debtStr, '', '')
-    elseif playerName == "Player_5" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 105, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使空军司令转移1000资金', '回到战场', '购买100天使投资', debtStr, '', '')
-    elseif playerName == "Player_6" and btnIndex == 4 then
-        exShowCustomBtnChoiceDialogForPlayer(playerName, 106, '欢迎进入交易市场\n投资金额(上限' .. angel_max .. '):' .. angel_money, '向天使攻击单元转移1000资金', '向天使时空管理员转移1000资金', '回到战场', '购买100天使投资', debtStr, '', '')
-    end
+
+    return true
 end

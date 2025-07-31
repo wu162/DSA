@@ -87,8 +87,8 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得盟军自由贸易协议，取得经济提升!")
     elseif techInstanceId == PlayerTech_ProductionBonus_JapanId then
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得帝国机械化组装协议，解锁全体坦克护盾技能");
-        exCenterTopBtnShowForPlayer(playerName, 3, "Button_PlayerPower_PointDefenseDrones", "全体坦克护盾\n为所有己方坦克套上纳米护盾\n冷却时间200秒")
         g_ProductionBonus_JapanGet[g_PlayerNameToIndex[playerName]] = 1
+        CenterTopBtnFunc_UpdatePlayer3rdButton(i)
     elseif techInstanceId == PlayerTech_ProductionBonus_SovietId then
         -- 通知一下大家 苏联大生产好了
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得苏联大生产协议，全体单位降价");

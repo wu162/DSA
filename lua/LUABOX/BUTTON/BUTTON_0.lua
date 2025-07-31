@@ -18,9 +18,7 @@ exCenterTopBtnSetHealthBarVisibility(1,1);
 --exCenterTopBtnShowForPlayer('Player_6', 1,'CEL_DragonShipLand','龙行天下(全局仅限一次)\n召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘')
 --exCenterTopBtnShowForPlayer('Player_6', 2,'Button_SovietInterceptorAircraft','空军元帅(全局可使用两次)\n请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击')
 for i = 1 , 6 , 1 do
-    exCenterTopBtnShowForPlayer('Player_'..i, 1, 'Button_Toggle_Power', '选择你的技能组')
-    exCenterTopBtnShowForPlayer('Player_'..i, 4,'Button_PlayerPower_FreeTrade','交易市场\n购买理财项目或者定向转移资金')
-    exCenterTopBtnShowForPlayer('Player_'..i, 6,'Allied_topmenu_infantry','投降(一人仅能使用一次)\n召开一次严肃的会议试图结束游戏')
+    CenterTopBtnFunc_CreateInitialButtons(i)
     BOMB[i] = GetObjectByScriptName("BOMB"..i) ;
     local objectId = ObjectGetId(BOMB[i])
     BOMBID[i] = objectId

@@ -90,8 +90,8 @@ function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, owner
 end
 
 function AlliedSuperWeaponBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
-    exCenterTopBtnShowForPlayer(ownerPlayerName, 3,'AUA_Aegis_Shield','超时空突袭(冷却三回合)\n打开时空裂缝让T2主战坦克和幻影坦克突袭敌方后排并获得短暂的铁幕')
     g_AlliedSuperWeaponBuilt[g_PlayerNameToIndex[ownerPlayerName]] = 1
+    CenterTopBtnFunc_UpdatePlayer3rdButton(g_PlayerNameToIndex[ownerPlayerName])
 
     SchedulerModule.delay_call(function(id, playerName)
         ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "AlliedSuperWeapon", 0)
