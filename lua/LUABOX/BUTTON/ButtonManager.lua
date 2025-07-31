@@ -253,6 +253,3 @@ end
 function _ALERT(msg)
     exAddTextToPublicBoard(msg, 10)
 end
-dostring("fds klskld skl d slkds")
-local test = { Field = false }
-exAddTextToPublicBoard("not false:" .. tostring(not test.Field), 10)
