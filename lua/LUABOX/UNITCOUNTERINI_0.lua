@@ -40,8 +40,8 @@ UNITLIST [index] = "SovietScoutInfantry"
 index = index + 1 ;
 UNITLIST [index] = "AlliedAntiVehicleInfantry"
 index = index + 1 ;
-UNITLIST [index] = "CelestialInfiltrationInfantry"
-index = index + 1 ;
+-- UNITLIST [index] = "CelestialInfiltrationInfantry"
+-- index = index + 1 ;
 --exMessageAppendToMessageArea("indexINFANT"..index)
 step1 = index-1 ;
 --index = 51
