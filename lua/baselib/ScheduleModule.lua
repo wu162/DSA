@@ -3,7 +3,7 @@
 --- DateTime: 12/19/2024 00:05 AM
 
 function loggerModuleLog(pos, message)
-    exMessageAppendToMessageArea(pos .. ": " .. message)
+    _ALERT(pos .. ": " .. message)
 end
 LoggerModule = {
     trace = function(pos, message) end,
@@ -54,7 +54,7 @@ SchedulerModule.call_every_x_frame = function(callback, interval_frame_num, repe
 
     local scheduler = SchedulerModule._schedulers
     local id = getn(SchedulerModule._schedulers) + 1
-    scheduler[id] = {
+    tinsert(scheduler, {
         callback = callback,
         aready_called_times = 0,
         repeat_times = repeat_num,
@@ -63,7 +63,7 @@ SchedulerModule.call_every_x_frame = function(callback, interval_frame_num, repe
         is_active = 1,
         arguments = arguments or {},
         argument_length = getn(arguments or {})
-    }
+    })
     return id
 end
 
@@ -178,14 +178,13 @@ SchedulerModule.delay_call = function(callback, delay, arguments)
     end
 
     local scheduler = SchedulerModule._delay_call_schedulers
-    local id = getn(SchedulerModule._delay_call_schedulers) + 1
-    scheduler[id] = {
+    tinsert(scheduler, {
         callback = callback,
         delay_frame_num = delay,
         passed_frames = 0,
         arguments = arguments or {},
         argument_length = getn(arguments or {})
-    }
+    })
 end
 
 
