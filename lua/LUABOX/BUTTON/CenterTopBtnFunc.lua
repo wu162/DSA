@@ -260,15 +260,34 @@ function CreateDragonshipButton(playerIndex)
         ButtonIndex = 1,
         IconId = 'CEL_DragonShipLand',
         Title = '龙行天下',
-        Description = '召唤回合数减三的龙船数量于主巨炮位置,上限不得超过三艘',
-        IsEnabled = true,
-        MaxUseCount = 1,
+        Description = '召唤龙船(第5回合起可以使用)',
+        UnlockedDescription = '召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘\n冷却时间1回合',
+        IsEnabled = false,
+        MaxUseCount = 2,
+        CooldownRounds = 1,
         SharedCooldownId = "dragonship",
         SharedCooldownSeconds = 5,
+        DragonshipNumber = 1,
         OnClick = function(self)
-            return RequestDragonShip(self.PlayerIndex)
+            if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
+                self.DragonshipNumber = 2
+                return true
+            end
+            return nil
         end
     }
+    local round = exCounterGetByName("lvc")
+    if round >= 5 then
+        buttonData.IsEnabled = true
+        buttonData.Description = buttonData.UnlockedDescription
+    else
+        RoundLuaManager.DelayCallOnRoundBegin(function(self)
+            self.IsEnabled = true
+            self.Description = self.UnlockedDescription
+            self:FormatText()
+            ButtonManager:SetButton(self)
+        end, { buttonData }, 5 - round)
+    end
     return CreateButton(buttonData)
 end
 
@@ -410,23 +429,27 @@ function RequestTimeStop(playerIndex)
     return true
 end
 
-function RequestDragonShip(playerIndex)
-    local cutMCV = 3
+function RequestDragonShip(playerIndex, count)
+    if count ~=1 and count ~= 2 then
+        exMessageAppendToMessageArea("错误：龙船召唤失败，数量必须为1或2")
+        return nil
+    end
+    local cutMCV = 5
     local counterValue = exCounterGetByName("lvc");
-    if counterValue <= cutMCV then
+    if counterValue < cutMCV then
         exMessageAppendToMessageArea("龙船召唤失败，回合数不足！")
         return nil
     end
 
     local sideName = "恶魔"
     local sideAIPlayer = "PlyrCivilian"
-    local mcvHealthScript = "MCVhealthD"
+    -- local mcvHealthScript = "MCVhealthD"
     local dragonshipAngle = "0"
     local tower = T74
     if playerIndex >= 4 then
         sideName = "天使"
         sideAIPlayer = "PlyrCreeps"
-        mcvHealthScript = "MCVhealthA"
+        -- mcvHealthScript = "MCVhealthA"
         dragonshipAngle = "180"
         tower = T84
     end
@@ -435,17 +458,29 @@ function RequestDragonShip(playerIndex)
     exMessageAppendToMessageArea(format("%s方召唤了青龙核心战斗舰！", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
     local x1, y1, z1 = ObjectGetPosition(tower);
-    local sign = 1
-    local deltay = 100
-    local realy = 0
-    for j = 1, counterValue - cutMCV, 1 do
-        if j <= 3 then
-            sign = (sign) * (-1)
-            deltay = deltay * (-1)
-            realy = (realy + deltay) * sign
-            ExecuteAction("CREATE_OBJECT", 'CelestialMCV', aiTeamName, { X = x1, Y = y1 + realy, Z = z1 }, dragonshipAngle)
+    local positions = {
+        { X = x1, Y = y1, Z = z1 },
+    }
+    if count == 2 then
+        positions[1].Y = y1 - 150
+        positions[2] = { X = x1, Y = y1 + 100, Z = z1 }
+    end
+
+    for j = 1, count, 1 do
+        ExecuteAction("CREATE_OBJECT", 'CelestialMCV', aiTeamName, positions[j], dragonshipAngle)
+    end
+    -- exEnableWBScript(mcvHealthScript)
+    local units, count = ObjectFindObjects(tower, nil, CelestialMCV)
+    for i = 1, count do
+        -- 需要避免第二次召唤龙船的时候给已经存在的龙船重新上 buff
+        -- count == 1 代表第一次召唤龙船
+        -- 假如 count 大于 1，说明已经有龙船存在了，此时跳过第一艘
+        if count == 1 or i ~= 1 then 
+            local wuti = ObjectGetId(units[i])
+            local str = "UnitStrRef" .. i
+            ExecuteAction("SET_UNIT_REFERENCE", str, units[i])
+            ExecuteAction("NAMED_SET_MAX_HEALTH", str, '30000', 'true')
         end
-        exEnableWBScript(mcvHealthScript)
     end
     return true
 end

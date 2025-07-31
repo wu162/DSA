@@ -15,7 +15,7 @@ CelestialCenturionUpgradeLevel = {
     [6] = 0,
 }
 CelestialCenturionUpgradeUseCountLevelCounter = 0
-CelestialCenturionMaxUseCount = 4
+CelestialCenturionMaxUseCount = 3
 
 SchedulerModule.call_every_x_frame(function()
     local round = exCounterGetByName("lvc")
@@ -47,7 +47,7 @@ SchedulerModule.call_every_x_frame(function()
         if CelestialCenturionUpgradeUseCount[i] < maxUseCount then
             local spellbookId = g_PlayerSpellBookId[i]
             if spellbookId ~= 0 and exObjectGetSpecialCountDownFrame(spellbookId, "SpecialPower_CelestialCenturionUpgrade") >= 200 then
-                ExecuteAction("NAMED_SET_SPECIAL_POWER_COUNTDOWN", GetObjectById(spellbookId), "SpecialPower_CelestialCenturionUpgrade", 1);
+                ExecuteAction("NAMED_SET_SPECIAL_POWER_COUNTDOWN", GetObjectById(spellbookId), "SpecialPower_CelestialCenturionUpgrade", 2);
                 CelestialCenturionUpgradeUseCount[i] = CelestialCenturionUpgradeUseCount[i] + 1
                 if (CelestialCenturionUpgradeLevel[i] or 0) == 0 then
                     CelestialCenturionUpgradeLevel[i] = 1

@@ -16,8 +16,8 @@ if not RoundLuaManager then
             local d = 1
             while d <= getn(delayedCalls) do
                 local data = delayedCalls[d]
+                data.Delay = data.Delay - 1
                 if data.Delay > 0 then
-                    data.Delay = data.Delay - 1
                     d = d + 1
                 else
                     call(data.Callback, data.Arguments, "x")

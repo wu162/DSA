@@ -86,7 +86,7 @@ function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, owner
                 ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", centurion, "EXITING_COMBINED", 0);
             end
         end
-    end, 25, {createdObjId})
+    end, 20, {createdObjId})
 end
 
 function AlliedSuperWeaponBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
