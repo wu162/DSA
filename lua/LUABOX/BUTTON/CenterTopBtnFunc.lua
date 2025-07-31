@@ -307,7 +307,7 @@ function CreateChronosphereButton(playerIndex)
         SharedCooldownId = "alliedsuperweapon",
         SharedCooldownSeconds = 2,
         OnClick = function(self)
-            return RequestChronosphere(self.PlayerName, self.ButtonIndex)
+            return RequestChronosphere(self.PlayerIndex)
         end
     }
     return CreateButton(buttonData)
