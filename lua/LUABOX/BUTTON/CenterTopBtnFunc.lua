@@ -335,7 +335,7 @@ function CreateNanoMaintainHiveButton(playerIndex)
         ButtonIndex = 2,
         IconId = 'Button_JapanNanoMaintainHive',
         Title = '纳米维修',
-        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置多叠加一个立场）并额外恢复防御塔 500+回合数平方*70 的血量',
+        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置多叠加一个立场）',
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -568,20 +568,20 @@ function RequestNanoMaintainHive(playerIndex)
     local tower = T74
     local positions = {
         { X = 3000, Y = 3104, Z = 210 },
+        { X = 3300, Y = 3104, Z = 210 },
         { X = 3080, Y = 2704, Z = 210 },
         { X = 3080, Y = 3504, Z = 210 }
     }
-    local towers = {T71, T72, T73, T74}
     if playerIndex >= 4 then
         sideName = "天使"
         sideAIPlayer = "PlyrCreeps"
         tower = T84
         positions = {
             { X = 4030, Y = 3104, Z = 210 },
+            { X = 3730, Y = 3104, Z = 210 },
             { X = 3950, Y = 2704, Z = 210 },
             { X = 3950, Y = 3504, Z = 210 }
         }
-        towers = {T81, T82, T83, T84}
     end
 
     exMessageAppendToMessageArea(format("%s方启动了纳米维修！", sideName))
@@ -589,13 +589,9 @@ function RequestNanoMaintainHive(playerIndex)
     local round = exCounterGetByName("lvc")
     local iteration = floor(round / 12) + 1
     for i = 1, iteration, 1 do
-        for j = 1, 3, 1 do
+        for j = 1, 4, 1 do
             ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions[j], 0)
         end
-    end
-    local healAmount = 500 + round * round * 70
-    for i = 1, 4 do
-        ExecuteAction("NAMED_DAMAGE", towers[i], -healAmount);
     end
 
     return true
