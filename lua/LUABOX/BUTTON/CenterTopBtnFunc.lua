@@ -476,17 +476,17 @@ function RequestDragonShip(playerIndex, count)
         round = 18
     end
     local maxHealth = 6000 + max(round - 10, 0) * 3000
-    local units, count = ObjectFindObjects(tower, nil, CelestialMCV)
+    local dragonships, dragonshipCount = ObjectFindObjects(tower, nil, CelestialMCV)
     for i = 1, count do
-        -- 需要避免第二次召唤龙船的时候给已经存在的龙船重新上 buff
-        -- count == 1 代表第一次召唤龙船
-        -- 假如 count 大于 1，说明已经有龙船存在了，此时跳过第一艘
-        if count == 1 or i ~= 1 then 
-            local wuti = ObjectGetId(units[i])
-            local str = "UnitStrRef" .. i
-            ExecuteAction("SET_UNIT_REFERENCE", str, units[i])
-            ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
-        end
+        local index = dragonshipCount - count + i
+        local dragonship = dragonships[index]
+        local id = ObjectGetId(dragonship)
+        local str = "UnitStrRef" .. id
+        local previousHp = ObjectGetCurrentHealth(dragonship)
+        ExecuteAction("SET_UNIT_REFERENCE", str, dragonship)
+        ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
+        local currentHp = ObjectGetCurrentHealth(dragonship)
+        exMessageAppendToMessageArea(format("龙船#%d 血量%d->%d", id, previousHp, currentHp))
     end
     return true
 end
