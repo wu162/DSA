@@ -261,7 +261,8 @@ function CreateDragonshipButton(playerIndex)
         IconId = 'CEL_DragonShipLand',
         Title = '龙行天下',
         Description = '召唤龙船(第5回合起可以使用)',
-        UnlockedDescription = '召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘\n冷却时间1回合',
+        UnlockedDescription = '召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘'
+            .. '\n龙船出现得越迟，血量越高，第18回合后血量抵达上限\n冷却时间1回合',
         IsEnabled = false,
         MaxUseCount = 2,
         CooldownRounds = 1,
@@ -470,6 +471,11 @@ function RequestDragonShip(playerIndex, count)
         ExecuteAction("CREATE_OBJECT", 'CelestialMCV', aiTeamName, positions[j], dragonshipAngle)
     end
     -- exEnableWBScript(mcvHealthScript)
+    local round = exCounterGetByName("lvc")
+    if round > 18 then
+        round = 18
+    end
+    local maxHealth = 6000 + max(round - 10, 0) * 3000
     local units, count = ObjectFindObjects(tower, nil, CelestialMCV)
     for i = 1, count do
         -- 需要避免第二次召唤龙船的时候给已经存在的龙船重新上 buff
@@ -479,7 +485,7 @@ function RequestDragonShip(playerIndex, count)
             local wuti = ObjectGetId(units[i])
             local str = "UnitStrRef" .. i
             ExecuteAction("SET_UNIT_REFERENCE", str, units[i])
-            ExecuteAction("NAMED_SET_MAX_HEALTH", str, '30000', 'true')
+            ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
         end
     end
     return true
