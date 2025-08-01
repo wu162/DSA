@@ -77,7 +77,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         IsEnabled = true,
         IsHighlighted = true,
         OnClick = function(self)
-            exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '退出(待会再选)', '', '', '')
+            exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '补充军队+纳米维修', '退出(待会再选)', '', '')
             return true
         end
     })
@@ -148,10 +148,26 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
     elseif kind == 3 then
         buttons[1] = CreateDragonshipButton(playerIndex)
         buttons[2] = CreateAirMarshalButton(playerIndex)
+    elseif kind == 4 then
+        buttons[1] = CreateSpawnArmyImmediatelyButton(playerIndex)
+        buttons[2] = CreateNanoMaintainHiveButton(playerIndex)
     else
         exMessageAppendToMessageArea("错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效")
         return
     end
+    for j = 1, 2 do
+        if playerIndex <= 3 then
+            for i = 1, 3 do
+                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 6)
+            end
+        else
+            for i = 4, 6 do
+                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 6)
+            end
+        end
+    end
+
+
     ButtonManager:SetButton(buttons[1])
     ButtonManager:SetButton(buttons[2])
 end
@@ -181,14 +197,14 @@ function CreateDestructionButton(playerIndex)
         ButtonIndex = 1,
         IconId = 'Button_SovietTeslaMissile',
         Title = '局部毁灭武器',
-        Description = '摧毁一大片地区的所有敌方单位，无视铁幕效果',
+        Description = '摧毁中间区域的所有敌方单位，无视铁幕效果',
         IsEnabled = true,
         MaxUseCount = 1,
         SharedCooldownId = "destruction",
         SharedCooldownSeconds = 5,
         OnClick = function(self)
             return RequestDestruction(self.PlayerIndex)
-        end
+        end,
     }
     return CreateButton(buttonData)
 end
@@ -208,7 +224,7 @@ function CreateDamoclesSwordButton(playerIndex)
         SharedCooldownSeconds = 10,
         OnClick = function(self)
             return RequestDamoclesSword(self.PlayerIndex)
-        end
+        end,
     }
     return CreateButton(buttonData)
 end
@@ -228,7 +244,7 @@ function CreateIronCurtainButton(playerIndex)
         SharedCooldownSeconds = 10,
         OnClick = function(self)
             return RequestIronCurtain(self.PlayerIndex)
-        end
+        end,
     }
     return CreateButton(buttonData)
 end
@@ -248,7 +264,7 @@ function CreateTimeStopButton(playerIndex)
         SharedCooldownSeconds = 10,
         OnClick = function(self)
             return RequestTimeStop(self.PlayerIndex)
-        end
+        end,
     }
     return CreateButton(buttonData)
 end
@@ -274,7 +290,7 @@ function CreateDragonshipButton(playerIndex)
                 return true
             end
             return nil
-        end
+        end,
     }
     local round = exCounterGetByName("lvc")
     if round >= 5 then
@@ -306,7 +322,48 @@ function CreateAirMarshalButton(playerIndex)
         SharedCooldownSeconds = 10,
         OnClick = function(self)
             return RequestAirMarshal(self.PlayerIndex)
-        end
+        end,
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateNanoMaintainHiveButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 2,
+        IconId = 'Button_JapanNanoMaintainHive',
+        Title = '纳米维修',
+        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置的立场回血速度翻倍）',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "namomaintainhive",
+        SharedCooldownSeconds = 10,
+        OnClick = function(self)
+            return RequestNanoMaintainHive(self.PlayerIndex)
+        end,
+    }
+    return CreateButton(buttonData)
+end
+
+-- 立即再次生成一次军队
+function CreateSpawnArmyImmediatelyButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'Button_JapanKamikazeTeammate',
+        Title = '补充军队',
+        Description = '立即触发一次生成陆地和空中部队(冷却70秒)',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 70,
+        SharedCooldownId = "SpawnArmyImmediately",
+        SharedCooldownSeconds = 70,
+        OnClick = function(self)
+            return RequestSpawnArmyImmediately(self.PlayerIndex)
+        end,
     }
     return CreateButton(buttonData)
 end
@@ -496,6 +553,89 @@ function RequestAirMarshal(playerIndex)
     ExecuteAction("PLAY_SOUND_EFFECT", "SOV_SukhoiInterceptor_VoiceAttack")
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
     exEnableWBScript(sideScript)
+    return true
+end
+
+function RequestNanoMaintainHive(playerIndex)
+    local sideName = "恶魔"
+    local sideAIPlayer = "PlyrCivilian"
+    local tower = T74
+    local positions = {
+        { X = 3000, Y = 3104, Z = 210 },
+        { X = 3030, Y = 2704, Z = 210 },
+        { X = 3030, Y = 3504, Z = 210 }
+    }
+    if playerIndex >= 4 then
+        sideName = "天使"
+        sideAIPlayer = "PlyrCreeps"
+        tower = T84
+        positions = {
+            { X = 4030, Y = 3104, Z = 210 },
+            { X = 4000, Y = 2704, Z = 210 },
+            { X = 4000, Y = 3504, Z = 210 }
+        }
+    end
+
+    exMessageAppendToMessageArea(format("%s方启动了纳米维修！", sideName))
+
+    local round = exCounterGetByName("lvc")
+    local iteration = floor(round / 12) + 1
+    for i = 1, iteration, 1 do
+        for j = 1, 3, 1 do
+            ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions[j], 0)
+        end
+    end
+
+    return true
+end
+
+function RequestSpawnArmyImmediately(playerIndex)
+    local sideName = "恶魔"
+    if playerIndex >= 4 then
+        sideName = "天使"
+    end
+    exMessageAppendToMessageArea(format("%s方使用了补充军队！", sideName))
+    if playerIndex <= 3 then
+        SchedulerModule.delay_call(function()
+            UNITSPST_left (1,step1,INFANTSP,INFANTTEAM,INFANTATTACK,INFANTSPCH)
+            UNITSPST_left (step1+1,step2,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
+            UNITSPST_left (step2+1,step3,HEAVYVEHSP,HEAVYVEHTEAM,HEAVYVEHATTACK,HEAVYVEHSPCH)
+            UNITSPAIRST_left (step4+1,step5,INFANTSP,AIRTEAM,AIRATTACK,INFANTSPCH)
+            SpawnGigaFortressAir_left()
+
+            exEnableWBScript('SHIPNOCOACT')
+            exEnableWBScript('PlyrCivilian/attackHEAVYVEHVEH__7')
+            exEnableWBScript('PlyrCivilian/attackINFANT__7')
+            exEnableWBScript('PlyrCivilian/attackLIGHTVEH__7')
+            exEnableWBScript('BUFFACTONCE')
+            exEnableWBScript('ShrinkMode_Trigger')
+
+            UNITSPAIRST_left (step3+1,step35,LIGHTVEHSP,AIRTEAM,AIRATTACK,LIGHTVEHSPCH)
+            UNITSPST_left (step5+1,step6,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
+            exEnableWBScript('PlyrCivilian/attackAIR__7')
+            exEnableWBScript('BUFFACTONCE__AIR')
+        end, 5)
+    else
+        SchedulerModule.delay_call(function()
+            UNITSPST_right (1,step1,INFANTSP,INFANTTEAM,INFANTATTACK,INFANTSPCH)
+            UNITSPST_right (step1+1,step2,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
+            UNITSPST_right (step2+1,step3,HEAVYVEHSP,HEAVYVEHTEAM,HEAVYVEHATTACK,HEAVYVEHSPCH)
+            UNITSPAIRST_right (step4+1,step5,INFANTSP,AIRTEAM,AIRATTACK,INFANTSPCH)
+            SpawnGigaFortressAir_right()
+
+            exEnableWBScript('SHIPNOCOACT')
+            exEnableWBScript('PlyrCreeps/attackHEAVYVEHVEH__8')
+            exEnableWBScript('PlyrCreeps/attackINFANT__8')
+            exEnableWBScript('PlyrCreeps/attackLIGHTVEH__8')
+            exEnableWBScript('BUFFACTONCE')
+            exEnableWBScript('ShrinkMode_Trigger')
+
+            UNITSPAIRST_right (step3+1,step35,LIGHTVEHSP,AIRTEAM,AIRATTACK,LIGHTVEHSPCH)
+            UNITSPST_right (step5+1,step6,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
+            exEnableWBScript('PlyrCreeps/attackAIR__8')
+            exEnableWBScript('BUFFACTONCE__AIR')
+        end, 5)
+    end
     return true
 end
 

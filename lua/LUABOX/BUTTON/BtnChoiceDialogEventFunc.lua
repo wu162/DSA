@@ -70,7 +70,7 @@ function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
     end
 
     if dialogId == 1001 then
-        if btnIndex <= 3 then
+        if btnIndex <= 4 then
             CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, btnIndex)
         end
     end
