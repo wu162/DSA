@@ -335,7 +335,7 @@ function CreateNanoMaintainHiveButton(playerIndex)
         ButtonIndex = 2,
         IconId = 'Button_JapanNanoMaintainHive',
         Title = '纳米维修',
-        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置的立场回血速度翻倍）',
+        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置多叠加一个立场）',
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -568,8 +568,8 @@ function RequestNanoMaintainHive(playerIndex)
     local tower = T74
     local positions = {
         { X = 3000, Y = 3104, Z = 210 },
-        { X = 3030, Y = 2704, Z = 210 },
-        { X = 3030, Y = 3504, Z = 210 }
+        { X = 3080, Y = 2704, Z = 210 },
+        { X = 3080, Y = 3504, Z = 210 }
     }
     if playerIndex >= 4 then
         sideName = "天使"
@@ -577,8 +577,8 @@ function RequestNanoMaintainHive(playerIndex)
         tower = T84
         positions = {
             { X = 4030, Y = 3104, Z = 210 },
-            { X = 4000, Y = 2704, Z = 210 },
-            { X = 4000, Y = 3504, Z = 210 }
+            { X = 3950, Y = 2704, Z = 210 },
+            { X = 3950, Y = 3504, Z = 210 }
         }
     end
 
