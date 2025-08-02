@@ -13,17 +13,13 @@ function UNITSPAIRST_left (unitmin,unitmax,UNITSP,UNITTEAM,UNITATTACKTEAM,UNITCH
                 for i = 1 , spiunitcount , 1 do
                     --------------------------------
                     if  spindex < 6 then
-                        if playindex <= 3 then
-                            local x, y, z = ObjectGetPosition(UNITSP[7][spindex]) ;
-                            ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[7][spindex],{X=x,Y=y,Z=z},"0")
-                            spindex = spindex + 1 ;
-                        end
+                        local x, y, z = ObjectGetPosition(UNITSP[7][spindex]) ;
+                        ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[7][spindex],{X=x,Y=y,Z=z},"0")
+                        spindex = spindex + 1 ;
                     elseif  spindex >= 6 then
-                        if playindex <= 3 then
-                            local x, y, z = ObjectGetPosition(UNITSP[7][spindex]) ;
-                            ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[7][spindex],{X=x,Y=y,Z=z},"0")
-                            spindex =  1 ;
-                        end
+                        local x, y, z = ObjectGetPosition(UNITSP[7][spindex]) ;
+                        ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[7][spindex],{X=x,Y=y,Z=z},"0")
+                        spindex =  1 ;
                     end
                     ----------------------------------------------
                 end
@@ -55,17 +51,13 @@ function UNITSPAIRST_right (unitmin,unitmax,UNITSP,UNITTEAM,UNITATTACKTEAM,UNITC
                 for i = 1 , spiunitcount , 1 do
                     --------------------------------
                     if  spindex < 6 then
-                        if playindex <= 3 then
-                            local x, y, z = ObjectGetPosition(UNITSP[8][spindex]) ;
-                            ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[8][spindex],{X=x,Y=y,Z=z},"180")
-                            spindex = spindex + 1 ;
-                        end
+                        local x, y, z = ObjectGetPosition(UNITSP[8][spindex]) ;
+                        ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[8][spindex],{X=x,Y=y,Z=z},"180")
+                        spindex = spindex + 1 ;
                     elseif  spindex >= 6 then
-                        if playindex <= 3 then
-                            local x, y, z = ObjectGetPosition(UNITSP[8][spindex]) ;
-                            ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[8][spindex],{X=x,Y=y,Z=z},"180")
-                            spindex =  1 ;
-                        end
+                        local x, y, z = ObjectGetPosition(UNITSP[8][spindex]) ;
+                        ExecuteAction("CREATE_OBJECT",UNITLIST[unitindex],UNITTEAM[8][spindex],{X=x,Y=y,Z=z},"180")
+                        spindex =  1 ;
                     end
                     ----------------------------------------------
                 end
