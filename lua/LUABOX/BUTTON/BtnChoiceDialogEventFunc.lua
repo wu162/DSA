@@ -541,7 +541,7 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
             -- end
         else
             skillText = '技能组：'
-            for i = 1, preselectedSkillCount do
+            for i = 1, 3 do
                 skillText = skillText .. g_SkillNames[g_PreselectedSkillIndices[i]]
                 if i < preselectedSkillCount then
                     skillText = skillText .. ','
