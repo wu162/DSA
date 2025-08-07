@@ -342,10 +342,15 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
     }
     dialogData.RefreshData = function(self)
         self.Choices = {}
-        if getn(g_PreselectedSkillIndices) == 0 then
-            tinsert(self.Choices, '让玩家自行选择')
+        local preselectedSkillCount = getn(g_PreselectedSkillIndices)
+        if preselectedSkillCount == 0 then
+            tinsert(self.Choices, '让每个玩家自行选择')
         else
             tinsert(self.Choices, '取消选择')
+            if preselectedSkillCount < 3 then
+                -- 假如预选技能组少于 3 个，继续选择
+                self.Title = format('请继续选择（还剩%d个）', 3 - preselectedSkillCount)
+            end
         end
         for i = 1, getn(g_SkillNames) do
             local name = g_SkillNames[i]
@@ -358,7 +363,7 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
             tinsert(self.Choices, name)
         end
         -- 假如房主还未选择技能，额外提供随机技能选项
-        if getn(g_PreselectedSkillIndices) == 0 then
+        if preselectedSkillCount == 0 then
             -- 关于为什么是可重复的，
             -- 看下面 RandomSymmetricSkill 与 RandomAsymmetricSkill 里面的注释
             tinsert(self.Choices, '随机（可重复，对称）')
