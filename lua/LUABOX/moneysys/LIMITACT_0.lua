@@ -1,1 +1,3 @@
- LIMITPOWER()
+if LIMITPOWER then
+    LIMITPOWER()
+end

@@ -67,20 +67,25 @@ end
 function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
     local playerName = "Player_" .. playerIndex
     local buttons = {}
-    buttons[1] = CreateButton({
-        PlayerName = playerName,
-        PlayerIndex = playerIndex,
-        ButtonIndex = 1,
-        IconId = 'Button_Toggle_Power',
-        Title = '请选择你的技能组',
-        Description = '选择后可获得两个强力技能，请尽快选择',
-        IsEnabled = true,
-        IsHighlighted = true,
-        OnClick = function(self)
-            exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '补充军队+纳米维修', '退出(待会再选)', '', '')
-            return true
-        end
-    })
+    local preselectedPlayerSkillKind = g_PreselectedSkillIndices[playerIndex]
+    if preselectedPlayerSkillKind ~= nil then
+        CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, preselectedPlayerSkillKind)
+    else
+        buttons[1] = CreateButton({
+            PlayerName = playerName,
+            PlayerIndex = playerIndex,
+            ButtonIndex = 1,
+            IconId = 'Button_Toggle_Power',
+            Title = '请选择你的技能组',
+            Description = '选择后可获得两个强力技能，请尽快选择',
+            IsEnabled = true,
+            IsHighlighted = true,
+            OnClick = function(self)
+                BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog(self.PlayerName)
+                return true
+            end
+        })
+    end
     if EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Allied") then
         buttons[3] = CreateChronosphereButton(playerIndex)
     elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Japan") then
@@ -97,7 +102,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         Description = '购买理财项目或者定向转移资金',
         IsEnabled = true,
         OnClick = function(self)
-            BtnChoiceDialogEventFunc_ShowNextMarketDialog(self.PlayerIndex)
+            BtnChoiceDialogEventFunc_ShowMarketDialog(self.PlayerIndex)
             return true
         end
     })
