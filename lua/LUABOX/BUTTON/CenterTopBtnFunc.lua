@@ -67,20 +67,25 @@ end
 function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
     local playerName = "Player_" .. playerIndex
     local buttons = {}
-    buttons[1] = CreateButton({
-        PlayerName = playerName,
-        PlayerIndex = playerIndex,
-        ButtonIndex = 1,
-        IconId = 'Button_Toggle_Power',
-        Title = '请选择你的技能组',
-        Description = '选择后可获得两个强力技能，请尽快选择',
-        IsEnabled = true,
-        IsHighlighted = true,
-        OnClick = function(self)
-            exShowCustomBtnChoiceDialogForPlayer(self.PlayerName, 1001, '选择你的技能组', '炸弹+达摩克利斯之剑', '铁幕+时停', '龙船+空军元帅', '补充军队+纳米维修', '退出(待会再选)', '', '')
-            return true
-        end
-    })
+    local preselectedPlayerSkillKind = g_PreselectedSkillIndices[playerIndex]
+    if preselectedPlayerSkillKind ~= nil then
+        CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, preselectedPlayerSkillKind)
+    else
+        buttons[1] = CreateButton({
+            PlayerName = playerName,
+            PlayerIndex = playerIndex,
+            ButtonIndex = 1,
+            IconId = 'Button_Toggle_Power',
+            Title = '请选择你的技能组',
+            Description = '选择后可获得两个强力技能，请尽快选择',
+            IsEnabled = true,
+            IsHighlighted = true,
+            OnClick = function(self)
+                BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog(self.PlayerName)
+                return true
+            end
+        })
+    end
     if EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Allied") then
         buttons[3] = CreateChronosphereButton(playerIndex)
     elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Japan") then
@@ -97,7 +102,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         Description = '购买理财项目或者定向转移资金',
         IsEnabled = true,
         OnClick = function(self)
-            BtnChoiceDialogEventFunc_ShowNextMarketDialog(self.PlayerIndex)
+            BtnChoiceDialogEventFunc_ShowMarketDialog(self.PlayerIndex)
             return true
         end
     })
@@ -184,6 +189,7 @@ function CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
     end
     if button then
         button.Description = button.UnlockedDescription
+        button.IsLocked = false
         button.IsEnabled = true
         button:FormatText()
         ButtonManager:SetButton(button)
@@ -279,7 +285,7 @@ function CreateDragonshipButton(playerIndex)
         Description = '召唤龙船(第5回合起可以使用)',
         UnlockedDescription = '召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘'
             .. '\n龙船出现得越迟，血量越高，第18回合后血量抵达上限\n冷却时间1回合',
-        IsEnabled = false,
+        IsLocked = true,
         MaxUseCount = 2,
         CooldownRounds = 1,
         SharedCooldownId = "dragonship",
@@ -299,6 +305,7 @@ function CreateDragonshipButton(playerIndex)
         buttonData.Description = buttonData.UnlockedDescription
     else
         RoundLuaManager.DelayCallOnRoundBegin(function(self)
+            self.IsLocked = false
             self.IsEnabled = true
             self.Description = self.UnlockedDescription
             self:FormatText()
@@ -378,7 +385,7 @@ function CreateChronosphereButton(playerIndex)
         Title = '超时空突袭',
         Description = '请建造盟军小超武「超时空传送仪」以解锁此按钮',
         UnlockedDescription = '打开时空裂缝让主战坦克突袭敌方后排并获得短暂的铁幕\n冷却时间三回合',
-        IsEnabled = false,
+        IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownRounds = 3,
         SharedCooldownId = "alliedsuperweapon",
@@ -399,7 +406,7 @@ function CreateJapanShieldButton(playerIndex)
         Title = '全体护盾',
         Description = '请激活帝国最高机密协议「机械化组装」以解锁此按钮',
         UnlockedDescription = '为所有己方载具套上纳米护盾\n冷却时间200秒',
-        IsEnabled = false,
+        IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownSeconds = 200,
         SharedCooldownId = "japanshield",
@@ -420,7 +427,7 @@ function CreateCelestialMoraleButton(playerIndex)
         Title = '士气提升',
         Description = '请建造神州小超武「日晷阵列」（止戈力场）以解锁此按钮',
         UnlockedDescription = '己方全体单位获得18秒的1.25倍移速和伤害加成\n冷却时间220秒',
-        IsEnabled = false,
+        IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownSeconds = 220,
         SharedCooldownId = "celestialmorale",

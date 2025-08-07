@@ -147,6 +147,9 @@ function CreateButton(buttonData)
         buttonData.SharedCooldownId = format("%s_%s", side, buttonData.SharedCooldownId)
         buttonData.SharedCooldownSeconds = buttonData.SharedCooldownSeconds or 1
     end
+    if buttonData.IsLocked then
+        buttonData.IsEnabled = false
+    end
 
     buttonData._usedCount = 0
     buttonData._cooldownCount = 0
@@ -235,6 +238,10 @@ function CreateButton(buttonData)
         end
         if self.MaxUseCount ~= nil and self._usedCount >= self.MaxUseCount then
             -- exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 已经使用完毕，无法恢复", self.PlayerName or "?", self.Title))
+            return
+        end
+        if self.IsLocked then
+            -- exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 已经被锁定，无法恢复", self.PlayerName or "?", self.Title))
             return
         end
         self._cooldownCount = self._cooldownCount - 1
