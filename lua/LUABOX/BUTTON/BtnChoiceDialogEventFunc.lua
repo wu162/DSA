@@ -23,6 +23,7 @@ MARKET_DIALOG_ID_OFFSET = 100
 GAMEMODE_DIALOG_ID = 201
 
 SKILL_DIALOG_ID_OFFSET = 1000
+SKILL_DIALOG_ID_OFFSET2 = 2000
 g_SkillNames = {
     '炸弹+达摩克利斯之剑',
     '铁幕+时停',
@@ -295,7 +296,7 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
             else
                 g_GameMode = 1 -- 默认正常模式
             end
-            BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(self.PlayerName)
+            BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillModeDialog(self.PlayerName)
             return
         end
         local option = g_GameModeOptions[buttonIndex]
@@ -333,11 +334,11 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end
 
-function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
+function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillModeDialog(playerName)
     local dialogData = {
         DialogId = SKILL_DIALOG_ID_OFFSET + 0, -- 0 是特殊的、房主预选技能组的对话框
         PlayerName = playerName,
-        Title = '请选择各个玩家的技能组',
+        Title = '请选择技能组模式',
         Choices = {},
     }
     dialogData.RefreshData = function(self)
@@ -345,23 +346,8 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
         local preselectedSkillCount = getn(g_PreselectedSkillIndices)
         if preselectedSkillCount == 0 then
             tinsert(self.Choices, '让每个玩家自行选择')
-        else
-            tinsert(self.Choices, '取消选择')
-            if preselectedSkillCount < 3 then
-                -- 假如预选技能组少于 3 个，继续选择
-                self.Title = format('请继续选择（还剩%d个）', 3 - preselectedSkillCount)
-            end
         end
-        for i = 1, getn(g_SkillNames) do
-            local name = g_SkillNames[i]
-            for j = 1, getn(g_PreselectedSkillIndices) do
-                if g_PreselectedSkillIndices[j] == i then
-                    name = name .. '(已选)'
-                    break
-                end
-            end
-            tinsert(self.Choices, name)
-        end
+        tinsert(self.Choices, '房主规定技能组(对称)')
         -- 假如房主还未选择技能，额外提供随机技能选项
         if preselectedSkillCount == 0 then
             -- 关于为什么是可重复的，
@@ -378,55 +364,21 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
                 BtnChoiceDialogEventFunc_InvokeStartGame()
                 return
             end
-            -- 假如房主点击的是“取消”，清空预选技能组
-            g_PreselectedSkillIndices = {}
-            -- 重新显示对话框
-            self:RefreshData()
-            ButtonChoiceDialogManager:ShowDialog(self)
             return
         end
-        if buttonIndex == getn(g_SkillNames) + 2 then
+        if buttonIndex == 2 then
+            BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(self.PlayerName)
+            return
+        elseif buttonIndex == 3 then
             self:RandomSkill(true)
             BtnChoiceDialogEventFunc_InvokeStartGame()
             return
-        elseif buttonIndex == getn(g_SkillNames) + 3 then
+        elseif buttonIndex == 4 then
             self:RandomSkill(false)
             BtnChoiceDialogEventFunc_InvokeStartGame()
             return
         end
 
-        -- 假如房主选择了某个技能组
-        -- 因为第一个按钮是“让玩家自行选择”，所以技能索引从 2 开始，要减去 1
-        local skillIndex = buttonIndex - 1
-        if skillIndex < 1 or skillIndex > getn(g_SkillNames) then
-            exMessageAppendToMessageArea(format("错误：玩家 %s 点击了非法技能组按钮 %d", self.PlayerName, buttonIndex))
-            return
-        end
-        local alreadySelected = false
-        for i = 1, getn(g_PreselectedSkillIndices) do
-            if g_PreselectedSkillIndices[i] == skillIndex then
-                alreadySelected = true
-                break
-            end
-        end
-        if not alreadySelected then
-            tinsert(g_PreselectedSkillIndices, skillIndex)
-        end
-
-        if getn(g_PreselectedSkillIndices) == 3 then
-            -- 已经选择了 3 个技能组，可以开始游戏了
-            -- 复制、补全到 6 个技能组
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[1])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[2])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[3])
-            -- 开始游戏
-            BtnChoiceDialogEventFunc_InvokeStartGame()
-            return
-        end
-
-        -- 继续选择下一个技能组
-        self:RefreshData()
-        ButtonChoiceDialogManager:ShowDialog(self)
     end
     dialogData.RandomSkill = function(self, isSymmetric)
         -- 生成一个对称的随机技能组
@@ -465,6 +417,89 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillDialog(playerName)
             value = max
         end
         return value
+    end
+    dialogData:RefreshData()
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+
+function BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(playerName)
+    local dialogData = {
+        DialogId = SKILL_DIALOG_ID_OFFSET2 + 0, -- 0 是特殊的、房主预选技能组的对话框
+        PlayerName = playerName,
+        Title = '请选择各个玩家的技能组',
+        Choices = {},
+    }
+    dialogData.RefreshData = function(self)
+        self.Choices = {}
+        local preselectedSkillCount = getn(g_PreselectedSkillIndices)
+        if preselectedSkillCount > 0 then
+            tinsert(self.Choices, '取消选择')
+            if preselectedSkillCount < 3 then
+                -- 假如预选技能组少于 3 个，继续选择
+                self.Title = format('请继续选择（还剩%d个）', 3 - preselectedSkillCount)
+            end
+        else
+            self.Title = "请选择各个玩家的技能组"
+        end
+        for i = 1, getn(g_SkillNames) do
+            local name = g_SkillNames[i]
+            for j = 1, getn(g_PreselectedSkillIndices) do
+                if g_PreselectedSkillIndices[j] == i then
+                    name = name .. '(已选)'
+                    break
+                end
+            end
+            tinsert(self.Choices, name)
+        end
+    end
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex == 1 and getn(g_PreselectedSkillIndices) > 0 then
+            -- 假如房主点击的是“取消”，清空预选技能组
+            g_PreselectedSkillIndices = {}
+            -- 重新显示对话框
+            self:RefreshData()
+            ButtonChoiceDialogManager:ShowDialog(self)
+            return
+        end
+
+        -- 假如房主选择了某个技能组
+        -- 因为第一个按钮是“让玩家自行选择”，所以技能索引从 2 开始，要减去 1
+        local skillIndex = buttonIndex - 1
+        local preselectedSkillCount = getn(g_PreselectedSkillIndices)
+        -- 但如果此时还一个技能都没选，没有第一个 取消选择 这个按钮
+        if preselectedSkillCount == 0 then
+            skillIndex = buttonIndex
+        end
+        if skillIndex < 1 or skillIndex > getn(g_SkillNames) then
+            exMessageAppendToMessageArea(format("错误：玩家 %s 点击了非法技能组按钮 %d", self.PlayerName, buttonIndex))
+            return
+        end
+        local alreadySelected = false
+        for i = 1, getn(g_PreselectedSkillIndices) do
+            if g_PreselectedSkillIndices[i] == skillIndex then
+                alreadySelected = true
+                break
+            end
+        end
+        if not alreadySelected then
+            tinsert(g_PreselectedSkillIndices, skillIndex)
+        end
+
+        if getn(g_PreselectedSkillIndices) == 3 then
+            -- 已经选择了 3 个技能组，可以开始游戏了
+            -- 复制、补全到 6 个技能组
+            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[1])
+            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[2])
+            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[3])
+            -- 开始游戏
+            BtnChoiceDialogEventFunc_InvokeStartGame()
+            return
+        end
+
+        -- 继续选择下一个技能组
+        self:RefreshData()
+        ButtonChoiceDialogManager:ShowDialog(self)
     end
     dialogData:RefreshData()
     ButtonChoiceDialogManager:ShowDialog(dialogData)

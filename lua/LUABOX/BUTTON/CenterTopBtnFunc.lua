@@ -163,11 +163,11 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
     for j = 1, 2 do
         if playerIndex <= 3 then
             for i = 1, 3 do
-                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 6)
+                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 8)
             end
         else
             for i = 4, 6 do
-                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 6)
+                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 8)
             end
         end
     end

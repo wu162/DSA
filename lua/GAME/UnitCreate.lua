@@ -40,7 +40,7 @@ function CelestialLaserTowerBorn(createdObjId, createdObjInstanceId, ownerPlayer
             local teamName = ObjectTeamName(GetObjectById(id))
             local playerName = g_objectTeamNameToPlayerName[teamName]
             ExecuteAction("NAMED_DELETE", GetObjectById(id));
-            ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", playerName, 'CelestialAntiInfantryInfantryAdvanced', playerName .. '/team' .. playerName, 'commonSpawn')
+            ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", playerName, 'CelestialAntiVehicleInfantry', playerName .. '/team' .. playerName, 'commonSpawn')
         end
     end, 5, {createdObjId})
 end
@@ -110,10 +110,27 @@ g_UnitCount = {
         [4] = 0,
         [5] = 0,
         [6] = 0,
-    }
+    },
+    [FastHash("AlliedAntiInfantryVehicle")] = {
+        [1] = 0,
+        [2] = 0,
+        [3] = 0,
+        [4] = 0,
+        [5] = 0,
+        [6] = 0,
+    },
+    [FastHash("AlliedAntiInfantryVehicle_Ground")] = {
+        [1] = 0,
+        [2] = 0,
+        [3] = 0,
+        [4] = 0,
+        [5] = 0,
+        [6] = 0,
+    },
 }
 
 function UnitCountFunc(createdObjId, createdObjInstanceId, ownerPlayerName)
+    exMessageAppendToMessageArea("物体生成 " .. tostring(createdObjInstanceId))
     SchedulerModule.delay_call(function(id, instanceId, playerName)
         local count = g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]];
         g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]] = count + 1;
@@ -140,6 +157,8 @@ g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCe
 g_UnitCreateEventFunc[FastHash("AlliedSuperWeapon")] = AlliedSuperWeaponBorn
 
 g_UnitCreateEventFunc[FastHash("JapanGigaFortressShipEgg")] = UnitCountFunc
+g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle")] = UnitCountFunc
+g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle_Ground")] = UnitCountFunc
 
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
@@ -155,6 +174,8 @@ exObjectRegisterCreateEvent("CelestialSpaceReinforceMarker")
 exObjectRegisterCreateEvent("CelestialCenturionUpgradeObject")
 exObjectRegisterCreateEvent("AlliedSuperWeapon")
 exObjectRegisterCreateEvent("JapanGigaFortressShipEgg")
+exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle")
+exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle_Ground")
 
 function onUnitCreateEvent(createdObjId, createdObjInstanceId, ownerPlayerName)
     g_UnitCreateEventFunc[createdObjInstanceId](createdObjId, createdObjInstanceId, ownerPlayerName)
