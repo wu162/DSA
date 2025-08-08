@@ -130,7 +130,9 @@ g_UnitCount = {
 }
 
 function UnitCountFunc(createdObjId, createdObjInstanceId, ownerPlayerName)
-    exMessageAppendToMessageArea("物体生成 " .. tostring(createdObjInstanceId))
+    if g_PlayerNameToIndex[ownerPlayerName] == nil then
+        return
+    end
     SchedulerModule.delay_call(function(id, instanceId, playerName)
         local count = g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]];
         g_UnitCount[instanceId][g_PlayerNameToIndex[playerName]] = count + 1;
