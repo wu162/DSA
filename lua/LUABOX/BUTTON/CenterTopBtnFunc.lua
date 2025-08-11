@@ -36,6 +36,13 @@ g_VehicleFilter = CreateObjectFilter({
     Include="VEHICLE",
 })
 
+g_MoneyBonusTargetFilter = CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    Include="VEHICLE INFANTRY SUBMARINE HUGE_VEHICLE",
+    Exclude="IGNORE_IN_AI_HUNT_TACTIC DEBRIS"
+})
+
 g_CelestialSuperWeapon_Get = {
     [1] = 0,
     [2] = 0,
@@ -53,6 +60,11 @@ g_CelestialSuperWeapon_CelestialWeaponEnable = {
     [5] = 1,
     [6] = 1,
 }
+
+g_angelButtonClickHistory = {}
+g_evilButtonClickHistory = {}
+
+g_CelestialEngineerRepairDroneIndex = 1;
 
 g_VehicleInfantryAircraftFilter = CreateObjectFilter({
     Rule="ANY",
@@ -86,11 +98,11 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             end
         })
     end
-    if EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Allied") then
+    if g_PlayerSide[playerIndex] == 1 then
         buttons[3] = CreateChronosphereButton(playerIndex)
-    elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Japan") then
+    elseif g_PlayerSide[playerIndex] == 3 then
         buttons[3] = CreateJapanShieldButton(playerIndex)
-    elseif EvaluateCondition("PLAYER_HAS_PLAYER_TECH", playerName, "PlayerTech_Celestial") then
+    elseif g_PlayerSide[playerIndex] == 4 then
         buttons[3] = CreateCelestialMoraleButton(playerIndex)
     end
     buttons[4] = CreateButton({
@@ -156,6 +168,9 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
     elseif kind == 4 then
         buttons[1] = CreateSpawnArmyImmediatelyButton(playerIndex)
         buttons[2] = CreateNanoMaintainHiveButton(playerIndex)
+    elseif kind == 5 then
+        buttons[1] = CreateCashBonusButton(playerIndex)
+        buttons[2] = CreateRepeatSelfSpecialPowerButton(playerIndex)
     else
         exMessageAppendToMessageArea("错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效")
         return
@@ -171,7 +186,6 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
             end
         end
     end
-
 
     ButtonManager:SetButton(buttons[1])
     ButtonManager:SetButton(buttons[2])
@@ -301,6 +315,7 @@ function CreateDragonshipButton(playerIndex)
     }
     local round = exCounterGetByName("lvc")
     if round >= 5 then
+        buttonData.IsLocked = false
         buttonData.IsEnabled = true
         buttonData.Description = buttonData.UnlockedDescription
     else
@@ -335,6 +350,45 @@ function CreateAirMarshalButton(playerIndex)
     return CreateButton(buttonData)
 end
 
+function CreateRepeatSelfSpecialPowerButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 2,
+        IconId = 'CelestialPowerPlantDetection',
+        Title = '复制技能',
+        Description = '复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却10s)',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 10,
+        SharedCooldownId = "repeatselfspecialpower",
+        SharedCooldownSeconds = 5,
+        OnClick = function(self)
+            return RequestRepeatSelfSpecialPower(self.PlayerIndex)
+        end,
+    }
+    return CreateButton(buttonData)
+end
+
+--function CreateBuyOverButton(playerIndex)
+--    local buttonData = {
+--        PlayerName = "Player_" .. playerIndex,
+--        PlayerIndex = playerIndex,
+--        ButtonIndex = 1,
+--        IconId = 'Button_AlliedInfiltrationInfantry_on',
+--        Title = '策反',
+--        Description = '策反中间区域附近的陆军和空军',
+--        IsEnabled = true,
+--        MaxUseCount = 1,
+--        SharedCooldownId = "buyover",
+--        SharedCooldownSeconds = 10,
+--        OnClick = function(self)
+--            return RequestBuyOver(self.PlayerIndex)
+--        end,
+--    }
+--    return CreateButton(buttonData)
+--end
+
 function CreateNanoMaintainHiveButton(playerIndex)
     local buttonData = {
         PlayerName = "Player_" .. playerIndex,
@@ -342,7 +396,7 @@ function CreateNanoMaintainHiveButton(playerIndex)
         ButtonIndex = 2,
         IconId = 'Button_JapanNanoMaintainHive',
         Title = '纳米维修',
-        Description = '在前线防御塔周围生成3个纳米维修立场，治愈己方部队和前线防御塔（每经过12回合，同位置多叠加一个立场）',
+        Description = '在前线防御塔周围生成1个纳米维修立场和4个大型维修天灯，治愈己方部队和前线防御塔',
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -371,6 +425,26 @@ function CreateSpawnArmyImmediatelyButton(playerIndex)
         SharedCooldownSeconds = 70,
         OnClick = function(self)
             return RequestSpawnArmyImmediately(self.PlayerIndex)
+        end,
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateCashBonusButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'AUA_Bribe',
+        Title = '杀敌奖励',
+        Description = '为所有敌方陆地单位和船（不包括空军）套上钱套子(持续30秒)，击杀后使用技能者获得金钱(冷却40秒)',
+        IsEnabled = true,
+        MaxUseCount = 2,
+        CooldownSeconds = 40,
+        SharedCooldownId = "cashbonus",
+        SharedCooldownSeconds = 40,
+        OnClick = function(self)
+            return RequestCashBonus(self.PlayerIndex)
         end,
     }
     return CreateButton(buttonData)
@@ -449,6 +523,27 @@ function RequestDestruction(playerIndex)
     exMessageAppendToMessageArea(format("%s方使用了局部杀伤性武器！", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
     exEnableWBScript(sideScript)
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestDestruction)
+    else
+        tinsert(g_angelButtonClickHistory, RequestDestruction)
+    end
+    return true
+end
+
+function RequestBuyOver(playerIndex)
+    local sideName = "恶魔"
+    if playerIndex >= 4 then
+        sideName = "天使"
+    end
+    exMessageAppendToMessageArea(format("%s方使用了策反！", sideName))
+    --ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestDestruction)
+    else
+        tinsert(g_angelButtonClickHistory, RequestDestruction)
+    end
     return true
 end
 
@@ -462,6 +557,11 @@ function RequestDamoclesSword(playerIndex)
     exMessageAppendToMessageArea(format("%s方落下了达摩克利斯之剑！", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
     exEnableWBScript(sideScript)
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestDamoclesSword)
+    else
+        tinsert(g_angelButtonClickHistory, RequestDamoclesSword)
+    end
     return true
 end
 
@@ -478,6 +578,11 @@ function RequestIronCurtain(playerIndex)
     for i = 1, count, 1 do
         ObjectLoadAttributeModifier(units[i], "AttributeModifier_IronCurtain", 196)
     end
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestIronCurtain)
+    else
+        tinsert(g_angelButtonClickHistory, RequestIronCurtain)
+    end
     return true
 end
 
@@ -491,6 +596,11 @@ function RequestTimeStop(playerIndex)
     exMessageAppendToMessageArea(format("%s方竟然让时间停止！", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
     exEnableWBScript(sideScript)
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestDestruction)
+    else
+        tinsert(g_angelButtonClickHistory, RequestDestruction)
+    end
     return true
 end
 
@@ -510,19 +620,24 @@ function RequestDragonShip(playerIndex, count)
     local sideAIPlayer = "PlyrCivilian"
     -- local mcvHealthScript = "MCVhealthD"
     local dragonshipAngle = "0"
+    local waypoint = "TD7"
     local tower = T74
     if playerIndex >= 4 then
         sideName = "天使"
         sideAIPlayer = "PlyrCreeps"
         -- mcvHealthScript = "MCVhealthA"
         dragonshipAngle = "180"
+        waypoint = "TD8"
         tower = T84
     end
     local aiTeamName = sideAIPlayer .. '/ATTACK'
 
     exMessageAppendToMessageArea(format("%s方召唤了青龙核心战斗舰！", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
-    local x1, y1, z1 = ObjectGetPosition(tower);
+    local pos = exWaypointGetPos(waypoint)
+    local x1 = pos[1];
+    local y1 = pos[2];
+    local z1 = pos[3];
     local positions = {
         { X = x1, Y = y1, Z = z1 },
     }
@@ -539,7 +654,7 @@ function RequestDragonShip(playerIndex, count)
     if round > 18 then
         round = 18
     end
-    local maxHealth = 6000 + max(round - 10, 0) * 3000
+    local maxHealth = 8000 + max(round - 10, 0) * 3000
     local dragonships, dragonshipCount = ObjectFindObjects(tower, nil, CelestialMCV)
     for i = 1, count do
         local index = dragonshipCount - count + i
@@ -551,6 +666,12 @@ function RequestDragonShip(playerIndex, count)
         ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
         local currentHp = ObjectGetCurrentHealth(dragonship)
         exMessageAppendToMessageArea(format("龙船#%d 血量%d->%d", id, previousHp, currentHp))
+    end
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestDragonShip)
+    else
+        tinsert(g_angelButtonClickHistory, RequestDragonShip)
     end
     return true
 end
@@ -566,6 +687,12 @@ function RequestAirMarshal(playerIndex)
     ExecuteAction("PLAY_SOUND_EFFECT", "SOV_SukhoiInterceptor_VoiceAttack")
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
     exEnableWBScript(sideScript)
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestAirMarshal)
+    else
+        tinsert(g_angelButtonClickHistory, RequestAirMarshal)
+    end
     return true
 end
 
@@ -573,34 +700,82 @@ function RequestNanoMaintainHive(playerIndex)
     local sideName = "恶魔"
     local sideAIPlayer = "PlyrCivilian"
     local tower = T74
-    local positions = {
-        { X = 3000, Y = 3104, Z = 210 },
-        { X = 3300, Y = 3104, Z = 210 },
-        { X = 3080, Y = 2704, Z = 210 },
-        { X = 3080, Y = 3504, Z = 210 }
+    local positions = { X = 3000, Y = 3104, Z = 210 }
+    local position2 = {
+        { X = 3200, Y = 3200, Z = 210 },
+        { X = 3200, Y = 3000, Z = 210 },
+        { X = 3200, Y = 3300, Z = 210 },
+        { X = 3200, Y = 2900, Z = 210 },
     }
     if playerIndex >= 4 then
         sideName = "天使"
         sideAIPlayer = "PlyrCreeps"
         tower = T84
-        positions = {
-            { X = 4030, Y = 3104, Z = 210 },
-            { X = 3730, Y = 3104, Z = 210 },
-            { X = 3950, Y = 2704, Z = 210 },
-            { X = 3950, Y = 3504, Z = 210 }
+        positions = { X = 4030, Y = 3104, Z = 210 }
+        position2 = {
+            { X = 3830, Y = 3200, Z = 210 },
+            { X = 3830, Y = 3000, Z = 210 },
+            { X = 3830, Y = 3300, Z = 210 },
+            { X = 3830, Y = 2900, Z = 210 },
         }
     end
 
     exMessageAppendToMessageArea(format("%s方启动了纳米维修！", sideName))
 
-    local round = exCounterGetByName("lvc")
-    local iteration = floor(round / 12) + 1
-    for i = 1, iteration, 1 do
-        for j = 1, 4, 1 do
-            ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions[j], 0)
+    ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions, 0)
+    for j = 1, 4, 1 do
+        g_CelestialEngineerRepairDroneIndex = g_CelestialEngineerRepairDroneIndex + 1;
+        ExecuteAction("UNIT_SPAWN_NAMED_LOCATION_ORIENTATION", "CelestialEngineerRepairDroneLv3" .. tostring(g_CelestialEngineerRepairDroneIndex),
+                "CelestialEngineerRepairDroneLv3",
+                sideAIPlayer .. "/team" .. sideAIPlayer, position2[j], 0)
+        local object = GetObjectByScriptName("CelestialEngineerRepairDroneLv3" .. tostring(g_CelestialEngineerRepairDroneIndex))
+        SchedulerModule.delay_call(function(objectId)
+            ExecuteAction("NAMED_DELETE", GetObjectById(objectId))
+        end, 450, {ObjectGetId(object)})
+    end
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestNanoMaintainHive)
+    else
+        tinsert(g_angelButtonClickHistory, RequestNanoMaintainHive)
+    end
+    return true
+end
+
+function RequestRepeatSelfSpecialPower(playerIndex)
+    local sideName = "恶魔"
+    if playerIndex >= 4 then
+        sideName = "天使"
+    end
+    local destPowerFunc = nil;
+    local history = g_evilButtonClickHistory;
+    if playerIndex >= 4 then
+        history = g_angelButtonClickHistory;
+    end
+    if getn(history) == 0 then
+        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, "未释放过技能，无法复制技能", 8)
+        return false;
+    end
+    for i = getn(history), 1, -1 do
+        if history[i] ~= RequestRepeatSelfSpecialPower then
+            destPowerFunc = history[i];
+            break;
         end
     end
 
+    if destPowerFunc ~= nil then
+        exMessageAppendToMessageArea(format("%s方使用了复制技能！", sideName))
+        destPowerFunc(playerIndex)
+    else
+        exAddTextToPublicBoardForPlayer("Player_" .. i, "未找到合适的技能，无法复制技能", 8)
+        return false;
+    end
+
+    --if playerIndex <= 3 then
+    --    tinsert(g_evilButtonClickHistory, RequestRepeatSelfSpecialPower)
+    --else
+    --    tinsert(g_angelButtonClickHistory, RequestRepeatSelfSpecialPower)
+    --end
     return true
 end
 
@@ -617,6 +792,7 @@ function RequestSpawnArmyImmediately(playerIndex)
             UNITSPST_left (step2+1,step3,HEAVYVEHSP,HEAVYVEHTEAM,HEAVYVEHATTACK,HEAVYVEHSPCH)
             UNITSPAIRST_left (step4+1,step5,INFANTSP,AIRTEAM,AIRATTACK,INFANTSPCH)
             SpawnGigaFortressAir_left()
+            SpawnLandUnit_left()
 
             exEnableWBScript('SHIPNOCOACT')
             exEnableWBScript('PlyrCivilian/attackHEAVYVEHVEH__7')
@@ -637,6 +813,7 @@ function RequestSpawnArmyImmediately(playerIndex)
             UNITSPST_right (step2+1,step3,HEAVYVEHSP,HEAVYVEHTEAM,HEAVYVEHATTACK,HEAVYVEHSPCH)
             UNITSPAIRST_right (step4+1,step5,INFANTSP,AIRTEAM,AIRATTACK,INFANTSPCH)
             SpawnGigaFortressAir_right()
+            SpawnLandUnit_right()
 
             exEnableWBScript('SHIPNOCOACT')
             exEnableWBScript('PlyrCreeps/attackHEAVYVEHVEH__8')
@@ -650,6 +827,12 @@ function RequestSpawnArmyImmediately(playerIndex)
             exEnableWBScript('PlyrCreeps/attackAIR__8')
             exEnableWBScript('BUFFACTONCE__AIR')
         end, 5)
+    end
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestSpawnArmyImmediately)
+    else
+        tinsert(g_angelButtonClickHistory, RequestSpawnArmyImmediately)
     end
     return true
 end
@@ -697,6 +880,37 @@ function RequestJapanShield(playerIndex)
         }, current)
     end
 
+    return true
+end
+
+function RequestCashBonus(playerIndex)
+    local sideName = "恶魔"
+    local filterObj = T84
+    if playerIndex >= 4 then
+        sideName = "天使"
+        filterObj = T74
+    end
+
+    exMessageAppendToMessageArea(format("%s方使用了杀敌奖励！", sideName))
+    local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_MoneyBonusTargetFilter)
+    if count == 0 then
+        exMessageAppendToMessageArea("错误：没有找到任何陆地单位，无法释放杀敌奖励")
+        return false
+    end
+    local fireObject = GetObjectByScriptName("wan" .. tostring(playerIndex))
+    for i = 1, count, 1 do
+        local current = matchedObjects[i]
+        local x, y, z = ObjectGetPosition(current)
+        ObjectCreateAndFireTempWeaponToTarget(fireObject, "PlayerPowerProductionKickbacksWeapon_Individual", {
+            X = x, Y = y, Z = z
+        }, current)
+    end
+
+    if playerIndex <= 3 then
+        tinsert(g_evilButtonClickHistory, RequestCashBonus)
+    else
+        tinsert(g_angelButtonClickHistory, RequestCashBonus)
+    end
     return true
 end
 

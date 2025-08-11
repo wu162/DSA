@@ -28,7 +28,8 @@ g_SkillNames = {
     '炸弹+达摩克利斯之剑',
     '铁幕+时停',
     '龙船+空军元帅',
-    '补充军队+纳米维修'
+    '补充军队+纳米维修',
+    '复制技能+杀敌奖励'
 }
 g_PreselectedSkillIndices = {}
 
@@ -556,7 +557,7 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
     end
     exMessageAppendToMessageArea(format("游戏开始！已选择游戏模式：%s", gameModeText))
     exMessageAppendToMessageArea(skillText)
-    exAddTextToPublicBoard(format("游戏开始！已选择游戏模式：%s\n%s", gameModeText, skillText), 15)
+    exAddTextToPublicBoard(format("游戏开始！已选择游戏模式：%s\n%s\n经济倍率: %d", gameModeText, skillText, exModeGetCheatMultiplier()), 15)
     exEnableWBScript("readyForStartCam")
 end
 
