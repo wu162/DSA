@@ -39,8 +39,8 @@ g_VehicleFilter = CreateObjectFilter({
 g_MoneyBonusTargetFilter = CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
-    Include="VEHICLE INFANTRY SUBMARINE HUGE_VEHICLE",
-    Exclude="IGNORE_IN_AI_HUNT_TACTIC DEBRIS"
+    Include="VEHICLE INFANTRY HUGE_VEHICLE",
+    Exclude="IGNORE_IN_AI_HUNT_TACTIC DEBRIS SHIP"
 })
 
 g_CelestialSuperWeapon_Get = {
@@ -357,14 +357,15 @@ function CreateRepeatSelfSpecialPowerButton(playerIndex)
         ButtonIndex = 2,
         IconId = 'CelestialPowerPlantDetection',
         Title = '复制技能',
-        Description = '复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却10s)',
+        Description = '复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)',
         IsEnabled = true,
         MaxUseCount = 2,
-        CooldownSeconds = 10,
+        CooldownSeconds = 30,
         SharedCooldownId = "repeatselfspecialpower",
-        SharedCooldownSeconds = 5,
+        SharedCooldownSeconds = 10,
+        DragonshipNumber = 1,
         OnClick = function(self)
-            return RequestRepeatSelfSpecialPower(self.PlayerIndex)
+            return RequestRepeatSelfSpecialPower(self.PlayerIndex, self)
         end,
     }
     return CreateButton(buttonData)
@@ -437,12 +438,12 @@ function CreateCashBonusButton(playerIndex)
         ButtonIndex = 1,
         IconId = 'AUA_Bribe',
         Title = '杀敌奖励',
-        Description = '为所有敌方陆地单位和船（不包括空军）套上钱套子(持续30秒)，击杀后使用技能者获得金钱(冷却40秒)',
+        Description = '为所有敌方陆地单位（不包括空军）套上钱套子(持续30秒)，击杀后使用技能者获得金钱(冷却40秒)',
         IsEnabled = true,
-        MaxUseCount = 2,
-        CooldownSeconds = 40,
+        MaxUseCount = 1,
+        CooldownSeconds = 70,
         SharedCooldownId = "cashbonus",
-        SharedCooldownSeconds = 40,
+        SharedCooldownSeconds = 70,
         OnClick = function(self)
             return RequestCashBonus(self.PlayerIndex)
         end,
@@ -742,7 +743,7 @@ function RequestNanoMaintainHive(playerIndex)
     return true
 end
 
-function RequestRepeatSelfSpecialPower(playerIndex)
+function RequestRepeatSelfSpecialPower(playerIndex, self)
     local sideName = "恶魔"
     if playerIndex >= 4 then
         sideName = "天使"
@@ -765,7 +766,16 @@ function RequestRepeatSelfSpecialPower(playerIndex)
 
     if destPowerFunc ~= nil then
         exMessageAppendToMessageArea(format("%s方使用了复制技能！", sideName))
-        destPowerFunc(playerIndex)
+        if destPowerFunc == RequestDragonShip then
+            if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
+                self.DragonshipNumber = 2
+                return true
+            end
+            return nil
+        else
+            return destPowerFunc(playerIndex)
+        end
+
     else
         exAddTextToPublicBoardForPlayer("Player_" .. i, "未找到合适的技能，无法复制技能", 8)
         return false;
@@ -776,7 +786,7 @@ function RequestRepeatSelfSpecialPower(playerIndex)
     --else
     --    tinsert(g_angelButtonClickHistory, RequestRepeatSelfSpecialPower)
     --end
-    return true
+    --return true
 end
 
 function RequestSpawnArmyImmediately(playerIndex)
