@@ -29,9 +29,20 @@ g_SkillNames = {
     '铁幕+时停',
     '龙船+空军元帅',
     '补充军队+纳米维修',
-    '复制技能+杀敌奖励'
+    '复制己方技能+复制敌方技能'
 }
 g_PreselectedSkillIndices = {}
+
+g_BuyTowerId = {
+    ["JapanPointShieldControlTower"] = {
+        ["angel"] = 0,
+        ["evil"] = 0,
+    },
+    ["SovietHeavyAntiAirMissileTurret"] = {
+        ["angel"] = 0,
+        ["evil"] = 0,
+    }
+}
 
 
 function onUserBtnChoiceDialogEvent(playerName, btnIndex, dialogId)
@@ -90,13 +101,15 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             format('向%s%s转移1000资金', roles[transferToB_Index], playerB_Color), -- 2
             '回到战场', -- 3
             nextInvestmentText, -- 4
+            "购买护盾塔(10000)", -- 5
+            "购买胡杨塔(12000)", -- 6
         }
-        if g_PlayerDebtCount[self.PlayerName] == 0 then
-            local debtMoney = g_TowerDestroyProgress * 2600 + 4000;
-            tinsert(self.Choices, format("向银行贷款 %d\n(将会3分钟无收入)", debtMoney)) -- 5
-        else
+        --if g_PlayerDebtCount[self.PlayerName] == 0 then
+        --    local debtMoney = g_TowerDestroyProgress * 2600 + 4000;
+        --    tinsert(self.Choices, format("向银行贷款 %d\n(将会3分钟无收入)", debtMoney)) -- 5
+        --else
             -- 您已贷款，无法再次贷款
-        end
+        --end
     end
     dialogData.OnChoice = function(self, buttonIndex)
         if buttonIndex == 1 or buttonIndex == 2 then
@@ -107,7 +120,11 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         elseif buttonIndex == 4 then
             self:InvestMoney()
         elseif buttonIndex == 5 then
-            self:TakeLoan()
+            self:BuyJapanPointShieldControlTower()
+            return
+        elseif buttonIndex == 6 then
+            self:BuySovietHeavyAntiAirMissileTurret()
+            return
         end
         -- 重新刷新数据并显示对话框
         self:RefreshData()
@@ -171,6 +188,78 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         SchedulerModule.delay_call(function(pName)
             g_PlayerInDebt[pName] = 0;
         end, 15 * 60 * 3, {self.PlayerName})
+    end
+    dialogData.BuyJapanPointShieldControlTower = function(self)
+        local sideName = "evil";
+        local playerOwn = "PlyrCivilian";
+        local pos = {X = 2900, Y = 3187};
+        if self.PlayerIndex >= 4 then
+            sideName = "angel";
+            playerOwn = "PlyrCreeps";
+            pos = {X = 4150, Y = 3187};
+        end
+        local objectId = g_BuyTowerId["JapanPointShieldControlTower"][sideName];
+        if ObjectIsAlive(objectId) then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, '护盾塔还在，不能购买', 10);
+            return;
+        end
+        local money = exPlayerGetCurrentMoney(self.PlayerName)
+        if money < 10000 then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, '资金不足', 10);
+            return;
+        end
+        local id = exCreateObject({
+            ObjectType = FastHash("JapanPointShieldControlTower"),
+            TeamName = playerOwn.."/team"..playerOwn,
+            Position = {X = pos.X, Y = pos.Y, Z = 210},
+            Angle = 0,
+            Health = 5500
+        });
+        g_BuyTowerId["JapanPointShieldControlTower"][sideName] = id;
+        local tower = GetObjectById(id);
+        ObjectLoadAttributeModifier(tower,'AttributeModifier_BoxRateOfFireUp', 999999)
+        ObjectLoadAttributeModifier(tower,'AttributeModifier_BoxRangeUp', 999999)
+        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"IN_SHIELD_SPHERE", 1)
+        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"UNPACKING", 0)
+
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -10000);
+
+    end
+    dialogData.BuySovietHeavyAntiAirMissileTurret = function(self)
+        local sideName = "evil";
+        local playerOwn = "PlyrCivilian";
+        local pos = {X = 2900, Y = 3018};
+        if self.PlayerIndex >= 4 then
+            sideName = "angel";
+            playerOwn = "PlyrCreeps";
+            pos = {X = 4150, Y = 3018};
+        end
+        local objectId = g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName];
+        if ObjectIsAlive(objectId) then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, '护盾塔还在，不能购买', 10);
+            return;
+        end
+        local money = exPlayerGetCurrentMoney(self.PlayerName)
+        if money < 12000 then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, '资金不足', 10);
+            return;
+        end
+        local id = exCreateObject({
+            ObjectType = FastHash("SovietHeavyAntiAirMissileTurret"),
+            TeamName = playerOwn.."/team"..playerOwn,
+            Position = {X = pos.X, Y = pos.Y, Z = 210},
+            Angle = 0,
+            Health = 9000
+        });
+        g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName] = id;
+        local tower = GetObjectById(id);
+        ObjectLoadAttributeModifier(tower,'AttributeModifier_MAP_Area_FireSpeed_Up', 999999)
+        ObjectLoadAttributeModifier(tower,'AttributeModifier_JapanNanoEnhanceDroneReinforcement', 999999)
+        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"IN_SHIELD_SPHERE", 1)
+        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"UNPACKING", 0)
+
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -12000);
+
     end
 
     dialogData:RefreshData()

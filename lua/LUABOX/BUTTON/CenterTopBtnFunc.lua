@@ -169,7 +169,7 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
         buttons[1] = CreateSpawnArmyImmediatelyButton(playerIndex)
         buttons[2] = CreateNanoMaintainHiveButton(playerIndex)
     elseif kind == 5 then
-        buttons[1] = CreateCashBonusButton(playerIndex)
+        buttons[1] = CreateRepeatEnemySpecialPowerButton(playerIndex)
         buttons[2] = CreateRepeatSelfSpecialPowerButton(playerIndex)
     else
         exMessageAppendToMessageArea("错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效")
@@ -356,7 +356,7 @@ function CreateRepeatSelfSpecialPowerButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'CelestialPowerPlantDetection',
-        Title = '复制技能',
+        Title = '复制己方技能',
         Description = '复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)',
         IsEnabled = true,
         MaxUseCount = 2,
@@ -366,6 +366,27 @@ function CreateRepeatSelfSpecialPowerButton(playerIndex)
         DragonshipNumber = 1,
         OnClick = function(self)
             return RequestRepeatSelfSpecialPower(self.PlayerIndex, self)
+        end,
+    }
+    return CreateButton(buttonData)
+end
+
+function CreateRepeatEnemySpecialPowerButton(playerIndex)
+    local buttonData = {
+        PlayerName = "Player_" .. playerIndex,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 1,
+        IconId = 'CelestialSonarOn',
+        Title = '复制敌方技能',
+        Description = '复制敌方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)',
+        IsEnabled = true,
+        MaxUseCount = 1,
+        CooldownSeconds = 30,
+        SharedCooldownId = "repeatenemyspecialpower",
+        SharedCooldownSeconds = 10,
+        DragonshipNumber = 1,
+        OnClick = function(self)
+            return RequestRepeatEnemySpecialPower(self.PlayerIndex, self)
         end,
     }
     return CreateButton(buttonData)
@@ -765,7 +786,7 @@ function RequestRepeatSelfSpecialPower(playerIndex, self)
     end
 
     if destPowerFunc ~= nil then
-        exMessageAppendToMessageArea(format("%s方使用了复制技能！", sideName))
+        exMessageAppendToMessageArea(format("%s方使用了复制己方技能！", sideName))
         if destPowerFunc == RequestDragonShip then
             if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
                 self.DragonshipNumber = 2
@@ -781,12 +802,46 @@ function RequestRepeatSelfSpecialPower(playerIndex, self)
         return false;
     end
 
-    --if playerIndex <= 3 then
-    --    tinsert(g_evilButtonClickHistory, RequestRepeatSelfSpecialPower)
-    --else
-    --    tinsert(g_angelButtonClickHistory, RequestRepeatSelfSpecialPower)
-    --end
-    --return true
+end
+
+function RequestRepeatEnemySpecialPower(playerIndex, self)
+    local sideName = "恶魔"
+    if playerIndex >= 4 then
+        sideName = "天使"
+    end
+    local destPowerFunc = nil;
+    local history = g_angelButtonClickHistory;
+    if playerIndex >= 4 then
+        history = g_evilButtonClickHistory;
+    end
+    if getn(history) == 0 then
+        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, "敌方未释放过技能，无法复制技能", 8)
+        return false;
+    end
+    for i = getn(history), 1, -1 do
+        if history[i] ~= RequestRepeatSelfSpecialPower then
+            destPowerFunc = history[i];
+            break;
+        end
+    end
+
+    if destPowerFunc ~= nil then
+        exMessageAppendToMessageArea(format("%s方使用了复制敌方技能！", sideName))
+        if destPowerFunc == RequestDragonShip then
+            if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
+                self.DragonshipNumber = 2
+                return true
+            end
+            return nil
+        else
+            return destPowerFunc(playerIndex)
+        end
+
+    else
+        exAddTextToPublicBoardForPlayer("Player_" .. i, "未找到合适的技能，无法复制技能", 8)
+        return false;
+    end
+
 end
 
 function RequestSpawnArmyImmediately(playerIndex)
