@@ -114,6 +114,10 @@ CelestialSpeedUpdate = FastHash('Upgrade_CelestialSpeedUpdate')
 CelestialSupplyElectricitySystem = FastHash('Upgrade_CelestialSupplyElectricitySystem')
 CelestialAuxiliaryAimingSystem = FastHash('Upgrade_CelestialAuxiliaryAimingSystem')
 RANK3 = FastHash('Upgrade_CelestialTech_RANK3')
+Upgrade_CelestialLodestarDeviceId = FastHash("Upgrade_CelestialLodestarDevice")
+Upgrade_JapanIntelligentAmmunitionId = FastHash("Upgrade_JapanIntelligentAmmunition")
+Upgrade_SovietGloriousArmedForceId = FastHash("Upgrade_SovietGloriousArmedForce")
+
 exRegisterUpgradeCompleteEvent('Upgrade_AlliedMissileIntercept')
 exRegisterUpgradeCompleteEvent('Upgrade_AlliedPrismTankReduceSpeed')
 exRegisterUpgradeCompleteEvent('Upgrade_AlliedAircraftAutoDivideBombs')
@@ -132,6 +136,9 @@ exRegisterUpgradeCompleteEvent('Upgrade_CelestialSpeedUpdate')
 exRegisterUpgradeCompleteEvent('Upgrade_CelestialSupplyElectricitySystem')
 exRegisterUpgradeCompleteEvent('Upgrade_CelestialAuxiliaryAimingSystem')
 exRegisterUpgradeCompleteEvent('Upgrade_CelestialTech_RANK3')
+exRegisterUpgradeCompleteEvent('Upgrade_CelestialLodestarDevice')
+exRegisterUpgradeCompleteEvent('Upgrade_JapanIntelligentAmmunition')
+exRegisterUpgradeCompleteEvent('Upgrade_SovietGloriousArmedForce')
 function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
     for i = 1, 6, 1 do
         if i <= 3 then
@@ -209,6 +216,18 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
                     local previous = SetWorldBuilderThisPlayer(1)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialAuxiliaryAimingSystem")
                     exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得穿云定海!")
+                elseif upgradeInstanceId == Upgrade_CelestialLodestarDeviceId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialLodestarDevice")
+                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得移星换位!")
+                elseif upgradeInstanceId == Upgrade_JapanIntelligentAmmunitionId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanIntelligentAmmunition")
+                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得白田火控AI!")
+                elseif upgradeInstanceId == Upgrade_SovietGloriousArmedForceId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietGloriousArmedForce")
+                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得光荣武装!")
                 end
                 SetWorldBuilderThisPlayer(previous)
             end
@@ -287,6 +306,18 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
                     local previous = SetWorldBuilderThisPlayer(1)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialAuxiliaryAimingSystem")
                     exMessageAppendToMessageArea("天使$p" .. i .. "Name获得穿云定海!")
+                elseif upgradeInstanceId == Upgrade_CelestialLodestarDeviceId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialLodestarDevice")
+                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得穿云定海!")
+                elseif upgradeInstanceId == Upgrade_JapanIntelligentAmmunitionId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanIntelligentAmmunition")
+                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得白田火控AI!")
+                elseif upgradeInstanceId == Upgrade_SovietGloriousArmedForceId then
+                    local previous = SetWorldBuilderThisPlayer(1)
+                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietGloriousArmedForce")
+                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得光荣武装!")
                 end
                 SetWorldBuilderThisPlayer(previous)
             end
