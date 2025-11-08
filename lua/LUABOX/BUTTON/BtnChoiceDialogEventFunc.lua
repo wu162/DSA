@@ -15,6 +15,7 @@ g_GameModeOptions = {
     { Name = '正常模式' },
     { Name = '死亡模式' },
     { Name = '缩小模式' },
+    { Name = '升本模式' },
     { Name = '禁止海军' },
 }
 
@@ -24,6 +25,7 @@ GAMEMODE_DIALOG_ID = 201
 
 SKILL_DIALOG_ID_OFFSET = 1000
 SKILL_DIALOG_ID_OFFSET2 = 2000
+PURCHASE_TECH_DIALOG_ID = 701
 g_SkillNames = {
     '炸弹+达摩克利斯之剑',
     '铁幕+时停',
@@ -373,7 +375,8 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         local normalGameOption = g_GameModeOptions[1]
         local deathGameOption = g_GameModeOptions[2]
         local shrinkGameOption = g_GameModeOptions[3]
-        local banSeaGameOption = g_GameModeOptions[4]
+        local purchaseTechMode = g_GameModeOptions[4]
+        local banSeaGameOption = g_GameModeOptions[5]
         -- 是否选择了确认按钮
         if buttonIndex == getn(g_GameModeOptions) + 1 then
             -- 假如选择了确认按钮，设置游戏模式
@@ -381,6 +384,8 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
             g_DisableSeaArmy = self:BooleanToNumber(banSeaGameOption.IsSelected)
             if shrinkGameOption.IsSelected then
                 g_GameMode = 3
+            elseif purchaseTechMode.IsSelected then
+                g_GameMode = 4
             elseif g_EnableDeathModeEffect == 1 then
                 g_GameMode = 2
             else
@@ -609,6 +614,8 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
         else
             gameModeText = '缩小模式'
         end
+    elseif g_GameMode == 4 then
+        gameModeText = '升本模式'
     end
     if g_DisableSeaArmy == 1 then
         gameModeText = gameModeText .. ' (禁止海军)'
@@ -673,5 +680,170 @@ function BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog(playerName)
         tinsert(dialogData.Choices, g_SkillNames[i])
     end
     tinsert(dialogData.Choices, '退出(待会再选)')
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
+    local playerIndex = g_PlayerNameToIndex[playerName]
+    if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
+        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_ShowPurchaseTechDialog 的参数 playerName 无效")
+        return
+    end
+    local techLevel = g_evilTechLevel
+    if playerIndex >= 4 then
+        techLevel = g_angelTechLevel
+    end
+
+    local neededMoney = g_techLevelNeededMoney[techLevel]
+
+    local dialogData = {
+        DialogId = PURCHASE_TECH_DIALOG_ID + g_PlayerNameToIndex[playerName],
+        PlayerName = playerName,
+        Title = "购买下一级科技权限($"..tostring(neededMoney)..")",
+        Choices = {},
+    }
+
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex == 1 then
+            local previous = SetWorldBuilderThisPlayer(1)
+
+            local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
+            local techLevel2 = g_evilTechLevel
+            if playerIndex2 >= 4 then
+                techLevel2 = g_angelTechLevel
+            end
+
+            local neededMoney2 = g_techLevelNeededMoney[techLevel2]
+
+            local money = exPlayerGetCurrentMoney(self.PlayerName)
+            if money >= neededMoney2 then
+                ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -neededMoney2)
+
+                self:onPurchaseSuccess(playerIndex2)
+
+            else
+                exAddTextToPublicBoardForPlayer(self.PlayerName, "购买失败，资金不足", 10)
+            end
+
+            SetWorldBuilderThisPlayer(previous)
+        end
+    end
+
+    dialogData.onPurchaseSuccess = function(self, pIndex)
+        if pIndex >= 4 then
+            g_angelTechLevel = g_angelTechLevel + 1
+            if g_angelTechLevel < 4 then
+                for i = 4, 6 do
+                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), "购买成功，解锁下一级科技等级和更多电厂", 20)
+                    exCreateCustomButtonForPlayer("Player_" .. tostring(i), {
+                        Index = 7,
+                        TextureName = "AUA_Bribe",
+                        Desc = "购买下一级科技(当前等级："..tostring(g_angelTechLevel)..")\n解锁下一级科技等级和更多电厂权限",
+                        X = 250,
+                        Y = 20,
+                        GroupIndex = 1,
+                        AlignX = "right",
+                        AlignY = "top",
+                    })
+                end
+
+            else
+                for i = 4, 6 do
+                    exCustomBtnSetVisibilityForPlayer("Player_" .. tostring(i), 7, 0)
+                end
+            end
+
+            -- TODO 自定义文本更新   解锁科技，解锁电厂数量
+            LIMITPOWERC = LIMITPOWERC  + 2
+            local powerNum = 5;
+            local celestialPowerNum = 4;
+            if g_angelTechLevel == 2 then
+                exEnableWBScript('Player_4/UNLOCK1__4')
+                exEnableWBScript('Player_5/UNLOCK1__5')
+                exEnableWBScript('Player_6/UNLOCK1__6')
+                powerNum = 7;
+                celestialPowerNum = 6;
+            elseif g_angelTechLevel == 3 then
+                exEnableWBScript('Player_4/UNLOCK2__4')
+                exEnableWBScript('Player_5/UNLOCK2__5')
+                exEnableWBScript('Player_6/UNLOCK2__6')
+                powerNum = 9;
+                celestialPowerNum = 8;
+            elseif g_angelTechLevel == 4 then
+                exEnableWBScript('Player_4/UNLOCK3__4')
+                exEnableWBScript('Player_5/UNLOCK3__5')
+                exEnableWBScript('Player_6/UNLOCK3__6')
+                powerNum = 11;
+                celestialPowerNum = 10;
+            end
+
+            ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
+
+            for i = 4, 6 do
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, "己方科技等级: " .. tostring(g_angelTechLevel))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, "己方电厂最大数量: " .. tostring(powerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, "己方神州电厂最大数量: " .. tostring(celestialPowerNum))
+            end
+
+
+        else
+            g_evilTechLevel = g_evilTechLevel + 1
+            if g_evilTechLevel < 4 then
+                for i = 1, 3 do
+                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), "购买成功，解锁下一级科技等级和更多电厂", 20)
+                    exCreateCustomButtonForPlayer("Player_" .. tostring(i), {
+                        Index = 7,
+                        TextureName = "AUA_Bribe",
+                        Desc = "购买下一级科技(当前等级："..tostring(g_evilTechLevel)..")\n解锁下一级科技等级和更多电厂权限",
+                        X = 250,
+                        Y = 20,
+                        GroupIndex = 1,
+                        AlignX = "right",
+                        AlignY = "top",
+                    })
+                end
+
+            else
+                for i = 1, 3 do
+                    exCustomBtnSetVisibilityForPlayer("Player_" .. tostring(i), 7, 0)
+                end
+            end
+
+            LIMITPOWERC = LIMITPOWERC  + 2
+            local powerNum = 5;
+            local celestialPowerNum = 4;
+            if g_evilTechLevel == 2 then
+                exEnableWBScript('Player_1/UNLOCK1__1')
+                exEnableWBScript('Player_2/UNLOCK1__2')
+                exEnableWBScript('Player_3/UNLOCK1__3')
+                powerNum = 7;
+                celestialPowerNum = 6;
+            elseif g_evilTechLevel == 3 then
+                exEnableWBScript('Player_1/UNLOCK2__1')
+                exEnableWBScript('Player_2/UNLOCK2__2')
+                exEnableWBScript('Player_3/UNLOCK2__3')
+                powerNum = 9;
+                celestialPowerNum = 8;
+            elseif g_evilTechLevel == 4 then
+                exEnableWBScript('Player_1/UNLOCK3__1')
+                exEnableWBScript('Player_2/UNLOCK3__2')
+                exEnableWBScript('Player_3/UNLOCK3__3')
+                powerNum = 11;
+                celestialPowerNum = 10;
+            end
+
+            ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
+
+            for i = 1, 3 do
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, "己方科技等级: " .. tostring(g_evilTechLevel))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, "己方电厂最大数量: " .. tostring(powerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, "己方神州电厂最大数量: " .. tostring(celestialPowerNum))
+            end
+
+        end
+    end
+
+    tinsert(dialogData.Choices, '购买')
+    tinsert(dialogData.Choices, '不购买')
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end

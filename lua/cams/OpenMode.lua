@@ -5,3 +5,7 @@ end
 if g_GameMode == 3 then
     ShrinkMode_Setting()
 end
+
+if g_GameMode == 4 then
+    PurchaseTechMode_Setting()
+end
