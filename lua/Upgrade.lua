@@ -309,7 +309,7 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
                 elseif upgradeInstanceId == Upgrade_CelestialLodestarDeviceId then
                     local previous = SetWorldBuilderThisPlayer(1)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialLodestarDevice")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得穿云定海!")
+                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得移星换位!")
                 elseif upgradeInstanceId == Upgrade_JapanIntelligentAmmunitionId then
                     local previous = SetWorldBuilderThisPlayer(1)
                     ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanIntelligentAmmunition")
