@@ -2,12 +2,10 @@ g_evilTechLevel = 1;
 g_angelTechLevel = 1;
 
 g_techLevelNeededMoney = {
-    [1] = 5500,
-    [2] = 12500,
-    [3] = 23500,
+    [1] = 6500,
+    [2] = 14000,
+    [3] = 28000,
 }
-
---购买科技等级后，需要等待15秒
 
 function PurchaseTechMode_Setting()
 

@@ -754,25 +754,28 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             end
 
             -- TODO 自定义文本更新   解锁科技，解锁电厂数量
-            LIMITPOWERC = LIMITPOWERC  + 2
+
             local powerNum = 5;
             local celestialPowerNum = 4;
             if g_angelTechLevel == 2 then
                 exEnableWBScript('Player_4/UNLOCK1__4')
                 exEnableWBScript('Player_5/UNLOCK1__5')
                 exEnableWBScript('Player_6/UNLOCK1__6')
+                LIMITPOWERC = 6
                 powerNum = 7;
                 celestialPowerNum = 6;
             elseif g_angelTechLevel == 3 then
                 exEnableWBScript('Player_4/UNLOCK2__4')
                 exEnableWBScript('Player_5/UNLOCK2__5')
                 exEnableWBScript('Player_6/UNLOCK2__6')
+                LIMITPOWERC = 8
                 powerNum = 9;
                 celestialPowerNum = 8;
             elseif g_angelTechLevel == 4 then
                 exEnableWBScript('Player_4/UNLOCK3__4')
                 exEnableWBScript('Player_5/UNLOCK3__5')
                 exEnableWBScript('Player_6/UNLOCK3__6')
+                LIMITPOWERC = 10
                 powerNum = 11;
                 celestialPowerNum = 10;
             end
@@ -816,18 +819,21 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 exEnableWBScript('Player_1/UNLOCK1__1')
                 exEnableWBScript('Player_2/UNLOCK1__2')
                 exEnableWBScript('Player_3/UNLOCK1__3')
+                LIMITPOWERC = 6
                 powerNum = 7;
                 celestialPowerNum = 6;
             elseif g_evilTechLevel == 3 then
                 exEnableWBScript('Player_1/UNLOCK2__1')
                 exEnableWBScript('Player_2/UNLOCK2__2')
                 exEnableWBScript('Player_3/UNLOCK2__3')
+                LIMITPOWERC = 8
                 powerNum = 9;
                 celestialPowerNum = 8;
             elseif g_evilTechLevel == 4 then
                 exEnableWBScript('Player_1/UNLOCK3__1')
                 exEnableWBScript('Player_2/UNLOCK3__2')
                 exEnableWBScript('Player_3/UNLOCK3__3')
+                LIMITPOWERC = 10
                 powerNum = 11;
                 celestialPowerNum = 10;
             end
