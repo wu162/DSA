@@ -619,9 +619,9 @@ function RequestTimeStop(playerIndex)
     ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
     exEnableWBScript(sideScript)
     if playerIndex <= 3 then
-        tinsert(g_evilButtonClickHistory, RequestDestruction)
+        tinsert(g_evilButtonClickHistory, RequestTimeStop)
     else
-        tinsert(g_angelButtonClickHistory, RequestDestruction)
+        tinsert(g_angelButtonClickHistory, RequestTimeStop)
     end
     return true
 end

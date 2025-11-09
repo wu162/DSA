@@ -1,13 +1,48 @@
 g_evilTechLevel = 1;
 g_angelTechLevel = 1;
 
+g_evilTechBuyRound = {
+    [1] = 1,
+    [2] = 1,
+    [3] = 1,
+}
+
+g_angelTechBuyRound = {
+    [1] = 1,
+    [2] = 1,
+    [3] = 1,
+}
+
 g_techLevelNeededMoney = {
-    [1] = 6500,
-    [2] = 14000,
-    [3] = 28000,
+    [1] = 10500,
+    [2] = 23000,
+    [3] = 35000,
+}
+
+
+g_maxTechLevelDecreaseMoney = {
+    [1] = 9000,
+    [2] = 14400,
+    [3] = 23100,
+}
+
+g_maxTechLevelDecreaseRate = {
+    [1] = 1500,
+    [2] = 1800,
+    [3] = 2100,
 }
 
 function PurchaseTechMode_Setting()
+
+    ExecuteAction("NAMED_SET_MAX_HEALTH", "T73", 30000, 1)
+    ExecuteAction("NAMED_SET_MAX_HEALTH", "T74", 140000, 1)
+    ExecuteAction("NAMED_SET_MAX_HEALTH", "T83", 30000, 1)
+    ExecuteAction("NAMED_SET_MAX_HEALTH", "T84", 140000, 1)
+
+    local object = GetObjectByScriptName("overlord7")
+    ExecuteAction("NAMED_DELETE", object);
+    object = GetObjectByScriptName("overlord8")
+    ExecuteAction("NAMED_DELETE", object);
 
     exDisableWBScript("NATURALUNLOCK__1")
     exDisableWBScript("NATURALUNLOCK__2")

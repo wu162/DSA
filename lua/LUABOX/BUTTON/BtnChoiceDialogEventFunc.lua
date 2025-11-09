@@ -694,17 +694,30 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
         techLevel = g_angelTechLevel
     end
 
-    local neededMoney = g_techLevelNeededMoney[techLevel]
-
     local dialogData = {
         DialogId = PURCHASE_TECH_DIALOG_ID + g_PlayerNameToIndex[playerName],
         PlayerName = playerName,
-        Title = "购买下一级科技权限($"..tostring(neededMoney)..")",
         Choices = {},
     }
 
+    dialogData.getNeededMoney = function(self, techLevel3)
+        local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
+        local neededMoneyOriginal = g_techLevelNeededMoney[techLevel3]
+        local roundRecord = g_evilTechBuyRound;
+        if playerIndex2 >= 4 then
+            roundRecord = g_angelTechBuyRound
+        end
+        local round = exCounterGetByName("lvc")
+        local diffRound = round - roundRecord[techLevel3]
+        return neededMoneyOriginal - min(g_maxTechLevelDecreaseMoney[techLevel3], diffRound * g_maxTechLevelDecreaseRate[techLevel3])
+    end
+
+    local neededMoney = dialogData:getNeededMoney(techLevel)
+    dialogData.Title = "购买下一级科技权限($"..tostring(neededMoney)..")"
+
     dialogData.OnChoice = function(self, buttonIndex)
         if buttonIndex == 1 then
+
             local previous = SetWorldBuilderThisPlayer(1)
 
             local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
@@ -713,7 +726,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 techLevel2 = g_angelTechLevel
             end
 
-            local neededMoney2 = g_techLevelNeededMoney[techLevel2]
+            local neededMoney2 = self:getNeededMoney(techLevel2)
 
             local money = exPlayerGetCurrentMoney(self.PlayerName)
             if money >= neededMoney2 then
@@ -764,6 +777,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 LIMITPOWERC = 6
                 powerNum = 7;
                 celestialPowerNum = 6;
+                g_angelTechBuyRound[2] = exCounterGetByName("lvc")
             elseif g_angelTechLevel == 3 then
                 exEnableWBScript('Player_4/UNLOCK2__4')
                 exEnableWBScript('Player_5/UNLOCK2__5')
@@ -771,6 +785,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 LIMITPOWERC = 8
                 powerNum = 9;
                 celestialPowerNum = 8;
+                g_angelTechBuyRound[3] = exCounterGetByName("lvc")
             elseif g_angelTechLevel == 4 then
                 exEnableWBScript('Player_4/UNLOCK3__4')
                 exEnableWBScript('Player_5/UNLOCK3__5')
@@ -822,6 +837,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 LIMITPOWERC = 6
                 powerNum = 7;
                 celestialPowerNum = 6;
+                g_evilTechBuyRound[2] = exCounterGetByName("lvc")
             elseif g_evilTechLevel == 3 then
                 exEnableWBScript('Player_1/UNLOCK2__1')
                 exEnableWBScript('Player_2/UNLOCK2__2')
@@ -829,6 +845,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 LIMITPOWERC = 8
                 powerNum = 9;
                 celestialPowerNum = 8;
+                g_evilTechBuyRound[3] = exCounterGetByName("lvc")
             elseif g_evilTechLevel == 4 then
                 exEnableWBScript('Player_1/UNLOCK3__1')
                 exEnableWBScript('Player_2/UNLOCK3__2')
