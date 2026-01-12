@@ -1,7 +1,8 @@
 
 g_UpdateBoxText = {
-    '343版本更新 (反馈群: 219951578)\n提高升本模式的科技解锁所需的金钱, 升本模式下，陆地一二塔被摧毁后不会杀死附近的敌军，陆地3、4塔血量减少，陆地2塔被摧毁后不会有老联盟坦克出现\n升科技等级所需金钱提高，但所需金钱会随着回合进行有所降低(但有下限)',
-    '341及342版本更新 (反馈群: 219951578)\n1.新增升本模式: 在这个模式下，科技和可建造电厂数量不会自然解锁，也不会因为推掉塔而解锁\n双方需要出钱购买科技等级,然后才能获得更高级单位的建造权限和更多电厂的建造权限（只需要一个人购买即可让己方所有人获得建造权限）\n2.双方4塔恢复为巨炮，修复达摩克利斯之剑伤害异常问题，推掉海3塔赏金下降至每人2000\n3.科技自然解锁回合延后一回合，即第6、12、19回合解锁下一回合的科技\n4.海3塔伤害和射程大幅提升',
+    '344版本更新\n1.重新取消盟军维和步兵的开盾技能\n2.苏联苏霍伊血量buff从3倍降低到1.5倍',
+    '343版本更新\n提高升本模式的科技解锁所需的金钱, 升本模式下，陆地一二塔被摧毁后不会杀死附近的敌军，陆地3、4塔血量减少，陆地2塔被摧毁后不会有老联盟坦克出现\n升科技等级所需金钱提高，但所需金钱会随着回合进行有所降低(但有下限)',
+    '341及342版本更新\n1.新增升本模式: 在这个模式下，科技和可建造电厂数量不会自然解锁，也不会因为推掉塔而解锁\n双方需要出钱购买科技等级,然后才能获得更高级单位的建造权限和更多电厂的建造权限（只需要一个人购买即可让己方所有人获得建造权限）\n2.双方4塔恢复为巨炮，修复达摩克利斯之剑伤害异常问题，推掉海3塔赏金下降至每人2000\n3.科技自然解锁回合延后一回合，即第6、12、19回合解锁下一回合的科技\n4.海3塔伤害和射程大幅提升',
     '340版本更新\n1.禁止四阵营大塔，禁止帝国湮灭炸弹、盟军超时空集结\n2.盟军城管恢复使用技能\n3.双方4塔替换为苏联礁石岸防导弹要塞',
     '336版本更：\n取消银行贷款，增加购买防御建筑的选项：购买护盾塔和胡杨塔（每一边每种塔最多同时只能存在一个，被摧毁后才能再次购买）\n护盾塔价格10000，5500血,1.25倍射速和1.25倍攻击范围\n胡杨塔价格12000，9000血，1.5倍攻击范围，2倍伤害，1.5倍射速\n2.删除杀敌奖励技能，替换为复制敌方技能，只能使用一次',
     '334版本更：\n1.纳米维修技能修改：改为生成一个纳米维修立场和4个大型维修天灯\n.2.新增一个技能组：杀敌奖励+复制技能：\n杀敌奖励: 为所有敌方陆地单位和船（不包括空军）套上钱套子(持续30秒)，击杀后使用技能者获得金钱(冷却70秒)\n复制技能：复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)\n3.龙船初始血量提升到8000,并且出生位置总在最前面, 达摩技能削到11秒',
@@ -33,8 +34,8 @@ g_UpdateBoxText = {
 }
 
 g_UpdateBoxTextNum = getn(g_UpdateBoxText);
-
-exShowLongTextDialog(1, g_UpdateBoxText[1],'','清楚!','下一页')
+g_QQGroupText = '自走棋交流/反馈QQ群: 219951578\n'
+exShowLongTextDialog(1, g_QQGroupText .. g_UpdateBoxText[1], '', '清楚!', '下一页')
 
 function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     local o
@@ -49,7 +50,7 @@ function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
         if dialogId > 2 then
             prev = '上一页'
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_UpdateBoxText[dialogId - 1], prev,'清楚!', '下一页')
+        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_QQGroupText .. g_UpdateBoxText[dialogId - 1], prev, '清楚!', '下一页')
     end
 
     if btnIndex == 3 then
@@ -57,7 +58,7 @@ function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
         if dialogId < (g_UpdateBoxTextNum - 1) then
             next = '下一页'
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_UpdateBoxText[dialogId + 1], '上一页','清楚!', next)
+        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_QQGroupText .. g_UpdateBoxText[dialogId + 1], '上一页', '清楚!', next)
     end
 
     if btnIndex==2 then
