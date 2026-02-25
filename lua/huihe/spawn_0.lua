@@ -63,6 +63,18 @@ if not RoundLuaManager then
             Delay = delay or 0,
         })
     end
+
+    exSetPublicBoardColor(HexToUInt32("00FFFF"))
+    local list = { "INFANT12", "INFANT15", "INFANT23", "INFANT24", "AIR14", "AIR16", "AIR24", "AIR26" }
+    RoundLuaManager.CallOnEveryRoundBegin(function(list)
+        for i = 1, getn(list), 1 do
+            ExecuteAction("OBJECT_CREATE_RADAR_EVENT", list[i], "Information")
+        end
+        local level = exCounterGetByName("lvc")
+        if level ~= nil and level > 0 then
+            exAddTextToPublicBoard(format("第%d回合，开始！", level), 10)
+        end
+    end, { list })
 end
 
 -- 回合结束

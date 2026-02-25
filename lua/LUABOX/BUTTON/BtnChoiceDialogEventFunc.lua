@@ -653,7 +653,7 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
     end
     exMessageAppendToMessageArea(format("游戏开始！已选择游戏模式：%s", gameModeText))
     exMessageAppendToMessageArea(skillText)
-    exAddTextToPublicBoard(format("游戏开始！已选择游戏模式：%s\n%s\n经济倍率: %d", gameModeText, skillText, exModeGetCheatMultiplier()), 15)
+    exAddTextToPublicBoard(format("游戏开始！已选择游戏模式：%s\n%s\n经济倍率: %.2f", gameModeText, skillText, exModeGetCheatMultiplier()), 15)
     exEnableWBScript("readyForStartCam")
 end
 

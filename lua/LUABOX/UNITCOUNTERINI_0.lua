@@ -89,6 +89,8 @@ UNITLIST [index] = "SovietScoutVehicle"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiStructureVehicle"
 index = index + 1 ;
+UNITLIST [index] = "SovietHeavyMortarVehicle"
+index = index + 1 ;
 UNITLIST [index] = "JapanAntiStructureVehicle"
 index = index + 1 ;
 UNITLIST [index] = "JapanMissileMechaAdvanced"
@@ -125,6 +127,8 @@ index = index + 1 ;
 UNITLIST [index] = "SovietGrinderVehicle"
 index = index + 1 ;
 UNITLIST [index] = "Overlordtank"
+index = index + 1 ;
+UNITLIST [index] = "AlliedBattleFortress"
 index = index + 1 ;
 --exMessageAppendToMessageArea("indexHEAVYVEH"..index)
 step3 = index-1
@@ -224,10 +228,18 @@ index = index + 1 ;
 step4 = index-1
 UNITLIST [index] = "SovietBomberAircraft"
 index = index + 1 ;
+UNITLIST [index] = "CelestialAntiAirVehicleTech3"
+index = index + 1 ;
 step5= index-1
 UNITLIST [index] = "SovietAntiAirShip"
 index = index + 1 ;
 UNITLIST [index] = "AlliedAntiAirVehicleTech1"
+index = index + 1 ;
+UNITLIST [index] = "AlliedAirForceDispatchVehicle"
+index = index + 1 ;
+UNITLIST [index] = "JapanAntiAirVehicleTech3"
+index = index + 1 ;
+UNITLIST [index] = "SovietElectronicRadarTruck"
 index = index + 1 ;
 step6= index-1
 unitcountmax = index-1
@@ -276,7 +288,8 @@ end
 function unitgenerate ()
     ----exMessageAppendToMessageArea("unitgenerate")
     for playindex = 1 , 6 , 1 do
-        if  EvaluateCondition("PLAYER_HAS_OBJECT_COMPARISON", "Player_"..playindex, 4 , 0 , "allunit") then
+        local units, unitsCount = CopyPlayerRegisteredObjectSet("Player_"..playindex, "UNITS")
+        if unitsCount > 0 then
             unitgetcountanddelet (playindex)
             --exMessageAppendToMessageArea("unitgeneratedone")
         end

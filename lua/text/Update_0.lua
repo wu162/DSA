@@ -1,5 +1,14 @@
+g_RuleText = [[自走棋游戏规则简介：
+1. 玩家造出的单位会被记录，每个回合开始时，战场上都会重新刷出玩家造过的所有单位，由电脑控制
+2. 上方玩家（天使）单位出现在战场右侧，下方玩家（恶魔）单位出现在战场左侧
+3. 电厂提供收入，请尽快造满电厂以避免卡钱；苏联超级反应堆和神州导流尖塔不提供收入（仅解锁科技）；建造T4高科附赠精兵学院
+正常模式：前期收入有限，请摧毁敌方防御塔来解锁更多的电厂和科技
+死亡模式：双方开局就只剩最后一座塔
+可点击下方“更新日志”按钮查看更新内容]]
 
 g_UpdateBoxText = {
+    g_RuleText,
+    '346版本更新\n1.支持更多日冕新单位\n2.修复复制时停会变成炸弹的bug',
     '344版本更新\n1.重新取消盟军维和步兵的开盾技能\n2.苏联苏霍伊血量buff从3倍降低到1.5倍',
     '343版本更新\n提高升本模式的科技解锁所需的金钱, 升本模式下，陆地一二塔被摧毁后不会杀死附近的敌军，陆地3、4塔血量减少，陆地2塔被摧毁后不会有老联盟坦克出现\n升科技等级所需金钱提高，但所需金钱会随着回合进行有所降低(但有下限)',
     '341及342版本更新\n1.新增升本模式: 在这个模式下，科技和可建造电厂数量不会自然解锁，也不会因为推掉塔而解锁\n双方需要出钱购买科技等级,然后才能获得更高级单位的建造权限和更多电厂的建造权限（只需要一个人购买即可让己方所有人获得建造权限）\n2.双方4塔恢复为巨炮，修复达摩克利斯之剑伤害异常问题，推掉海3塔赏金下降至每人2000\n3.科技自然解锁回合延后一回合，即第6、12、19回合解锁下一回合的科技\n4.海3塔伤害和射程大幅提升',
@@ -35,7 +44,7 @@ g_UpdateBoxText = {
 
 g_UpdateBoxTextNum = getn(g_UpdateBoxText);
 g_QQGroupText = '自走棋交流/反馈QQ群: 219951578\n'
-exShowLongTextDialog(1, g_QQGroupText .. g_UpdateBoxText[1], '', '清楚!', '下一页')
+exShowLongTextDialog(1, g_QQGroupText .. g_RuleText, '', '清楚!', '更新日志')
 
 function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     local o
@@ -46,19 +55,19 @@ function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     end
 
     if btnIndex == 1 then
-        local prev = '';
+        local prevText = '';
         if dialogId > 2 then
-            prev = '上一页'
+            prevText = '上一页'
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_QQGroupText .. g_UpdateBoxText[dialogId - 1], prev, '清楚!', '下一页')
+        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_QQGroupText .. g_UpdateBoxText[dialogId - 1], prevText, '清楚!', '下一页')
     end
 
     if btnIndex == 3 then
-        local next = '';
+        local nextText = '';
         if dialogId < (g_UpdateBoxTextNum - 1) then
-            next = '下一页'
+            nextText = '下一页'
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_QQGroupText .. g_UpdateBoxText[dialogId + 1], '上一页', '清楚!', next)
+        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_QQGroupText .. g_UpdateBoxText[dialogId + 1], '上一页', '清楚!', nextText)
     end
 
     if btnIndex==2 then
