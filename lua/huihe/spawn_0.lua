@@ -73,6 +73,10 @@ if not RoundLuaManager then
         local level = exCounterGetByName("lvc")
         if level ~= nil and level > 0 then
             exAddTextToPublicBoard(format("第%d回合，开始！", level), 10)
+            if level == 1 then
+                exAddTextToPublicBoard("战场右侧：天使$p4Name $p5Name $p6Name", 20)
+                exAddTextToPublicBoard("战场左侧：恶魔$p1Name $p2Name $p3Name", 20)
+            end
         end
     end, { list })
 end

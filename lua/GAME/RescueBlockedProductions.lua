@@ -56,6 +56,10 @@ end, 75, nil)
 -- 希望有一天能把下面这个函数 以及其他代码 重新重构成更加优雅的形式
 function RescueBlockedProductions_CheckUnitCanBuild(playerIndex, unitType)
     if unitType == 'JapanPowerPlantEgg' then
+        local units, count = ObjectFindObjects(P[playerIndex], nil, condition)
+        if units ~= nil then
+            return count < LIMITPOWERC
+        end
         -- FLAGENPOWER 这玩意在 lua\LUABOX\moneysys\MONEYINI_3.lua 里面
         return FLAGENPOWER[playerIndex] == 1
     elseif unitType == 'CelestialDF41' then

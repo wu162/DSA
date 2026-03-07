@@ -126,7 +126,7 @@ SCRIPT:text4
 end
 
 SCRIPT:learn
-"建造部队让AI产兵，记得造电厂 ，帝国建造序列卡住右键锁住的电厂可取消制造。"
+"建造单位，单位每回合会自动在地图中央战斗。\n电厂提供收入，请记得多造电厂，防止资金不足。\n若帝国建造队列卡住：右键双击锁住的电厂可取消制造。"
 end
 
 SCRIPT:POWERLIMNITCELESTIAL

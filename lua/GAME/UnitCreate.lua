@@ -102,6 +102,51 @@ function AlliedSuperWeaponBorn(createdObjId, createdObjInstanceId, ownerPlayerNa
 
 end
 
+function GetLimitCommandoUnitCreateFunc(commandoName, limitCount)
+    g_UnitCount[FastHash(commandoName)] = { 0, 0, 0, 0, 0, 0 }
+    return function(createdObjId, createdObjInstanceId, ownerPlayerName)
+        local playerIndex = g_PlayerNameToIndex[ownerPlayerName]
+        if playerIndex == nil then
+            return
+        end
+        local countTable = g_UnitCount[createdObjInstanceId]
+        if countTable == nil then
+            countTable = {}
+            g_UnitCount[createdObjInstanceId] = countTable
+        end
+        local newCount = (countTable[playerIndex] or 0) + 1
+        if newCount >= %limitCount then
+            -- 禁止造更多的
+            local previous = SetWorldBuilderThisPlayer(1)
+            ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", ownerPlayerName, %commandoName, 0)
+            SetWorldBuilderThisPlayer(previous)
+        end
+        countTable[playerIndex] = newCount
+    end
+end
+
+function JapanPointDefenseDroneBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    SchedulerModule.delay_call(function(id)
+        if ObjectIsAlive(id) then
+            local unitTable = GetObjectById(id)
+            local attachees = ObjectGetAttachees(id)
+            local attachee = nil
+            if attachees ~= nil then
+                attachee = attachees[1]
+            end
+            if ObjectIsAlive(attachee) then
+                local currentPlayerName = ObjectPlayerScriptName(id)
+                local attacheePlayerName = ObjectPlayerScriptName(attachee)
+                if currentPlayerName ~= attacheePlayerName then
+                    local newTeamName = format("%s/%s", attacheePlayerName, ObjectTeamName(attachee))
+                    ExecuteAction("UNIT_SET_TEAM", unitTable, newTeamName)
+                end
+            end
+            ExecuteAction("UNIT_AFFECT_OBJECT_PANEL_FLAGS", unitTable, "Indestructible", false)
+        end
+    end, 1, {createdObjId})
+end
+
 g_UnitCount = {
     [FastHash("JapanGigaFortressShipEgg")] = {
         [1] = 0,
@@ -162,6 +207,13 @@ g_UnitCreateEventFunc[FastHash("JapanGigaFortressShipEgg")] = UnitCountFunc
 g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle")] = UnitCountFunc
 g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle_Ground")] = UnitCountFunc
 
+-- 谭雅只让造两个
+g_UnitCreateEventFunc[FastHash("AlliedCommandoTech1")] = GetLimitCommandoUnitCreateFunc("AlliedCommandoTech1", 2)
+-- 百合子有让防御塔不攻击的 bug，那还是不让造了（地图里面禁止了已经）
+g_UnitCreateEventFunc[FastHash("JapanCommandoTech1")] = GetLimitCommandoUnitCreateFunc("JapanCommandoTech1", 1)
+
+g_UnitCreateEventFunc[FastHash("JapanPointDefenseDrone")] = JapanPointDefenseDroneBorn
+
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
 --exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")
@@ -178,6 +230,11 @@ exObjectRegisterCreateEvent("AlliedSuperWeapon")
 exObjectRegisterCreateEvent("JapanGigaFortressShipEgg")
 exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle")
 exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle_Ground")
+
+exObjectRegisterCreateEvent("AlliedCommandoTech1")
+exObjectRegisterCreateEvent("JapanCommandoTech1")
+
+exObjectRegisterCreateEvent("JapanPointDefenseDrone")
 
 function onUnitCreateEvent(createdObjId, createdObjInstanceId, ownerPlayerName)
     g_UnitCreateEventFunc[createdObjInstanceId](createdObjId, createdObjInstanceId, ownerPlayerName)

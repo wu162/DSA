@@ -76,6 +76,74 @@ function onCenterTopBtnClickEvent(playerName, btnIndex)
     ButtonManager:OnClick(playerName, btnIndex)
 end
 
+g_AutoSurrender = {
+    PlayerInitiallyPresent = { 0, 0, 0, 0, 0, 0 },
+    PlayerNowDied = { 0, 0, 0, 0, 0, 0 },
+    DidPlayerAutoSurrender = { 0, 0, 0, 0, 0, 0 },
+}
+function CenterTopBtnFunc_InitializeAutoSurrender()
+    for i = 1, 6, 1 do
+        local playerName = "Player_" .. i
+        -- check if player has at least one structure
+        local previous = SetWorldBuilderThisPlayer(1)
+        local structures, count = CopyPlayerRegisteredObjectSet(playerName, "STRUCTURES")
+        SetWorldBuilderThisPlayer(previous)
+        if count > 0 then
+            g_AutoSurrender.PlayerInitiallyPresent[i] = 1
+        end
+    end
+    SchedulerModule.call_every_x_frame(function()
+        for i = 1, 6, 1 do
+            local playerName = "Player_" .. i
+            local previous = SetWorldBuilderThisPlayer(1)
+            local structures, count = CopyPlayerRegisteredObjectSet(playerName, "STRUCTURES")
+            SetWorldBuilderThisPlayer(previous)
+            if count == 0 and g_AutoSurrender.PlayerInitiallyPresent[i] == 1 then
+                g_AutoSurrender.PlayerNowDied[i] = 1
+                -- 自动发起一次投降
+                if g_AutoSurrender.DidPlayerAutoSurrender[i] ~= 1 then
+                    g_AutoSurrender.DidPlayerAutoSurrender[i] = 1
+                    -- 但假如是游戏即将正常结束那就不投降了
+                    -- 检查 PlyrCivilian 和 PlyrCreeps 里是否还有建筑
+                    -- 如果没有了说明游戏即将结束了，就不投降了
+                    -- 只有在它们都还有建筑的情况下才自动投降
+                    local previous2 = SetWorldBuilderThisPlayer(1)
+                    local civilianStructures, civilianStructureCount = CopyPlayerRegisteredObjectSet("PlyrCivilian", "STRUCTURES")
+                    local creepStructures, creepStructureCount = CopyPlayerRegisteredObjectSet("PlyrCreeps", "STRUCTURES")
+                    SetWorldBuilderThisPlayer(previous2)
+                    if civilianStructureCount > 0 and creepStructureCount > 0 then
+                        RequestSurrender(i, true)
+                    end
+                end
+            end
+        end
+    end, 15, nil)
+end
+
+function RequestSurrender(playerIndex, isAutoSurrender)
+    local side, sideName, sideAiPlayer, sidePlayerIndexOffset = "devil", "恶魔", "PlyrCivilian", 0
+    if playerIndex >= 4 then
+        side, sideName, sideAiPlayer, sidePlayerIndexOffset = "angel", "天使", "PlyrCreeps", 3
+    end
+    local globalVariableName = format("%s_surrender", side)
+    setglobal(globalVariableName, 0)
+    exEnableWBScript(format("%s/%s_surrender", sideAiPlayer, side))
+    exAddTextToPublicBoard(format("%s$p%dName发起了投降", sideName, playerIndex), 10)
+    local voteText = '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降'
+    for i = 1, 3, 1 do
+        local p = sidePlayerIndexOffset + i
+        local targetPlayerName = format("Player_%d", p)
+        exHideCustomBtnChoiceDialogForPlayer(targetPlayerName)
+        exHideLongTextDialogForPlayer(targetPlayerName)
+        exShowLongTextDialogForPlayer(targetPlayerName, 200 + p, voteText, '投降', '弃权', '战斗')
+    end
+    if isAutoSurrender then
+        exAddTextToPublicBoard(format("%s$p%dName选择投降", sideName, playerIndex), 30)
+        setglobal(globalVariableName, getglobal(globalVariableName) + 1)
+    end
+    return true
+end
+
 function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
     local playerName = "Player_" .. playerIndex
     local buttons = {}
@@ -130,18 +198,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         SharedCooldownSeconds = 3,
         IsEnabled = true,
         OnClick = function(self)
-            local side, sideName, sideAiPlayer, sidePlayerIndexOffset = "devil", "恶魔", "PlyrCivilian", 0
-            if self.PlayerIndex >= 4 then
-                side, sideName, sideAiPlayer, sidePlayerIndexOffset = "angel", "天使", "PlyrCreeps", 3
-            end
-            setglobal(format("%s_surrender", side), 0)
-            exEnableWBScript(format("%s/%s_surrender", sideAiPlayer, side))
-            exAddTextToPublicBoard(format("%s$p%dName发起了投降", sideName, self.PlayerIndex), 10)
-            local voteText = '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降'
-            for i = 1, 3, 1 do
-                local p = sidePlayerIndexOffset + i
-                exShowLongTextDialogForPlayer(format("Player_%d", p), 200 + p, voteText, '投降', '弃权', '战斗')
-            end
+            RequestSurrender(self.PlayerIndex, false)
             return true
         end
     })

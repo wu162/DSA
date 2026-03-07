@@ -15,7 +15,7 @@ FilterPower=CreateObjectFilter({
 function addmoney  (money)
     for playindex = 1 , 6 , 1 do
         local playerName = "Player_"..playindex;
-        if g_PlayerInDebt[playerName] == 0 then
+        if ObjectIsAlive(P[playindex]) and g_PlayerInDebt[playerName] == 0 then
             local TAR, count = ObjectFindObjects(P[playindex], nil,FilterPower)
             for i = 1 , count , 1 do
                 if not EvaluateCondition("UNIT_HAS_MODELCONDITION", TAR[i] , "STRUCTURE_UNPACKING") then

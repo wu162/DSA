@@ -5,6 +5,7 @@ BOMB = {}
 BOMBID = {}
 exCenterTopBtnsChangeVisibility(1)
 exCenterTopBtnSetHealthBarVisibility(1,1);
+CenterTopBtnFunc_InitializeAutoSurrender()
 --exCenterTopBtnShowForPlayer('Player_1', 1,'Button_SovietTeslaMissile','局部毁灭武器(全局仅限一次)\n摧毁一大片地区的所有敌方单位')
 --exCenterTopBtnShowForPlayer('Player_1',2,'Button_CelestialPantaOrbitalStrike','达摩克利斯之剑(全局可使用两次)\n请求太空的卫星对敌方启用15秒的精准卫星打击')
 --exCenterTopBtnShowForPlayer('Player_2', 1,'Button_PlayerPower_IronCurtain','铁幕演说(全局可使用两次)\n进行铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒')

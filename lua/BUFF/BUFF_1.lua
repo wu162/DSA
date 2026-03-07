@@ -1,9 +1,9 @@
 
---- ÀËÈË¹íÍõHP*1.5£¬ÀËÈËÈ¥³ýÎÞÏÞµ¯Ï»
---- ÈÌÕßá°Ó°´Ì¹íÍõX¹¥ËÙÉä³ÌÔö¼Ó
----ÑÅµäÄÈ¹¥ËÙ*1.8
----²¨ÄÜÖØ´¸Éä³Ì½µµÍ
----Ìêµ¶Ì«µ¶¹¥»÷*1.2
+--- 浪人鬼王HP*1.5，浪人去除无限弹匣
+--- 忍者岚影刺鬼王X攻速射程增加
+---雅典娜攻速*1.4
+---重锤计蒙伤害75%
+---剃刀太刀攻击*1.2
 
 
 
@@ -19,7 +19,7 @@ FilterJapanSentinelVehicle=CreateObjectFilter({
 
 function JapanSentinelVehicleBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterJapanSentinelVehicle)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GunshipBOSSAIUnitCheat",9999)
     end
 end
@@ -32,10 +32,10 @@ FilterLONGRANGEANTIINFANT=CreateObjectFilter({
     }
 })
 
---Ñþ¹â
+--瑶光
 function LONGRANGEANTIINFANTBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterLONGRANGEANTIINFANT)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectSetWeaponSetUpdateWeaponCurrentAmmoCount(TAR[i], 10, 10, 10, 10)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxRangeUp",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_CelestialZhuRongRapidFire",9999)
@@ -54,24 +54,35 @@ FilterAlliedAntiStructureVehicle=CreateObjectFilter({
 
 function AlliedAntiStructureVehicleBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterAlliedAntiStructureVehicle)
-    for i = 0 , COUNTX ,1 do
-        ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_CelestialZhuRongRapidFire",9999)
+    for i = 1 , COUNTX ,1 do
+        local instanceId = exObjectGetInstanceId(ObjectGetId(TAR[i]))
+        -- exMessageAppendToMessageArea("AlliedAntiStructureVehicleBUFF instance id:"..instanceId)
+        if instanceId ~= -234022367 then
+            -- exMessageAppendToMessageArea("AlliedAntiStructureVehicleBUFF zhurong buff")
+            ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_CelestialZhuRongRapidFire",9999)
+        else
+            -- exMessageAppendToMessageArea("AlliedAntiStructureVehicleBUFF normal buff")
+            ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_MAP_RATE_OF_FIRE_Up",9999)
+            ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_MAP_RATE_OF_FIRE_Up",9999)
+        end
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifer_JapanEmperorsResolve_L1",9999)
+        -- local rateOfFire = ObjectGetAttributeModifier(TAR[i], "RATE_OF_FIRE")
+        -- exMessageAppendToMessageArea("AlliedAntiStructureVehicleBUFF rate of fire:"..rateOfFire)
     end
 end
 
-FilterJapanAntiStructureVehicle=CreateObjectFilter({
+FilterDamange75Percent=CreateObjectFilter({
     Rule="ANY",
 
     IncludeThing = {
-        "JapanAntiStructureVehicle","SovietSledgehammerSPG","CelestialAlmightlyShip"
+        "SovietSledgehammerSPG","CelestialAlmightlyShip"
     }
 })
---ÖØ´¸,¼¤ÃÈ,¹¬Å®DEBUFF
+--重锤,激萌,宫女DEBUFF
 
 function JapanAntiStructureVehicleBUFF ()
-    local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterJapanAntiStructureVehicle)
-    for i = 0 , COUNTX ,1 do
+    local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterDamange75Percent)
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxDamageMultDown",9999)
         -- ObjectLoadAttributeModifier(TAR[i], "HardAISinglePlayer_Bonus",9999)
     end
@@ -89,7 +100,7 @@ FilterJapanShip=CreateObjectFilter({
 
 function JapanShipBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterJapanShip)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_CenturionUpgradeLv1",9999)
     end
 end
@@ -107,7 +118,7 @@ FilterCelestialLongRangeMissileVehicle=CreateObjectFilter({
 
 function CelestialLongRangeMissileVehicleBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterCelestialLongRangeMissileVehicle)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         --ObjectLoadAttributeModifier(TAR[i], "AttributeMod_AlliedPrismAttackBoost",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxRangeUp",9999)
     end
@@ -123,13 +134,13 @@ FilterMIDDLEENHANCE=CreateObjectFilter({
     }
 })
 
---¹íÍõX
+--鬼王X
 
 
 
 function MIDDLEENHANCEBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterMIDDLEENHANCE)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_AlliedPrismAttackBoost",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxRangeUp",9999)
     end
@@ -146,12 +157,12 @@ FilterANTIGROUNDAIRCRAFT=CreateObjectFilter({
     }
 })
 
---±ùÈË
+--冰人
 
 function ANTIGROUNDAIRCRAFTBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterANTIGROUNDAIRCRAFT)
     --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         --ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GunshipBOSSAIUnitCheat",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_AlliedPrismAttackBoost",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxRangeUp",9999)
@@ -169,7 +180,7 @@ FilterCelestialAntiInfantryInfantryAdvanced=CreateObjectFilter({
 function CelestialAntiInfantryInfantryAdvancedBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterCelestialAntiInfantryInfantryAdvanced)
     --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GenericBOSSAIUnitCheat",9999)
     end
 end
@@ -185,7 +196,7 @@ FilterCelestialAntiInfantryInfantryAdvancedSINGLE=CreateObjectFilter({
 function CelestialAntiInfantryInfantryAdvancedSINGLEBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterCelestialAntiInfantryInfantryAdvancedSINGLE)
     --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_AlliedPrismAttackBoost",9999)
     end
 end
@@ -204,7 +215,7 @@ FilterLARGEENHANCE=CreateObjectFilter({
 function LARGEENHANCEBUFF ()
     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterLARGEENHANCE)
     --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
-    for i = 0 , COUNTX ,1 do
+    for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GunshipBOSSAIUnitCheat",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_AlliedTeslaBoost",9999)
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxRangeUp",9999)
