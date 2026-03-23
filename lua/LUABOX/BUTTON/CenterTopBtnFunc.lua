@@ -21,6 +21,15 @@ g_ProductionBonus_JapanGet = {
     [6] = 0,
 }
 
+g_ProductionBonus_SovietGet = {
+    [1] = 0,
+    [2] = 0,
+    [3] = 0,
+    [4] = 0,
+    [5] = 0,
+    [6] = 0,
+}
+
 g_ProductionBonus_JapanWeaponEnable = {
     [1] = 1,
     [2] = 1,
@@ -190,7 +199,7 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         PlayerName = playerName,
         PlayerIndex = playerIndex,
         ButtonIndex = 6,
-        IconId = 'Allied_topmenu_infantry',
+        IconId = 'Allied_topmenu_communicator',
         Title = '投降',
         Description = '召开一次严肃的会议试图结束游戏',
         MaxUseCount = 1,

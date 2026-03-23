@@ -26,6 +26,7 @@ GAMEMODE_DIALOG_ID = 201
 SKILL_DIALOG_ID_OFFSET = 1000
 SKILL_DIALOG_ID_OFFSET2 = 2000
 PURCHASE_TECH_DIALOG_ID = 701
+RECYCLE_UNIT_DIALOG_ID = 801
 g_SkillNames = {
     '炸弹+达摩克利斯之剑',
     '铁幕+时停',
@@ -868,5 +869,77 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
 
     tinsert(dialogData.Choices, '购买')
     tinsert(dialogData.Choices, '不购买')
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
+    local playerIndex = g_PlayerNameToIndex[playerName]
+    if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
+        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_ShowPurchaseTechDialog 的参数 playerName 无效")
+        return
+    end
+
+    local dialogData = {
+        DialogId = RECYCLE_UNIT_DIALOG_ID + g_PlayerNameToIndex[playerName],
+        PlayerName = playerName,
+        Choices = {},
+    }
+
+    dialogData.Title = "回收".. g_CurrentClickRecycleUnit[playerIndex].Name;
+
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex <= 4 then
+
+            local previous = SetWorldBuilderThisPlayer(1)
+
+            local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
+
+            local targetUnitIndex = -1;
+            for unitindex = 1 , unitcountmax , 1 do
+                if UNITLIST[unitindex] == g_CurrentClickRecycleUnit[playerIndex2].Type then
+                    targetUnitIndex = unitindex;
+                    break;
+                end
+            end
+
+            if targetUnitIndex > 0 then
+                local count = g_RecycleUnitCount[buttonIndex];
+                if UNITCOUNT[playerIndex2][targetUnitIndex] > count then
+                    UNITCOUNT[playerIndex2][targetUnitIndex] = UNITCOUNT[playerIndex2][targetUnitIndex] - count;
+                    ANYUNITCOUNT[playerIndex2] = ANYUNITCOUNT[playerIndex2] - count ;
+                else
+                    count = UNITCOUNT[playerIndex2][targetUnitIndex];
+                    ANYUNITCOUNT[playerIndex2] = ANYUNITCOUNT[playerIndex2] - count ;
+                    UNITCOUNT[playerIndex2][targetUnitIndex] = 0;
+                end
+                -- 苏联拿到大生产之后需要乘一个系数  可能会导致苏联后期回收亏钱，不过也很难管了
+                local getSovietBonus = g_ProductionBonus_SovietGet[playerIndex2];
+                local discount = 1.0;
+                if getSovietBonus then
+                    discount = 0.75;
+                end
+                ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, count * g_CurrentClickRecycleUnit[playerIndex2].Money * discount) ;
+                -- 同时也要告诉盟友
+                local msg = "$p"..tostring(playerIndex2).."Name回收了" .. tostring(count) .. "个" .. g_CurrentClickRecycleUnit[playerIndex2].Name;
+                if playerIndex2 >= 4 then
+                    exAddTextToPublicBoardForPlayer("Player_4", msg, 5);
+                    exAddTextToPublicBoardForPlayer("Player_5", msg, 5);
+                    exAddTextToPublicBoardForPlayer("Player_6", msg, 5);
+                else
+                    exAddTextToPublicBoardForPlayer("Player_1", msg, 5);
+                    exAddTextToPublicBoardForPlayer("Player_2", msg, 5);
+                    exAddTextToPublicBoardForPlayer("Player_3", msg, 5);
+                end
+            end
+
+            SetWorldBuilderThisPlayer(previous)
+        end
+    end
+
+    tinsert(dialogData.Choices, '回收1个')
+    tinsert(dialogData.Choices, '回收5个')
+    tinsert(dialogData.Choices, '回收10个')
+    tinsert(dialogData.Choices, '回收20个')
+    tinsert(dialogData.Choices, '取消')
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end

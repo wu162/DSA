@@ -9,3 +9,5 @@ end
 if g_GameMode == 4 then
     PurchaseTechMode_Setting()
 end
+
+RecycleUnit_Setting()

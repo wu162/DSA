@@ -92,6 +92,7 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
     elseif techInstanceId == PlayerTech_ProductionBonus_SovietId then
         -- 通知一下大家 苏联大生产好了
         exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得苏联大生产协议，全体单位降价");
+        g_ProductionBonus_SovietGet[g_PlayerNameToIndex[playerName]] = 1
     end
     SetWorldBuilderThisPlayer(previous)
 
