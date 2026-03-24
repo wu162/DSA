@@ -129,7 +129,7 @@ g_VehicleAllied = {
     --{Type = "AlliedAntiInfantryVehicle", Image = "Button_AlliedAntiInfantryVehicle_on", Name = "ACV"},
     {Type = "AlliedAntiAirVehicleTech1", Image = "Button_AlliedIFV_B_on", Name = "ifv", Money = 800},
     {Type = "AlliedAntiVehicleVehicleTech1", Image = "Button_AlliedAntiVehicleVehicleTech1_on", Name = "守护者坦克", Money = 950},
-    {Type = "PrismTank", Image = "Button_PrismTank_B", Name = "光棱坦克", Money = 1400},
+    {Type = "prismtank", Image = "Button_PrismTank_B", Name = "光棱坦克", Money = 1400},
     {Type = "AlliedAntiStructureVehicle", Image = "Button_AlliedAntiStructureVehicle_on", Name = "雅典娜", Money = 1800},
     {Type = "AlliedAntiVehicleVehicleTech3", Image = "Button_AlliedAntiVehicleVehicleTech3_B", Name = "幻影坦克", Money = 1600},
     {Type = "AlliedFutureTank", Image = "Button_AlliedFutureTank", Name = "未来坦克", Money = 3200},
@@ -159,7 +159,7 @@ g_VehicleJapan = {
 }
 
 g_VehicleCelestial = {
-    {Type = "CelestialAntiInfantryVehicle", Image = "Button_CelestialAntiInfantryVehicle_B", Name = "凌波战车", Money = 850},
+    {Type = "CelestialAntiInfantryVehicle_B", Image = "Button_CelestialAntiInfantryVehicle_B", Name = "凌波战车", Money = 850},
     {Type = "CelestialAntiAirShip", Image = "Button_CelestialAntiAirShip", Name = "磁弩", Money = 900},
     {Type = "CelestialAntiVehicleVehicleTech1", Image = "Button_CelestialKylinMBT", Name = "麒麟坦克", Money = 1000},
     {Type = "CelestialLongRangeMissileVehicle_B", Image = "Button_CelestialLongRangeMissileVehicle_B", Name = "清风", Money = 1400},
@@ -243,32 +243,32 @@ g_AirCraftCelestial = {
 
 g_ShipAllied = {
     {Type = "AlliedAntiNavalScout", Image = "Button_AlliedAntiNavalScout_on", Name = "", Money = 750},
-    {Type = "AlliedAntiAirShip", Image = "Button_AlliedAntiAirShip_on", Name = "", Money = 900},
-    {Type = "AlliedAntiNavyShipTech1", Image = "Button_AlliedAntiNavyShipTech1_on", Name = "", Money = 1600},
-    {Type = "AlliedAntiNavyShipTech3", Image = "Button_AlliedAntiNavyShipTech3", Name = "", Money = 4000},
-    {Type = "AlliedAntiStructureShip", Image = "Button_AlliedAntiStructureShip_on", Name = "", Money = 5500},
+    {Type = "AlliedAntiAirShip", Image = "Button_AlliedAntiAirShip_on", Name = "水翼", Money = 900},
+    {Type = "AlliedAntiNavyShipTech1", Image = "Button_AlliedAntiNavyShipTech1_on", Name = "驱逐舰", Money = 1600},
+    {Type = "AlliedAntiNavyShipTech3", Image = "Button_AlliedAntiNavyShipTech3", Name = "波塞冬", Money = 4000},
+    {Type = "AlliedAntiStructureShip", Image = "Button_AlliedAntiStructureShip_on", Name = "航母", Money = 5500},
 }
 
 g_ShipSoviet = {
-    {Type = "SovietAntiNavyShipTech1", Image = "Button_SovietAntiNavyShipTech1_small", Name = "", Money = 1000},
-    {Type = "SovietAntiNavyShipTech2", Image = "Button_SovietAntiNavyShipTech2_small", Name = "", Money = 2000},
-    {Type = "SovietAntiNavyShipTech3", Image = "Button_SovietAntiNavyShipTech3", Name = "", Money = 4500},
-    {Type = "SovietAntiStructureShip", Image = "Button_SovietAntiStructureShip_small", Name = "", Money = 5000},
+    {Type = "SovietAntiNavyShipTech1", Image = "Button_SovietAntiNavyShipTech1_small", Name = "磁暴快艇", Money = 1000},
+    {Type = "SovietAntiNavyShipTech2", Image = "Button_SovietAntiNavyShipTech2_small", Name = "阿库拉", Money = 2000},
+    {Type = "SovietAntiNavyShipTech3", Image = "Button_SovietAntiNavyShipTech3", Name = "光荣", Money = 4500},
+    {Type = "SovietAntiStructureShip", Image = "Button_SovietAntiStructureShip_small", Name = "无畏", Money = 5000},
 }
 
 g_ShipJapan = {
-    {Type = "JapanNavyScoutShip", Image = "Button_JapanNavyScoutShip", Name = "", Money = 800},
-    {Type = "JapanAntiAirShip", Image = "Button_JapanAntiShipAircraft_air", Name = "", Money = 1100},
-    {Type = "JapanAntiVehicleShip", Image = "Button_JapanAntiNavyShipTech2", Name = "", Money = 2000},
-    {Type = "JapanAntiNavyShipTech3", Image = "Button_JapanAntiNavyShipTech3", Name = "", Money = 4500},
-    {Type = "JapanAntiStructureShip", Image = "Button_JapanAntiStructureShip", Name = "", Money = 6300},
+    {Type = "JapanNavyScoutShip", Image = "Button_JapanNavyScoutShip", Name = "小潜艇", Money = 800},
+    {Type = "JapanAntiAirShip", Image = "Button_JapanAntiShipAircraft_air", Name = "海翼", Money = 1100},
+    {Type = "JapanAntiVehicleShip", Image = "Button_JapanAntiNavyShipTech2", Name = "剃刀", Money = 2000},
+    {Type = "JapanAntiNavyShipTech3", Image = "Button_JapanAntiNavyShipTech3", Name = "太刀", Money = 4500},
+    {Type = "JapanAntiStructureShip", Image = "Button_JapanAntiStructureShip", Name = "将军战舰", Money = 6300},
 }
 
 g_ShipCelestial = {
-    {Type = "CelestialAntiNavyShipTech1", Image = "Button_CelestialAntiNavyShipTech1", Name = "", Money = 800},
-    {Type = "CelestialAlmightlyShip", Image = "Button_CelestialAntiNavyShipTech2", Name = "", Money = 2000},
-    {Type = "CelestialAntiNavyShipTech3", Image = "Button_CelestialAntiNavyShipTech3B", Name = "", Money = 4500},
-    {Type = "CelestialAntiStructureShip", Image = "Button_CelestialAntiStructureShipB", Name = "", Money = 5000},
+    {Type = "CelestialAntiNavyShipTech1", Image = "Button_CelestialAntiNavyShipTech1", Name = "乌篷猎船", Money = 800},
+    {Type = "CelestialAlmightlyShip", Image = "Button_CelestialAntiNavyShipTech2", Name = "计蒙", Money = 2000},
+    {Type = "CelestialAntiNavyShipTech3", Image = "Button_CelestialAntiNavyShipTech3B", Name = "玄冥", Money = 4500},
+    {Type = "CelestialAntiStructureShip", Image = "Button_CelestialAntiStructureShipB", Name = "玄武", Money = 5000},
 }
 
 --g_RecycleBtnsMap = {
@@ -306,6 +306,7 @@ g_RecycleBtnsMapByFaction = {
 }
 
 function createRecycleBtns()
+    -- TODO 挡住顶部技能栏的文字了
     exCreateCustomButton({
         Index = 21,
         TextureName = "Allied_topmenu_infantry",
