@@ -246,14 +246,14 @@ g_ShipAllied = {
     {Type = "AlliedAntiAirShip", Image = "Button_AlliedAntiAirShip_on", Name = "水翼", Money = 900},
     {Type = "AlliedAntiNavyShipTech1", Image = "Button_AlliedAntiNavyShipTech1_on", Name = "驱逐舰", Money = 1600},
     {Type = "AlliedAntiNavyShipTech3", Image = "Button_AlliedAntiNavyShipTech3", Name = "波塞冬", Money = 4000},
-    {Type = "AlliedAntiStructureShip", Image = "Button_AlliedAntiStructureShip_on", Name = "航母", Money = 5500},
+    --{Type = "AlliedAntiStructureShip", Image = "Button_AlliedAntiStructureShip_on", Name = "航母", Money = 5500},
 }
 
 g_ShipSoviet = {
     {Type = "SovietAntiNavyShipTech1", Image = "Button_SovietAntiNavyShipTech1_small", Name = "磁暴快艇", Money = 1000},
     {Type = "SovietAntiNavyShipTech2", Image = "Button_SovietAntiNavyShipTech2_small", Name = "阿库拉", Money = 2000},
     {Type = "SovietAntiNavyShipTech3", Image = "Button_SovietAntiNavyShipTech3", Name = "光荣", Money = 4500},
-    {Type = "SovietAntiStructureShip", Image = "Button_SovietAntiStructureShip_small", Name = "无畏", Money = 5000},
+    --{Type = "SovietAntiStructureShip", Image = "Button_SovietAntiStructureShip_small", Name = "无畏", Money = 5000},
 }
 
 g_ShipJapan = {
@@ -261,14 +261,14 @@ g_ShipJapan = {
     {Type = "JapanAntiAirShip", Image = "Button_JapanAntiShipAircraft_air", Name = "海翼", Money = 1100},
     {Type = "JapanAntiVehicleShip", Image = "Button_JapanAntiNavyShipTech2", Name = "剃刀", Money = 2000},
     {Type = "JapanAntiNavyShipTech3", Image = "Button_JapanAntiNavyShipTech3", Name = "太刀", Money = 4500},
-    {Type = "JapanAntiStructureShip", Image = "Button_JapanAntiStructureShip", Name = "将军战舰", Money = 6300},
+    --{Type = "JapanAntiStructureShip", Image = "Button_JapanAntiStructureShip", Name = "将军战舰", Money = 6300},
 }
 
 g_ShipCelestial = {
     {Type = "CelestialAntiNavyShipTech1", Image = "Button_CelestialAntiNavyShipTech1", Name = "乌篷猎船", Money = 800},
     {Type = "CelestialAlmightlyShip", Image = "Button_CelestialAntiNavyShipTech2", Name = "计蒙", Money = 2000},
     {Type = "CelestialAntiNavyShipTech3", Image = "Button_CelestialAntiNavyShipTech3B", Name = "玄冥", Money = 4500},
-    {Type = "CelestialAntiStructureShip", Image = "Button_CelestialAntiStructureShipB", Name = "玄武", Money = 5000},
+    --{Type = "CelestialAntiStructureShip", Image = "Button_CelestialAntiStructureShipB", Name = "玄武", Money = 5000},
 }
 
 --g_RecycleBtnsMap = {
@@ -311,8 +311,8 @@ function createRecycleBtns()
         Index = 21,
         TextureName = "Allied_topmenu_infantry",
         Desc = "回收步兵单位",
-        X = 350,
-        Y = 70,
+        X = 5,
+        Y = 5,
         GroupIndex = 2,
         AlignX = "left",
         AlignY = "top",
@@ -322,8 +322,8 @@ function createRecycleBtns()
         Index = 22,
         TextureName = "Allied_topmenu_vehicles",
         Desc = "回收坦克单位",
-        X = 400,
-        Y = 70,
+        X = 55,
+        Y = 5,
         GroupIndex = 2,
         AlignX = "left",
         AlignY = "top",
@@ -333,8 +333,8 @@ function createRecycleBtns()
         Index = 23,
         TextureName = "Allied_topmenu_air",
         Desc = "回收空军单位",
-        X = 450,
-        Y = 70,
+        X = 105,
+        Y = 5,
         GroupIndex = 2,
         AlignX = "left",
         AlignY = "top",
@@ -344,8 +344,8 @@ function createRecycleBtns()
         Index = 24,
         TextureName = "Allied_topmenu_navy",
         Desc = "回收海军单位",
-        X = 500,
-        Y = 70,
+        X = 155,
+        Y = 5,
         GroupIndex = 2,
         AlignX = "left",
         AlignY = "top",
@@ -355,8 +355,8 @@ function createRecycleBtns()
         Index = 25,
         TextureName = "Allied_topmenu_groups",
         Desc = "收起下方按钮",
-        X = 550,
-        Y = 70,
+        X = 205,
+        Y = 5,
         GroupIndex = 2,
         AlignX = "left",
         AlignY = "top",
@@ -407,8 +407,8 @@ function RecycleTypeBtnClick(playerName, index)
                 Index = g_RecycleBtnsIndexStart + i,
                 TextureName = currentBtn.Image,
                 Desc = "",
-                X = 350 + mod(i - 1, 6) * 50,
-                Y = 125 + floor((i - 1) / 6) * 50,
+                X = 5 + mod(i - 1, 6) * 50,
+                Y = 60 + floor((i - 1) / 6) * 50,
                 GroupIndex = 3,
                 AlignX = "left",
                 AlignY = "top",

@@ -79,6 +79,8 @@ if not RoundLuaManager then
             end
         end
     end, { list })
+
+    exEnableWBScript("EnvKillAllUnit");
 end
 
 -- 回合结束

@@ -912,15 +912,17 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
                     ANYUNITCOUNT[playerIndex2] = ANYUNITCOUNT[playerIndex2] - count ;
                     UNITCOUNT[playerIndex2][targetUnitIndex] = 0;
                 end
+                local leftCount = UNITCOUNT[playerIndex2][targetUnitIndex];
                 -- 苏联拿到大生产之后需要乘一个系数  可能会导致苏联后期回收亏钱，不过也很难管了
                 local getSovietBonus = g_ProductionBonus_SovietGet[playerIndex2];
-                local discount = 1.0;
+                -- 只给90%回收
+                local discount = 0.9;
                 if getSovietBonus then
-                    discount = 0.75;
+                    discount = 0.72;
                 end
                 ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, count * g_CurrentClickRecycleUnit[playerIndex2].Money * discount) ;
                 -- 同时也要告诉盟友
-                local msg = "$p"..tostring(playerIndex2).."Name回收了" .. tostring(count) .. "个" .. g_CurrentClickRecycleUnit[playerIndex2].Name;
+                local msg = "$p"..tostring(playerIndex2).."Name回收了" .. tostring(count) .. "个" .. g_CurrentClickRecycleUnit[playerIndex2].Name .. ", 剩余" .. tostring(leftCount) .. "个";
                 if playerIndex2 >= 4 then
                     exAddTextToPublicBoardForPlayer("Player_4", msg, 5);
                     exAddTextToPublicBoardForPlayer("Player_5", msg, 5);
