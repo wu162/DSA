@@ -194,7 +194,7 @@ g_AirCraftAllied = {
     {Type = "AlliedAntiGroundAircraft", Image = "Button_AlliedAntiGroundAircraft_on", Name = "维和飞机", Money = 1200},
     {Type = "AlliedFighterAircraft", Image = "Button_AlliedApolloFighterAircraft", Name = "阿波罗", Money = 1000},
     {Type = "AlliedSupportAircraft", Image = "Button_AlliedSupportAircraft_on", Name = "冷冻飞机", Money = 1600},
-    {Type = "AlliedInterceptorAircraftTech3", Image = "Button_AlliedInterceptorAircraftTech3", Name = "阿瑞斯", Money = 1600},
+    {Type = "AlliedInterceptorAircraft", Image = "Button_AlliedInterceptorAircraftTech3", Name = "阿瑞斯", Money = 1600},
     {Type = "AlliedAntiStructureBomberAircraft", Image = "Button_AlliedBomberAircraft_on", Name = "世纪", Money = 2500},
     {Type = "AlliedGunshipAircraft", Image = "Button_AlliedHarbingerGunship", Name = "先锋", Money = 4000},
 }
