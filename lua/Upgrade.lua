@@ -97,231 +97,93 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
     SetWorldBuilderThisPlayer(previous)
 
 end
-AlliedMissileIntercept = FastHash("Upgrade_AlliedMissileIntercept")
-AlliedPrismTankReduceSpeed = FastHash("Upgrade_AlliedPrismTankReduceSpeed")
-AlliedAircraftAutoDivideBombs = FastHash("Upgrade_AlliedAircraftAutoDivideBombs")
-AlliedAdvancedPrismEquipment = FastHash('Upgrade_AlliedAdvancedPrismEquipment')
-AlliedCommandControlSystem = FastHash('Upgrade_AlliedCommandControlSystem')
-AlliedAircraftCarrierDrone = FastHash('Upgrade_AlliedAircraftCarrierDrone')
-SovietMissileIntercept = FastHash('Upgrade_SovietMissileIntercept')
-SovietCompositeArmor = FastHash('Upgrade_SovietCompositeArmor')
-SovietImprovedTeslaCoil = FastHash('Upgrade_SovietImprovedTeslaCoil')
-SovietMultiModeGuidance = FastHash('Upgrade_SovietMultiModeGuidance')
-JapanSubmarineAttack = FastHash('Upgrade_JapanSubmarineAttack')
-JapanMechaRush = FastHash('Upgrade_JapanMechaRush')
-JapanNanoTransmissionStructure = FastHash('Upgrade_JapanNanoTransmissionStructure')
-JapanNanoSustainingForceField = FastHash('Upgrade_JapanNanoSustainingForceField')
-CelestialSpeedUpdate = FastHash('Upgrade_CelestialSpeedUpdate')
-CelestialSupplyElectricitySystem = FastHash('Upgrade_CelestialSupplyElectricitySystem')
-CelestialAuxiliaryAimingSystem = FastHash('Upgrade_CelestialAuxiliaryAimingSystem')
-RANK3 = FastHash('Upgrade_CelestialTech_RANK3')
-Upgrade_CelestialLodestarDeviceId = FastHash("Upgrade_CelestialLodestarDevice")
-Upgrade_JapanIntelligentAmmunitionId = FastHash("Upgrade_JapanIntelligentAmmunition")
-Upgrade_SovietGloriousArmedForceId = FastHash("Upgrade_SovietGloriousArmedForce")
 
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedMissileIntercept')
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedPrismTankReduceSpeed')
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedAircraftAutoDivideBombs')
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedAdvancedPrismEquipment')
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedCommandControlSystem')
-exRegisterUpgradeCompleteEvent('Upgrade_AlliedAircraftCarrierDrone')
-exRegisterUpgradeCompleteEvent('Upgrade_SovietMissileIntercept')
-exRegisterUpgradeCompleteEvent('Upgrade_SovietCompositeArmor')
-exRegisterUpgradeCompleteEvent('Upgrade_SovietImprovedTeslaCoil')
-exRegisterUpgradeCompleteEvent('Upgrade_SovietMultiModeGuidance')
-exRegisterUpgradeCompleteEvent('Upgrade_JapanSubmarineAttack')
-exRegisterUpgradeCompleteEvent('Upgrade_JapanMechaRush')
-exRegisterUpgradeCompleteEvent('Upgrade_JapanNanoTransmissionStructure')
-exRegisterUpgradeCompleteEvent('Upgrade_JapanNanoSustainingForceField')
-exRegisterUpgradeCompleteEvent('Upgrade_CelestialSpeedUpdate')
-exRegisterUpgradeCompleteEvent('Upgrade_CelestialSupplyElectricitySystem')
-exRegisterUpgradeCompleteEvent('Upgrade_CelestialAuxiliaryAimingSystem')
-exRegisterUpgradeCompleteEvent('Upgrade_CelestialTech_RANK3')
-exRegisterUpgradeCompleteEvent('Upgrade_CelestialLodestarDevice')
-exRegisterUpgradeCompleteEvent('Upgrade_JapanIntelligentAmmunition')
-exRegisterUpgradeCompleteEvent('Upgrade_SovietGloriousArmedForce')
+-- Ordered upgrade list
+local upgrades = {
+    { "Upgrade_AlliedMissileIntercept", "取得先进反导系统!" },
+    { "Upgrade_AlliedPrismTankReduceSpeed", "取得激光协调矩阵!" },
+    { "Upgrade_AlliedAircraftAutoDivideBombs", "取得智能航电系统!" },
+    { "Upgrade_AlliedAdvancedPrismEquipment", "取得先进稳相光学设备!" },
+    { "Upgrade_AlliedCommandControlSystem", "取得战场全面信息化!" },
+    { "Upgrade_AlliedAircraftCarrierDrone", "取得先进航空指挥系统!" },
+
+    { "Upgrade_SovietMissileIntercept", "获得防空火控雷达!" },
+    { "Upgrade_SovietCompositeArmor", "获得外附装甲!" },
+    { "Upgrade_SovietImprovedTeslaCoil", "获得预充能线圈!" },
+    { "Upgrade_SovietMultiModeGuidance", "获得目标识别导引头!" },
+
+    { "Upgrade_JapanSubmarineAttack", "获得潜航发射!" },
+    { "Upgrade_JapanMechaRush", "获得机甲冲击!" },
+    { "Upgrade_JapanNanoTransmissionStructure", "获得高强度机械变形框架!" },
+    { "Upgrade_JapanNanoSustainingForceField", "获得纳米维持力场!" },
+
+    { "Upgrade_CelestialSpeedUpdate", "获得电掣之势!" },
+    { "Upgrade_CelestialSupplyElectricitySystem", "获得超导电枢!" },
+    { "Upgrade_CelestialAuxiliaryAimingSystem", "获得穿云定海!" },
+
+    { "Upgrade_CelestialLodestarDevice", "获得移星换位!" },
+    { "Upgrade_JapanIntelligentAmmunition", "获得白田火控AI!" },
+    { "Upgrade_SovietGloriousArmedForce", "获得光荣武装!" },
+
+    { "Upgrade_AlliedCryoWeaponArray", "获得冰冻武器阵列!" },
+}
+local RANK3_NAME = "Upgrade_CelestialTech_RANK3"
+local RANK3_ID = FastHash(RANK3_NAME)
+
+-- lookup: id -> {name, msg}
+local upgradeLookup = {}
+-- build lookup + register events
+for i = 1, getn(upgrades) do
+    local name = upgrades[i][1]
+    local msg  = upgrades[i][2]
+
+    local id = FastHash(name)
+    upgradeLookup[id] = { name, msg }
+
+    exRegisterUpgradeCompleteEvent(name)
+end
+exRegisterUpgradeCompleteEvent(RANK3_NAME)
+
 function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
-    for i = 1, 6, 1 do
-        if i <= 3 then
-            if playerName == 'Player_' .. i then
-                local Ply = 'PlyrCivilian'
-                if upgradeInstanceId == AlliedMissileIntercept then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedMissileIntercept")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得先进反导系统!")
-                elseif upgradeInstanceId == RANK3 then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("ALLOW_DISALLOW_ONE_UPGRADE", playerName, "Upgrade_CelestialTech_RANK3", 'false')
-                    exEnableWBScript("LEVELUP7");
-                elseif upgradeInstanceId == AlliedPrismTankReduceSpeed then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedPrismTankReduceSpeed")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得激光协调矩阵!")
-                elseif upgradeInstanceId == AlliedAircraftAutoDivideBombs then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedAircraftAutoDivideBombs")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得智能航电系统!")
-                elseif upgradeInstanceId == AlliedAdvancedPrismEquipment then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedAdvancedPrismEquipment")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得先进稳相光学设备!")
-                elseif upgradeInstanceId == AlliedCommandControlSystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedCommandControlSystem")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得战场全面信息化!")
-                elseif upgradeInstanceId == AlliedAircraftCarrierDrone then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_AlliedAircraftCarrierDrone")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name取得先进航空指挥系统!")
-                elseif upgradeInstanceId == SovietMissileIntercept then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietMissileIntercept")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得防空火控雷达!")
-                elseif upgradeInstanceId == SovietCompositeArmor then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietCompositeArmor")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得外附装甲!")
-                elseif upgradeInstanceId == SovietImprovedTeslaCoil then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietImprovedTeslaCoil")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得预充能线圈!")
-                elseif upgradeInstanceId == SovietMultiModeGuidance then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietMultiModeGuidance")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得目标识别导引头!")
-                elseif upgradeInstanceId == JapanSubmarineAttack then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanSubmarineAttack")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得潜航发射!")
-                elseif upgradeInstanceId == JapanMechaRush then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanMechaRush")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得机甲冲击!")
-                elseif upgradeInstanceId == JapanNanoTransmissionStructure then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanNanoTransmissionStructure")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得高强度机械变形框架!")
-                elseif upgradeInstanceId == JapanNanoSustainingForceField then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanNanoSustainingForceField")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得纳米维持力场!")
-                elseif upgradeInstanceId == CelestialSpeedUpdate then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialSpeedUpdate")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得电掣之势!")
-                elseif upgradeInstanceId == CelestialSupplyElectricitySystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialSupplyElectricitySystem")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得超导电枢!")
-                elseif upgradeInstanceId == CelestialAuxiliaryAimingSystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialAuxiliaryAimingSystem")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得穿云定海!")
-                elseif upgradeInstanceId == Upgrade_CelestialLodestarDeviceId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_CelestialLodestarDevice")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得移星换位!")
-                elseif upgradeInstanceId == Upgrade_JapanIntelligentAmmunitionId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_JapanIntelligentAmmunition")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得白田火控AI!")
-                elseif upgradeInstanceId == Upgrade_SovietGloriousArmedForceId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCivilian', "Upgrade_SovietGloriousArmedForce")
-                    exMessageAppendToMessageArea("恶魔$p" .. i .. "Name获得光荣武装!")
-                end
-                SetWorldBuilderThisPlayer(previous)
-            end
-        elseif i > 3 then
-            if playerName == 'Player_' .. i then
-                local Ply = 'PlyrCreeps'
-                if upgradeInstanceId == AlliedMissileIntercept then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedMissileIntercept")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得先进反导系统!")
-                elseif upgradeInstanceId == RANK3 then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("ALLOW_DISALLOW_ONE_UPGRADE", playerName, "Upgrade_CelestialTech_RANK3", 'false')
-                    exEnableWBScript("LEVELUP8");
-                elseif upgradeInstanceId == AlliedPrismTankReduceSpeed then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedPrismTankReduceSpeed")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得激光协调矩阵!")
-                elseif upgradeInstanceId == AlliedAircraftAutoDivideBombs then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedAircraftAutoDivideBombs")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得智能航电系统!")
-                elseif upgradeInstanceId == AlliedAdvancedPrismEquipment then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedAdvancedPrismEquipment")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得先进稳相光学设备!")
-                elseif upgradeInstanceId == AlliedCommandControlSystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedCommandControlSystem")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得战场全面信息化!")
-                elseif upgradeInstanceId == AlliedAircraftCarrierDrone then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_AlliedAircraftCarrierDrone")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name取得先进航空指挥系统!")
-                elseif upgradeInstanceId == SovietMissileIntercept then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietMissileIntercept")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得防空火控雷达!")
-                elseif upgradeInstanceId == SovietCompositeArmor then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietCompositeArmor")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得外附装甲!")
-                elseif upgradeInstanceId == SovietImprovedTeslaCoil then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietImprovedTeslaCoil")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得预充能线圈!")
-                elseif upgradeInstanceId == SovietMultiModeGuidance then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietMultiModeGuidance")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得目标识别导引头!")
-                elseif upgradeInstanceId == JapanSubmarineAttack then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanSubmarineAttack")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得潜航发射!")
-                elseif upgradeInstanceId == JapanMechaRush then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanMechaRush")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得机甲冲击!")
-                elseif upgradeInstanceId == JapanNanoTransmissionStructure then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanNanoTransmissionStructure")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得高强度机械变形框架!")
-                elseif upgradeInstanceId == JapanNanoSustainingForceField then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanNanoSustainingForceField")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得纳米维持力场!")
-                elseif upgradeInstanceId == CelestialSpeedUpdate then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialSpeedUpdate")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得电掣之势!")
-                elseif upgradeInstanceId == CelestialSupplyElectricitySystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialSupplyElectricitySystem")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得超导电枢!")
-                elseif upgradeInstanceId == CelestialAuxiliaryAimingSystem then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialAuxiliaryAimingSystem")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得穿云定海!")
-                elseif upgradeInstanceId == Upgrade_CelestialLodestarDeviceId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_CelestialLodestarDevice")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得移星换位!")
-                elseif upgradeInstanceId == Upgrade_JapanIntelligentAmmunitionId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_JapanIntelligentAmmunition")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得白田火控AI!")
-                elseif upgradeInstanceId == Upgrade_SovietGloriousArmedForceId then
-                    local previous = SetWorldBuilderThisPlayer(1)
-                    ExecuteAction("GIVE_PLAYER_UPGRADE", 'PlyrCreeps', "Upgrade_SovietGloriousArmedForce")
-                    exMessageAppendToMessageArea("天使$p" .. i .. "Name获得光荣武装!")
-                end
-                SetWorldBuilderThisPlayer(previous)
-            end
+    local playerIndex = PlayerIndex[playerName];
+
+    local isFirstTeam = playerIndex <= 3
+
+    local factionName = PlayerSideName[playerName]
+    local targetPlayer = PlayerToComputer[playerName]
+
+    -- "$pXName"
+    local playerToken = "$p" .. playerIndex .. "Name"
+
+    -- Special case
+    if upgradeInstanceId == RANK3_ID then
+        local previous = SetWorldBuilderThisPlayer(1)
+
+        ExecuteAction("ALLOW_DISALLOW_ONE_UPGRADE", playerName, RANK3_NAME, 'false')
+        if isFirstTeam then
+            exEnableWBScript("LEVELUP7")
+        else
+            exEnableWBScript("LEVELUP8")
         end
+
+        SetWorldBuilderThisPlayer(previous)
+        return
     end
+
+    -- O(1) lookup
+    local entry = upgradeLookup[upgradeInstanceId]
+    if not entry then
+        _ALERT("Unknown upgrade completed: " .. upgradeInstanceId)
+        return
+    end
+
+    local previous = SetWorldBuilderThisPlayer(1)
+
+    ExecuteAction("GIVE_PLAYER_UPGRADE", targetPlayer, entry[1])
+
+    exMessageAppendToMessageArea(
+        factionName .. playerToken .. entry[2]
+    )
+
+    SetWorldBuilderThisPlayer(previous)
 end
