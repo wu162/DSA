@@ -13,7 +13,7 @@ end
 
 function ButtonManager.SetButton(self, buttonData)
     if not buttonData or not buttonData.PlayerName or not buttonData.ButtonIndex then
-        exMessageAppendToMessageArea("错误：按钮数据不完整，无法设置按钮")
+        exMessageAppendToMessageArea(Localization.get("button_manager.error.incomplete_data"))
         return
     end
 
@@ -64,14 +64,14 @@ function ButtonManager.OnClick(self, playerName, buttonIndex)
     if type(buttonData.OnClick) == "function" then
         buttonData:OnClick()
     else
-        exMessageAppendToMessageArea(format("%s 点击了按钮 %d，但该按钮没有定义点击事件", playerName, buttonIndex))
+        exMessageAppendToMessageArea(Localization.get("button_manager.error.no_click_event", playerName, buttonIndex))
     end
 end
 
 function ButtonManager.SharedCooldown(self, buttonData)
     local sharedCooldownId = buttonData.SharedCooldownId
     if not sharedCooldownId then
-        exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 没有定义共享冷却 ID 却试图触发共享冷却事件", buttonData.PlayerName or "?", buttonData.Title or "未知按钮"))
+        exMessageAppendToMessageArea(Localization.get("button_manager.error.no_sharedcooldown_id", buttonData.PlayerName or "?", buttonData.Title or Localization.get("button.default.unknown")))
         return
     end
     local list = self._sharedCooldown[sharedCooldownId]
@@ -83,8 +83,8 @@ function ButtonManager.SharedCooldown(self, buttonData)
         if currentButton ~= buttonData then -- 避免自己触发自己的冷却
             if type(currentButton.SharedCooldown) == "function" then
                 currentButton:SharedCooldown()
-            else
-                exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 没有定义共享冷却事件", currentButton.PlayerName or "?", currentButton.Title or "未知按钮"))
+                else
+                exMessageAppendToMessageArea(Localization.get("button_manager.error.no_sharedcooldown_handler", currentButton.PlayerName or "?", currentButton.Title or Localization.get("button.default.unknown")))
             end
         end
     end
@@ -129,15 +129,15 @@ function ButtonManager._removeSharedCooldown(self, buttonData)
 end
 
 function CreateButton(buttonData)
-    buttonData.Title = buttonData.Title or "没有名字"
-    buttonData.Description = buttonData.Description or "没有描述"
+    buttonData.Title = buttonData.Title or Localization.get("button.default.title")
+    buttonData.Description = buttonData.Description or Localization.get("button.default.description")
     buttonData.MaxUseCount = buttonData.MaxUseCount or nil -- 最大使用次数，如果为 nil 则表示没有限制
     buttonData.CooldownSeconds = buttonData.CooldownSeconds or 0
     buttonData.CooldownRounds = buttonData.CooldownRounds or 0
-    buttonData.Text = format("<尚未初始化完毕>%s\n%s", buttonData.Title, buttonData.Description)
+    buttonData.Text = Localization.get("button_manager.text.not_initialized", buttonData.Title, buttonData.Description)
     if buttonData.SharedCooldownId then
         if not buttonData.PlayerIndex then
-            exMessageAppendToMessageArea("错误：按钮 %s 没有定义 PlayerIndex", buttonData.Title or "未知按钮")
+            exMessageAppendToMessageArea(Localization.get("button_manager.error.no_playerindex", buttonData.Title or Localization.get("button.default.unknown")))
             return
         end
         local side = "devil"
@@ -158,14 +158,14 @@ function CreateButton(buttonData)
     buttonData.FormatText = function(self)
         local title = self.Title
         if self.MaxUseCount ~= nil and self._usedCount >= self.MaxUseCount then
-            title = self.Title .. "(已使用)"
+            title = self.Title .. Localization.get("button.suffix.used")
         elseif self._cooldownCount > 0 then
-            title = self.Title .. "(冷却中)"
+            title = self.Title .. Localization.get("button.suffix.cooldown")
         elseif self.MaxUseCount ~= nil then
             if self.MaxUseCount == 1 then
-                title = self.Title .. "(仅限一次)"
+                title = self.Title .. Localization.get("button.suffix.single_use")
             else
-                title = format("%s(可使用%d次)", self.Title, self.MaxUseCount - self._usedCount)
+                title = self.Title .. Localization.get("button.suffix.use_count", self.MaxUseCount - self._usedCount)
             end
         end
         self.Text = format("%s\n%s", title, self.Description)
@@ -233,7 +233,7 @@ function CreateButton(buttonData)
     end
     buttonData._reActivate = function(self)
         if ButtonManager:GetButton(self.PlayerName, self.ButtonIndex) ~= self then
-            exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 已经被其他按钮覆盖，无法恢复", self.PlayerName or "?", self.Title))
+            exMessageAppendToMessageArea(Localization.get("button_manager.error.overwritten_cannot_restore", self.PlayerName or "?", self.Title or Localization.get("button.default.unknown")))
             return
         end
         if self.MaxUseCount ~= nil and self._usedCount >= self.MaxUseCount then

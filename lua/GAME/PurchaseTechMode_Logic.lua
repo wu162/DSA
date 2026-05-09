@@ -51,7 +51,7 @@ function PurchaseTechMode_Setting()
     exCreateCustomButton({
         Index = 7,
         TextureName = "AUA_Bribe",
-        Desc = "购买下一级科技(当前等级：1)\n解锁下一级科技等级和更多电厂权限",
+        Desc = Localization.get("purchase_tech.button"),
         X = 250,
         Y = 20,
         GroupIndex = 1,
@@ -63,7 +63,7 @@ function PurchaseTechMode_Setting()
 
     exCreateCustomText({
         Index = 1,
-        Content = "己方科技等级: 1",
+        Content = Localization.get("purchase_tech.level", 1),
         X = 10,
         Y = 10,
         Color = 16711680,
@@ -74,7 +74,7 @@ function PurchaseTechMode_Setting()
 
     exCreateCustomText({
         Index = 2,
-        Content = "己方电厂最大数量: 5",
+        Content = Localization.get("purchase_tech.power_plants", 5),
         X = 0,
         Y = 30,
         Color = 16711680,
@@ -85,7 +85,7 @@ function PurchaseTechMode_Setting()
 
     exCreateCustomText({
         Index = 3,
-        Content = "己方神州电厂最大数量: 4",
+        Content = Localization.get("purchase_tech.celestial_plants", 4),
         X = 0,
         Y = 50,
         Color = 16711680,

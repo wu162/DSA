@@ -7,7 +7,7 @@ g_BanSeaFilter = CreateObjectFilter({
 })
 
 function MsgCommand_BanSea()
-    exMessageAppendToMessageArea("房主已禁止海军！")
+    exMessageAppendToMessageArea(Localization.get("extra_command.ban_sea"))
     for i = 1, 6 do
         local playerName = "Player_" .. i
         ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "AlliedNavalYard", 0)
@@ -24,7 +24,7 @@ function MsgCommand_BanSea()
 end
 
 function MsgCommand_BanInfantry()
-    exMessageAppendToMessageArea("房主已禁止兵营！")
+    exMessageAppendToMessageArea(Localization.get("extra_command.ban_infantry"))
     for i = 1, 6 do
         local playerName = "Player_" .. i
         ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "AlliedBarracks", 0)
@@ -42,7 +42,7 @@ function onUserHotKeyEvent(playerName, commandCode, mouseWorldPos)
         local round = exCounterGetByName("lvc")
         local start = exCounterGetByName("start")
         if round == 0 and start >= 30 then
-            exShowCustomBtnChoiceDialogForPlayer(g_RoomOwnerPlayer, 301, "额外设定", '禁海军', '禁兵营', '', '', '', '', '')
+            exShowCustomBtnChoiceDialogForPlayer(g_RoomOwnerPlayer, 301, Localization.get("extra_command.dialog.title"), Localization.get("extra_command.choice.ban_sea"), Localization.get("extra_command.choice.ban_infantry"), '', '', '', '', '')
         end
     end
 

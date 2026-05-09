@@ -12,14 +12,7 @@ PlayerTech_ProductionBonus_SovietId = FastHash('PlayerTech_ProductionBonus_Sovie
 PlayerTech_ProductionBonus_JapanId = FastHash('PlayerTech_ProductionBonus_Japan')
 exTogglePlayerGetTechEvent(1)
 
-PlayerSideName = {
-    ["Player_1"] = "恶魔",
-    ["Player_2"] = "恶魔",
-    ["Player_3"] = "恶魔",
-    ["Player_4"] = "天使",
-    ["Player_5"] = "天使",
-    ["Player_6"] = "天使",
-}
+PlayerSideName = Localization.map("player_side_name")
 
 PlayerIndex = {
     ["Player_1"] = 1,
@@ -46,33 +39,33 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
     local computerPlayer = PlayerToComputer[playerName]
     if techInstanceId == Airpower then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_AlliedAirPower")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得空军升级!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.airpower", sideName, i))
     elseif techInstanceId == HighTechnology then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_AlliedHighTechnology")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得高科技升级!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.high_technology", sideName, i))
     elseif techInstanceId == CrushPuppies then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_SovietCrushPuppiesPower")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得碾压升级!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.crush_puppies", sideName, i))
     elseif techInstanceId == TerrorDroneEggs then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_SovietTerrorDroneEggs")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得蜘蛛升级!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.terror_drone_eggs", sideName, i))
     elseif techInstanceId == NavalPower then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_JapanNavalPower")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得海军协议!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.naval_power", sideName, i))
     elseif techInstanceId == EnhancedKamikaze then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_JapanEnhancedKamikaze")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得光荣自爆!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.enhanced_kamikaze", sideName, i))
     elseif techInstanceId == AdvancedMissilePacks then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_JapanAdvancedMissilePacks")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得先进弹药匣!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.advanced_missile_packs", sideName, i))
     elseif techInstanceId == ElectromagneticGun then
         ExecuteAction("GIVE_PLAYER_UPGRADE", computerPlayer, "Upgrade_CelestialEMG")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name取得电磁炮!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.electromagnetic_gun", sideName, i))
     elseif techInstanceId == PlayerTech_Celestial_PowerSealOffId then
         local round = exCounterGetByName("lvc")
         if round >= 3 then
             ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", playerName, "CelestialBattery", 1)
-            exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得电能纳贡，解锁蓄元鼎建造权限!")
+            exMessageAppendToMessageArea(Localization.get("upgrade.tech.power_seal_off_now", sideName, i))
         else
             SchedulerModule.call_every_x_frame(function(pName)
                 local round1 = exCounterGetByName("lvc")
@@ -80,65 +73,67 @@ function onPlayerGetTechEvent(playerName, techInstanceId)
                     ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", pName, "CelestialBattery", 1)
                 end
             end, 30, nil, {playerName})
-            exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得电能纳贡，第3回合后解锁蓄元鼎建造权限!")
+            exMessageAppendToMessageArea(Localization.get("upgrade.tech.power_seal_off_later", sideName, i))
         end
     elseif techInstanceId == ProductionBonus then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", 'PlayerA_' .. i, 'AlliedWallPiece', computerPlayer .. '/team' .. computerPlayer, "jiaoyidian")
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得盟军自由贸易协议，取得经济提升!")
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.production_bonus_allied", sideName, i))
     elseif techInstanceId == PlayerTech_ProductionBonus_JapanId then
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得帝国机械化组装协议，解锁全体坦克护盾技能");
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.production_bonus_japan", sideName, i));
         g_ProductionBonus_JapanGet[g_PlayerNameToIndex[playerName]] = 1
         CenterTopBtnFunc_UpdatePlayer3rdButton(i)
     elseif techInstanceId == PlayerTech_ProductionBonus_SovietId then
-        -- 通知一下大家 苏联大生产好了
-        exMessageAppendToMessageArea(sideName .. "$p" .. i .. "Name获得苏联大生产协议，全体单位降价");
+        exMessageAppendToMessageArea(Localization.get("upgrade.tech.production_bonus_soviet", sideName, i));
         g_ProductionBonus_SovietGet[g_PlayerNameToIndex[playerName]] = 1
     end
     SetWorldBuilderThisPlayer(previous)
 
 end
 
--- Ordered upgrade list
+-- Upgrade completed notifications.
+-- Localization keys are derived from the upgrade name: upgrade.<UpgradeName>
 local upgrades = {
-    { "Upgrade_AlliedMissileIntercept", "取得先进反导系统!" },
-    { "Upgrade_AlliedPrismTankReduceSpeed", "取得激光协调矩阵!" },
-    { "Upgrade_AlliedAircraftAutoDivideBombs", "取得智能航电系统!" },
-    { "Upgrade_AlliedAdvancedPrismEquipment", "取得先进稳相光学设备!" },
-    { "Upgrade_AlliedCommandControlSystem", "取得战场全面信息化!" },
-    { "Upgrade_AlliedAircraftCarrierDrone", "取得先进航空指挥系统!" },
+    "Upgrade_AlliedMissileIntercept",
+    "Upgrade_AlliedPrismTankReduceSpeed",
+    "Upgrade_AlliedAircraftAutoDivideBombs",
+    "Upgrade_AlliedAdvancedPrismEquipment",
+    "Upgrade_AlliedCommandControlSystem",
+    "Upgrade_AlliedAircraftCarrierDrone",
 
-    { "Upgrade_SovietMissileIntercept", "获得防空火控雷达!" },
-    { "Upgrade_SovietCompositeArmor", "获得外附装甲!" },
-    { "Upgrade_SovietImprovedTeslaCoil", "获得预充能线圈!" },
-    { "Upgrade_SovietMultiModeGuidance", "获得目标识别导引头!" },
+    "Upgrade_SovietMissileIntercept",
+    "Upgrade_SovietCompositeArmor",
+    "Upgrade_SovietImprovedTeslaCoil",
+    "Upgrade_SovietMultiModeGuidance",
 
-    { "Upgrade_JapanSubmarineAttack", "获得潜航发射!" },
-    { "Upgrade_JapanMechaRush", "获得机甲冲击!" },
-    { "Upgrade_JapanNanoTransmissionStructure", "获得高强度机械变形框架!" },
-    { "Upgrade_JapanNanoSustainingForceField", "获得纳米维持力场!" },
+    "Upgrade_JapanSubmarineAttack",
+    "Upgrade_JapanMechaRush",
+    "Upgrade_JapanNanoTransmissionStructure",
+    "Upgrade_JapanNanoSustainingForceField",
 
-    { "Upgrade_CelestialSpeedUpdate", "获得电掣之势!" },
-    { "Upgrade_CelestialSupplyElectricitySystem", "获得超导电枢!" },
-    { "Upgrade_CelestialAuxiliaryAimingSystem", "获得穿云定海!" },
+    "Upgrade_CelestialSpeedUpdate",
+    "Upgrade_CelestialSupplyElectricitySystem",
+    "Upgrade_CelestialAuxiliaryAimingSystem",
 
-    { "Upgrade_CelestialLodestarDevice", "获得移星换位!" },
-    { "Upgrade_JapanIntelligentAmmunition", "获得白田火控AI!" },
-    { "Upgrade_SovietGloriousArmedForce", "获得光荣武装!" },
+    "Upgrade_CelestialLodestarDevice",
+    "Upgrade_JapanIntelligentAmmunition",
+    "Upgrade_SovietGloriousArmedForce",
 
-    { "Upgrade_AlliedCryoWeaponArray", "获得冰冻武器阵列!" },
+    "Upgrade_AlliedCryoWeaponArray",
 }
-local RANK3_NAME = "Upgrade_CelestialTech_RANK3"
-local RANK3_ID = FastHash(RANK3_NAME)
+RANK3_NAME = "Upgrade_CelestialTech_RANK3"
+RANK3_ID = FastHash(RANK3_NAME)
 
 -- lookup: id -> {name, msg}
 local upgradeLookup = {}
 -- build lookup + register events
 for i = 1, getn(upgrades) do
-    local name = upgrades[i][1]
-    local msg  = upgrades[i][2]
+    local name = upgrades[i]
 
     local id = FastHash(name)
-    upgradeLookup[id] = { name, msg }
+    upgradeLookup[id] = {
+        Name = name,
+        MessageKey = "upgrade." .. name,
+    }
 
     exRegisterUpgradeCompleteEvent(name)
 end
@@ -171,7 +166,7 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
     end
 
     -- O(1) lookup
-    local entry = upgradeLookup[upgradeInstanceId]
+    local entry = %upgradeLookup[upgradeInstanceId]
     if not entry then
         _ALERT("Unknown upgrade completed: " .. upgradeInstanceId)
         return
@@ -179,10 +174,10 @@ function onPlayerUpgradeCompleteEvent(playerName, upgradeInstanceId, objectId)
 
     local previous = SetWorldBuilderThisPlayer(1)
 
-    ExecuteAction("GIVE_PLAYER_UPGRADE", targetPlayer, entry[1])
+    ExecuteAction("GIVE_PLAYER_UPGRADE", targetPlayer, entry.Name)
 
     exMessageAppendToMessageArea(
-        factionName .. playerToken .. entry[2]
+        factionName .. playerToken .. Localization.get(entry.MessageKey)
     )
 
     SetWorldBuilderThisPlayer(previous)

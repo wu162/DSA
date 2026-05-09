@@ -7,7 +7,7 @@ function CelestialBatteryDie(dyingObjId, attackerId, dyingObjInstanceId, attacke
         SchedulerModule.delay_call(function(playerName, nx,ny,nz)
             local previous = SetWorldBuilderThisPlayer(1);
             ExecuteAction("PLAYER_GIVE_MONEY", playerName, CELESTIAL_BATTERY_DIE_MONEY)
-            exShowTextAtPos("获得$" .. CELESTIAL_BATTERY_DIE_MONEY, nx, ny, nz, 189465)
+            exShowTextAtPos(Localization.get("unit_die.money_gained", CELESTIAL_BATTERY_DIE_MONEY), nx, ny, nz, 189465)
             SetWorldBuilderThisPlayer(previous)
         end, 5, {ownerPlayerName, x,y,z})
     end

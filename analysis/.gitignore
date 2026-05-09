@@ -1,0 +1,6 @@
+*.py
+*.txt
+*.lua
+*.ps1
+*.js
+luac.exe

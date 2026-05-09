@@ -1,10 +1,4 @@
-g_RuleText = [[自走棋游戏规则简介：
-1. 玩家造出的单位会被记录，每个回合开始时，战场上都会重新刷出玩家造过的所有单位，由电脑控制
-2. 上方玩家（天使）单位出现在战场右侧，下方玩家（恶魔）单位出现在战场左侧
-3. 电厂提供收入，请尽快造满电厂以避免卡钱；苏联超级反应堆和神州导流尖塔不提供收入（仅解锁科技）；建造T4高科附赠精兵学院
-正常模式：前期收入有限，请摧毁敌方防御塔来解锁更多的电厂和科技
-死亡模式：双方开局就只剩最后一座塔
-可点击下方“更新日志”按钮查看更新内容]]
+g_RuleText = Localization.get("game.rules")
 
 g_UpdateBoxText = {
     g_RuleText,
@@ -46,8 +40,8 @@ g_UpdateBoxText = {
 }
 
 g_UpdateBoxTextNum = getn(g_UpdateBoxText);
-g_QQGroupText = '自走棋交流/反馈QQ群: 219951578\n'
-exShowLongTextDialog(1, g_QQGroupText .. g_RuleText, '', '清楚!', '更新日志')
+g_QQGroupText = Localization.get('game.qq_group');
+exShowLongTextDialog(1, g_QQGroupText .. g_RuleText, '', Localization.get('dialog.read_done'), Localization.get('dialog.update_log'))
 
 function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     local o
@@ -60,21 +54,21 @@ function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     if btnIndex == 1 then
         local prevText = '';
         if dialogId > 2 then
-            prevText = '上一页'
+            prevText = Localization.get("dialog.previous_page")
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_QQGroupText .. g_UpdateBoxText[dialogId - 1], prevText, '清楚!', '下一页')
+        exShowLongTextDialogForPlayer(playerName, dialogId - 1, g_QQGroupText .. g_UpdateBoxText[dialogId - 1], prevText, Localization.get("dialog.read_done"), Localization.get("dialog.next_page"))
     end
 
     if btnIndex == 3 then
         local nextText = '';
         if dialogId < (g_UpdateBoxTextNum - 1) then
-            nextText = '下一页'
+            nextText = Localization.get("dialog.next_page")
         end
-        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_QQGroupText .. g_UpdateBoxText[dialogId + 1], '上一页', '清楚!', nextText)
+        exShowLongTextDialogForPlayer(playerName, dialogId + 1, g_QQGroupText .. g_UpdateBoxText[dialogId + 1], Localization.get("dialog.previous_page"), Localization.get("dialog.read_done"), nextText)
     end
 
     if btnIndex==2 then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT",playerName,'AlliedWallPiece','PlyrCreeps/teamPlyrCreeps','toupiaodian'..o)
-        exMessageAppendToMessageArea('$p'..o..'Name已阅读完成')
+        exMessageAppendToMessageArea(Localization.get("dialog.read_completed", o))
     end
 end

@@ -14,10 +14,10 @@ RoundLuaManager.CallOnEveryRoundBegin(function(list)
     local level = exCounterGetByName("lvc")
     if level ~= nil and g_GameMode == 1 then
         if level == 8 then
-            exAddTextToPublicBoard("下一回合开始将会清除场上双方单位，请做好准备", 15)
+            exAddTextToPublicBoard(Localization.get("env_kill_all_unit.warning_next_round"), 15)
         end
         if level == 9 then
-            exAddTextToPublicBoard("清除场上双方单位", 10)
+            exAddTextToPublicBoard(Localization.get("env_kill_all_unit.execute"), 10)
             local units, count = ObjectFindObjects(T74, nil,unitallEnv);
             for i = 1 , count , 1 do
                 ExecuteAction("NAMED_DELETE", units[i]);

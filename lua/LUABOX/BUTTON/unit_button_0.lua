@@ -3,7 +3,7 @@
   for i = 1 , 6 , 1 do
   if playerName == "Player_"..i and unitId == BOMBID[i] then
     if i == 1 then
-      exMessageAppendToMessageArea("天使方召唤了龙船！")  
+      exMessageAppendToMessageArea(Localization.get("unit_button.angel.dragonship_called"))
       ExecuteAction("PLAY_SOUND_EFFECT","CEL_DragonShip_VoicePack")   
       local counterValue = exCounterGetByName("lvc");
       if counterValue > cutMCV then
@@ -24,13 +24,13 @@
       exObjectDeleteBtnAtTop(unitId);  -- 删除按钮
     end
     if i == 2 then
-        exMessageAppendToMessageArea("天使方使用了炸弹！")
+      exMessageAppendToMessageArea(Localization.get("unit_button.angel.used_bomb"))
         ExecuteAction("PLAY_SOUND_EFFECT","A01_CoastalGun_ImpactExplosion") 
     exEnableWBScript("KW");
     exObjectDeleteBtnAtTop(unitId);  -- 删除按钮
     end
     if i == 3 then 
-        exMessageAppendToMessageArea("天使方使用了铁幕！")
+      exMessageAppendToMessageArea(Localization.get("unit_button.angel.used_iron_curtain"))
         ExecuteAction("PLAY_SOUND_EFFECT","SOV_IronCurtain_Cast") 
       local TAR, count = ObjectFindObjects(P[7],nil,FilterALLUNIT)
       for j = 1 , count , 1 do
@@ -39,7 +39,7 @@
       exObjectDeleteBtnAtTop(unitId);  -- 删除按钮
     end
     if i == 4 then 
-        exMessageAppendToMessageArea("恶魔方召唤了龙船！")
+      exMessageAppendToMessageArea(Localization.get("unit_button.devil.dragonship_called"))
         ExecuteAction("PLAY_SOUND_EFFECT","CEL_DragonShip_VoicePack")  
       local counterValue = exCounterGetByName("lvc");
       if counterValue > cutMCV then
@@ -59,13 +59,13 @@
       exObjectDeleteBtnAtTop(unitId);  -- 删除按钮
     end
     if i == 5 then 
-        exMessageAppendToMessageArea("恶魔方使用了炸弹！")
+      exMessageAppendToMessageArea(Localization.get("unit_button.devil.used_bomb"))
         ExecuteAction("PLAY_SOUND_EFFECT","A01_CoastalGun_ImpactExplosion") 
       exEnableWBScript("KB");
       exObjectDeleteBtnAtTop(unitId);  -- 删除按钮
     end
     if i == 6 then 
-        exMessageAppendToMessageArea("恶魔方使用了铁幕！")
+      exMessageAppendToMessageArea(Localization.get("unit_button.devil.used_iron_curtain"))
         ExecuteAction("PLAY_SOUND_EFFECT","SOV_IronCurtain_Cast") 
       local TAR, count = ObjectFindObjects(P[8],nil,FilterALLUNIT)
       for j = 1 , count , 1 do

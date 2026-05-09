@@ -44,7 +44,7 @@ function AIUNITBUILDRADOM ()
         exMessageAppendToMessageArea("unitindex:"..unitindex)
         UNITCOUNT[playindex][unitindex] =   UNITCOUNT[playindex][unitindex] + 1 ;
         AIFAKEMONEY[playindex] = AIFAKEMONEY[playindex] - 150 ;
-        exMessageAppendToMessageArea("AI姝ュ叺寤洪€犲畬姣?)
+        exMessageAppendToMessageArea(Localization.get("ai.infantry_built"))
         exMessageAppendToMessageArea("AIFAKEMONEY[playindex]:"..AIFAKEMONEY[playindex])
     end
 end

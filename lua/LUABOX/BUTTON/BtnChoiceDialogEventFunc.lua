@@ -6,17 +6,17 @@ g_EnableDeathModeEffect = 0;
 g_DisableSeaArmy = 0;
 
 g_GameModeName = {
-    [1] = "正常模式",
-    [2] = "死亡模式",
-    [3] = "缩小模式",
+    [1] = Localization.get("game_mode.name.1"),
+    [2] = Localization.get("game_mode.name.2"),
+    [3] = Localization.get("game_mode.name.3"),
 }
 
 g_GameModeOptions = {
-    { Name = '正常模式' },
-    { Name = '死亡模式' },
-    { Name = '缩小模式' },
-    { Name = '升本模式' },
-    { Name = '禁止海军' },
+    { Name = Localization.get("game_mode.option.1.name") },
+    { Name = Localization.get("game_mode.option.2.name") },
+    { Name = Localization.get("game_mode.option.3.name") },
+    { Name = Localization.get("game_mode.option.4.name") },
+    { Name = Localization.get("game_mode.option.5.name") },
 }
 
 MARKET_DIALOG_ID_OFFSET = 100
@@ -28,11 +28,11 @@ SKILL_DIALOG_ID_OFFSET2 = 2000
 PURCHASE_TECH_DIALOG_ID = 701
 RECYCLE_UNIT_DIALOG_ID = 801
 g_SkillNames = {
-    '炸弹+达摩克利斯之剑',
-    '铁幕+时停',
-    '龙船+空军元帅',
-    '补充军队+纳米维修',
-    '复制己方技能+复制敌方技能'
+    Localization.get("skill.name.1"),
+    Localization.get("skill.name.2"),
+    Localization.get("skill.name.3"),
+    Localization.get("skill.name.4"),
+    Localization.get("skill.name.5"),
 }
 g_PreselectedSkillIndices = {}
 
@@ -70,7 +70,7 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         DialogId = MARKET_DIALOG_ID_OFFSET + playerIndex,
         PlayerName = "Player_" .. playerIndex,
         PlayerIndex = playerIndex,
-        Title = '欢迎进入交易市场',
+        Title = Localization.get("market.title"),
     }
     dialogData.RefreshData = function(self)
         local playerIndex = self.PlayerIndex
@@ -78,10 +78,17 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         if playerIndex >= 4 then
             investedMax, investedMoney = angel_max, angel_money
         end
-        self.Title = format('欢迎进入交易市场\n投资金额(上限%d):%d', investedMax, investedMoney)
+        self.Title = Localization.get("market.title_with_investment", investedMax, investedMoney)
 
         local transferToA_Index, transferToB_Index = BtnChoiceDialogEventFunc_GetTransferMoneyIndices(playerIndex)
-        local roles = { '恶魔1号', '恶魔2号', '恶魔3号', '天使1号', '天使2号', '天使3号' }
+        local roles = {
+            Localization.get("market.role.1"),
+            Localization.get("market.role.2"),
+            Localization.get("market.role.3"),
+            Localization.get("market.role.4"),
+            Localization.get("market.role.5"),
+            Localization.get("market.role.6"),
+        }
         function getColorText(index)
             local color = BtnChoiceDialogEventFunc_CalculateColor(index)
             if color == nil then
@@ -93,19 +100,19 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         local playerA_Color = getColorText(transferToA_Index)
         local playerB_Color = getColorText(transferToB_Index)
         
-        local nextInvestmentText = '购买100恶魔投资'
+        local nextInvestmentText = Localization.get("market.next_investment.devil")
         if playerIndex >= 4 then
-            nextInvestmentText = '购买100天使投资'
+            nextInvestmentText = Localization.get("market.next_investment.angel")
         end
-        nextInvestmentText = nextInvestmentText .. '\n若回合胜利可获收益'
+        nextInvestmentText = nextInvestmentText .. Localization.get("market.next_investment.benefit")
 
         self.Choices = {
-            format('向%s%s转移1000资金', roles[transferToA_Index], playerA_Color), -- 1
-            format('向%s%s转移1000资金', roles[transferToB_Index], playerB_Color), -- 2
-            '回到战场', -- 3
+            Localization.get("market.transfer.choice", roles[transferToA_Index], playerA_Color), -- 1
+            Localization.get("market.transfer.choice", roles[transferToB_Index], playerB_Color), -- 2
+            Localization.get("market.back_to_battle"), -- 3
             nextInvestmentText, -- 4
-            "购买护盾塔(10000)", -- 5
-            "购买胡杨塔(12000)", -- 6
+            Localization.get("market.buy_shield_tower", 10000), -- 5
+            Localization.get("market.buy_poplar_tower", 12000), -- 6
         }
         --if g_PlayerDebtCount[self.PlayerName] == 0 then
         --    local debtMoney = g_TowerDestroyProgress * 2600 + 4000;
@@ -144,9 +151,9 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         if money >= 1000 then
             ExecuteAction('PLAYER_GIVE_MONEY', transferTargetName, '1000')
             ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, '-1000')
-            exAddTextToPublicBoardForPlayer(self.PlayerName, format('成功转账1000给$p%dName', transferTargetIndex), 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.transfer.success", transferTargetIndex), 5)
         else
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '您的余额不足', 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.transfer.insufficient"), 5)
         end
     end
     -- 处理购买投资
@@ -161,11 +168,11 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             isInvestementMax = true
         end
         if isInvestementMax then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '投资失败：投资已达到上限', 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.invest.failed.max"), 5)
         elseif start <= 600 then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '投资失败：只能在每个回合刚开始时投资', 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.invest.failed.start_only"), 5)
         elseif money < 100 then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '投资失败：余额不足', 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.invest.failed.insufficient"), 5)
         else
             if playerIndex <= 3 then
                 devil_money = devil_money + 100
@@ -174,7 +181,7 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
                 angel_money = angel_money + 100
                 totalInvestedMoney = angel_money
             end
-            exAddTextToPublicBoardForPlayer(self.PlayerName, format('投资成功，当前投资金额：%d', totalInvestedMoney), 5)
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.invest.success", totalInvestedMoney), 5)
             ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, '-100')
         end
     end
@@ -182,8 +189,8 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
     dialogData.TakeLoan = function(self)
         local debtMoney = g_TowerDestroyProgress * 2600 + 4000;
         ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, debtMoney)
-        exMessageAppendToMessageArea(format('$p%dName向银行贷款', self.PlayerIndex))
-        exAddTextToPublicBoardForPlayer(self.PlayerName, '贷款成功', 10)
+        exMessageAppendToMessageArea(Localization.get("market.loan.message", self.PlayerIndex))
+        exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.loan.success"), 10)
 
         g_PlayerInDebt[self.PlayerName] = 1;
         g_PlayerDebtCount[self.PlayerName] = g_PlayerDebtCount[self.PlayerName] + 1;
@@ -203,12 +210,12 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         end
         local objectId = g_BuyTowerId["JapanPointShieldControlTower"][sideName];
         if ObjectIsAlive(objectId) then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '护盾塔还在，不能购买', 10);
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
             return;
         end
         local money = exPlayerGetCurrentMoney(self.PlayerName)
         if money < 10000 then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '资金不足', 10);
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
         local id = exCreateObject({
@@ -239,12 +246,12 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         end
         local objectId = g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName];
         if ObjectIsAlive(objectId) then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '护盾塔还在，不能购买', 10);
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
             return;
         end
         local money = exPlayerGetCurrentMoney(self.PlayerName)
         if money < 12000 then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, '资金不足', 10);
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
         local id = exCreateObject({
@@ -301,11 +308,11 @@ function BtnChoiceDialogEventFunc_CalculateColor(playerIndex)
     local minValue = min(red, green, blue)
     local lightness = (maxValue + minValue) / 2
     if lightness < 0.1 then
-        return "黑色"
+        return Localization.get("color.black")
     elseif lightness > 0.95 then
-        return "白色"
+        return Localization.get("color.white")
     elseif maxValue == minValue then
-        return "灰色"
+        return Localization.get("color.gray")
     end
     local d = maxValue - minValue
     local saturation = 0
@@ -315,7 +322,7 @@ function BtnChoiceDialogEventFunc_CalculateColor(playerIndex)
         saturation = d / (maxValue + minValue)
     end
     if saturation < 0.1 then
-        return "灰色"
+        return Localization.get("color.gray")
     end
     local hue = 0
     if maxValue == red then
@@ -330,21 +337,21 @@ function BtnChoiceDialogEventFunc_CalculateColor(playerIndex)
     end
     hue = hue * 60
     if hue < 20 or hue >= 330 then
-        return "红色"
+        return Localization.get("color.red")
     elseif hue < 45 then
-        return "橙色"
+        return Localization.get("color.orange")
     elseif hue < 75 then
-        return "黄色"
+        return Localization.get("color.yellow")
     elseif hue < 160 then
-        return "绿色"
+        return Localization.get("color.green")
     elseif hue < 200 then
-        return "青色"
+        return Localization.get("color.cyan")
     elseif hue < 270 then
-        return "蓝色"
+        return Localization.get("color.blue")
     elseif hue < 300 then
-        return "紫色"
+        return Localization.get("color.purple")
     elseif hue < 330 then
-        return "粉色"
+        return Localization.get("color.pink")
     end
     return nil
 end
@@ -353,7 +360,7 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
     local dialogData = {
         DialogId = GAMEMODE_DIALOG_ID,
         PlayerName = playerName,
-        Title = '请选择游戏模式',
+        Title = Localization.get("game_mode.dialog.title"),
         Choices = {},
     }
     dialogData.RefreshData = function(self)
@@ -362,14 +369,14 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         for i = 1, getn(g_GameModeOptions) do
             local option = g_GameModeOptions[i]
             if option.IsSelected then
-                tinsert(self.Choices, option.Name .. '(已选择)')
+                tinsert(self.Choices, option.Name .. Localization.get("game_mode.selected_suffix"))
                 hasSelected = true
             else
                 tinsert(self.Choices, option.Name)
             end
         end
         if hasSelected then
-            tinsert(self.Choices, ">>确认<<")
+            tinsert(self.Choices, Localization.get("game_mode.confirm"))
         end
     end
     dialogData.OnChoice = function(self, buttonIndex)
@@ -397,15 +404,15 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         end
         local option = g_GameModeOptions[buttonIndex]
         if not option then
-            exMessageAppendToMessageArea(format("错误：玩家 %s 点击了非法按钮 %d", self.PlayerName, buttonIndex))
+            exMessageAppendToMessageArea(Localization.get("game_mode.error.invalid_button", self.PlayerName, buttonIndex))
             return
         end
         if not option.IsSelected then
             option.IsSelected = true
-            exMessageAppendToMessageArea(format("房主已选择%s", option.Name))
+            exMessageAppendToMessageArea(Localization.get("game_mode.host.selected", option.Name))
         elseif option ~= normalGameOption then
             option.IsSelected = nil
-            exMessageAppendToMessageArea(format("房主已取消选择%s", option.Name))
+            exMessageAppendToMessageArea(Localization.get("game_mode.host.canceled", option.Name))
         end
         if option == normalGameOption then
             -- 假如选择了正常模式，取消选择死亡模式和缩小模式
@@ -434,22 +441,22 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillModeDialog(playerName
     local dialogData = {
         DialogId = SKILL_DIALOG_ID_OFFSET + 0, -- 0 是特殊的、房主预选技能组的对话框
         PlayerName = playerName,
-        Title = '请选择技能组模式',
+        Title = Localization.get("skill_mode.dialog.title"),
         Choices = {},
     }
     dialogData.RefreshData = function(self)
         self.Choices = {}
         local preselectedSkillCount = getn(g_PreselectedSkillIndices)
         if preselectedSkillCount == 0 then
-            tinsert(self.Choices, '让每个玩家自行选择')
+            tinsert(self.Choices, Localization.get("skill_mode.choose_yourself"))
         end
-        tinsert(self.Choices, '房主规定技能组(对称)')
+        tinsert(self.Choices, Localization.get("skill_mode.host_symmetric"))
         -- 假如房主还未选择技能，额外提供随机技能选项
         if preselectedSkillCount == 0 then
             -- 关于为什么是可重复的，
             -- 看下面 RandomSymmetricSkill 与 RandomAsymmetricSkill 里面的注释
-            tinsert(self.Choices, '随机（可重复，对称）')
-            tinsert(self.Choices, '随机（可重复，不对称）')
+            tinsert(self.Choices, Localization.get("skill_mode.random_symmetric"))
+            tinsert(self.Choices, Localization.get("skill_mode.random_asymmetric"))
         end
     end
     dialogData.OnChoice = function(self, buttonIndex)
@@ -523,26 +530,26 @@ function BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(playerName)
     local dialogData = {
         DialogId = SKILL_DIALOG_ID_OFFSET2 + 0, -- 0 是特殊的、房主预选技能组的对话框
         PlayerName = playerName,
-        Title = '请选择各个玩家的技能组',
+        Title = Localization.get("skill_mode.all.title"),
         Choices = {},
     }
     dialogData.RefreshData = function(self)
         self.Choices = {}
         local preselectedSkillCount = getn(g_PreselectedSkillIndices)
         if preselectedSkillCount > 0 then
-            tinsert(self.Choices, '取消选择')
+            tinsert(self.Choices, Localization.get("skill_mode.cancel"))
             if preselectedSkillCount < 3 then
                 -- 假如预选技能组少于 3 个，继续选择
-                self.Title = format('请继续选择（还剩%d个）', 3 - preselectedSkillCount)
+                self.Title = Localization.get("skill_mode.continue", 3 - preselectedSkillCount)
             end
         else
-            self.Title = "请选择各个玩家的技能组"
+            self.Title = Localization.get("skill_mode.all.title")
         end
         for i = 1, getn(g_SkillNames) do
             local name = g_SkillNames[i]
             for j = 1, getn(g_PreselectedSkillIndices) do
                 if g_PreselectedSkillIndices[j] == i then
-                    name = name .. '(已选)'
+                    name = name .. Localization.get("skill_mode.selected_suffix")
                     break
                 end
             end
@@ -568,7 +575,7 @@ function BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(playerName)
             skillIndex = buttonIndex
         end
         if skillIndex < 1 or skillIndex > getn(g_SkillNames) then
-            exMessageAppendToMessageArea(format("错误：玩家 %s 点击了非法技能组按钮 %d", self.PlayerName, buttonIndex))
+            exMessageAppendToMessageArea(Localization.get("skill_mode.invalid_button", self.PlayerName, buttonIndex))
             return
         end
         local alreadySelected = false
@@ -606,28 +613,28 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
     local gameModeText = ''
     local skillText = ''
     if g_GameMode == 1 then
-        gameModeText = '正常模式'
+        gameModeText = Localization.get("game_mode.normal")
     elseif g_GameMode == 2 then
-        gameModeText = '死亡模式'
+        gameModeText = Localization.get("game_mode.death")
     elseif g_GameMode == 3 then
         if g_EnableDeathModeEffect == 1 then
-            gameModeText = '缩小模式(启用死亡模式效果)'
+            gameModeText = Localization.get("game_mode.shrink_with_effect")
         else
-            gameModeText = '缩小模式'
+            gameModeText = Localization.get("game_mode.shrink")
         end
     elseif g_GameMode == 4 then
-        gameModeText = '升本模式'
+        gameModeText = Localization.get("game_mode.level_up")
     end
     if g_DisableSeaArmy == 1 then
-        gameModeText = gameModeText .. ' (禁止海军)'
+        gameModeText = gameModeText .. Localization.get("game_mode.no_navy_suffix")
     end
     local preselectedSkillCount = getn(g_PreselectedSkillIndices)
     if preselectedSkillCount == 6 then
         if g_PreselectedSkillIndices.IsRandom then
             if g_PreselectedSkillIndices.IsSymmetric then
-                skillText = '技能组：随机（可重复，对称）'
+                skillText = Localization.get("game.start.skill_random_symmetric")
             else
-                skillText = '技能组：随机（可重复，不对称）'
+                skillText = Localization.get("game.start.skill_random_asymmetric")
             end
             -- 调试版本：显示随机选择的技能组
             -- 正式发布的版本里，注释掉下面的代码，给玩家一个“惊喜”
@@ -638,7 +645,7 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
             --     end
             -- end
         else
-            skillText = '技能组：'
+            skillText = Localization.get("game.start.skill_prefix")
             for i = 1, 3 do
                 skillText = skillText .. g_SkillNames[g_PreselectedSkillIndices[i]]
                 if i < preselectedSkillCount then
@@ -647,27 +654,27 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
             end
         end
     elseif preselectedSkillCount == 0 then
-        skillText = '技能组：由玩家自由选择'
+        skillText = Localization.get("game.start.skill_free_choice")
     else
-        exMessageAppendToMessageArea(format("错误：预选技能组数量不正确，应该是 0 或 6，但实际是 %d", preselectedSkillCount))
+        exMessageAppendToMessageArea(Localization.get("skill_mode.error.preselected_count", preselectedSkillCount))
         return
     end
-    exMessageAppendToMessageArea(format("游戏开始！已选择游戏模式：%s", gameModeText))
+    exMessageAppendToMessageArea(Localization.get("game.start.begin", gameModeText))
     exMessageAppendToMessageArea(skillText)
-    exAddTextToPublicBoard(format("游戏开始！已选择游戏模式：%s\n%s\n经济倍率: %.2f", gameModeText, skillText, exModeGetCheatMultiplier()), 15)
+    exAddTextToPublicBoard(format("%s\n%s\n%s", Localization.get("game.start.begin", gameModeText), skillText, Localization.get("game.start.economic_multiplier", exModeGetCheatMultiplier())), 15)
     exEnableWBScript("readyForStartCam")
 end
 
 function BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog(playerName)
     local playerIndex = g_PlayerNameToIndex[playerName]
     if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
-        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog 的参数 playerName 无效")
+        exMessageAppendToMessageArea(Localization.get("skill_mode.player_choose.invalid_player_name"))
         return
     end
     local dialogData = {
         DialogId = SKILL_DIALOG_ID_OFFSET + g_PlayerNameToIndex[playerName],
         PlayerName = playerName,
-        Title = '请选择您的技能组',
+        Title = Localization.get("skill_mode.player_choose.title"),
         Choices = {},
     }
     dialogData.OnChoice = function(self, buttonIndex)
@@ -680,14 +687,14 @@ function BtnChoiceDialogEventFunc_ShowPlayerChooseSkillDialog(playerName)
     for i = 1, getn(g_SkillNames) do
         tinsert(dialogData.Choices, g_SkillNames[i])
     end
-    tinsert(dialogData.Choices, '退出(待会再选)')
+    tinsert(dialogData.Choices, Localization.get("skill_mode.player_choose.exit"))
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end
 
 function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
     local playerIndex = g_PlayerNameToIndex[playerName]
     if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
-        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_ShowPurchaseTechDialog 的参数 playerName 无效")
+        exMessageAppendToMessageArea(Localization.get("skill_mode.player_choose.invalid_tech_player_name"))
         return
     end
     local techLevel = g_evilTechLevel
@@ -714,7 +721,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
     end
 
     local neededMoney = dialogData:getNeededMoney(techLevel)
-    dialogData.Title = "购买下一级科技权限($"..tostring(neededMoney)..")"
+    dialogData.Title = Localization.get("skill_mode.purchase.tech.title", neededMoney)
 
     dialogData.OnChoice = function(self, buttonIndex)
         if buttonIndex == 1 then
@@ -736,7 +743,7 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
                 self:onPurchaseSuccess(playerIndex2)
 
             else
-                exAddTextToPublicBoardForPlayer(self.PlayerName, "购买失败，资金不足", 10)
+                exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("skill_mode.purchase.tech.failed"), 10)
             end
 
             SetWorldBuilderThisPlayer(previous)
@@ -748,11 +755,11 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             g_angelTechLevel = g_angelTechLevel + 1
             if g_angelTechLevel < 4 then
                 for i = 4, 6 do
-                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), "购买成功，解锁下一级科技等级和更多电厂", 20)
+                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), Localization.get("skill_mode.purchase.tech.success"), 20)
                     exCreateCustomButtonForPlayer("Player_" .. tostring(i), {
                         Index = 7,
                         TextureName = "AUA_Bribe",
-                        Desc = "购买下一级科技(当前等级："..tostring(g_angelTechLevel)..")\n解锁下一级科技等级和更多电厂权限",
+                        Desc = Localization.get("skill_mode.purchase.tech.description", g_angelTechLevel),
                         X = 250,
                         Y = 20,
                         GroupIndex = 1,
@@ -799,9 +806,9 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
 
             for i = 4, 6 do
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, "己方科技等级: " .. tostring(g_angelTechLevel))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, "己方电厂最大数量: " .. tostring(powerNum))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, "己方神州电厂最大数量: " .. tostring(celestialPowerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, Localization.get("purchase_tech.level", g_angelTechLevel))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", powerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialPowerNum))
             end
 
 
@@ -809,11 +816,11 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             g_evilTechLevel = g_evilTechLevel + 1
             if g_evilTechLevel < 4 then
                 for i = 1, 3 do
-                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), "购买成功，解锁下一级科技等级和更多电厂", 20)
+                    exAddTextToPublicBoardForPlayer("Player_" .. tostring(i), Localization.get("skill_mode.purchase.tech.success"), 20)
                     exCreateCustomButtonForPlayer("Player_" .. tostring(i), {
                         Index = 7,
                         TextureName = "AUA_Bribe",
-                        Desc = "购买下一级科技(当前等级："..tostring(g_evilTechLevel)..")\n解锁下一级科技等级和更多电厂权限",
+                        Desc = Localization.get("skill_mode.purchase.tech.description", g_evilTechLevel),
                         X = 250,
                         Y = 20,
                         GroupIndex = 1,
@@ -859,23 +866,23 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
 
             for i = 1, 3 do
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, "己方科技等级: " .. tostring(g_evilTechLevel))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, "己方电厂最大数量: " .. tostring(powerNum))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, "己方神州电厂最大数量: " .. tostring(celestialPowerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, Localization.get("purchase_tech.level", g_evilTechLevel))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", powerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialPowerNum))
             end
 
         end
     end
 
-    tinsert(dialogData.Choices, '购买')
-    tinsert(dialogData.Choices, '不购买')
+    tinsert(dialogData.Choices, Localization.get("skill_mode.purchase.tech.choice.buy"))
+    tinsert(dialogData.Choices, Localization.get("skill_mode.purchase.tech.choice.no_buy"))
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end
 
 function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
     local playerIndex = g_PlayerNameToIndex[playerName]
     if type(playerIndex) ~= 'number' or playerIndex < 1 or playerIndex > 6 then
-        exMessageAppendToMessageArea("错误：BtnChoiceDialogEventFunc_ShowPurchaseTechDialog 的参数 playerName 无效")
+        exMessageAppendToMessageArea(Localization.get("skill_mode.player_choose.invalid_tech_player_name"))
         return
     end
 
@@ -885,7 +892,7 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
         Choices = {},
     }
 
-    dialogData.Title = "回收".. g_CurrentClickRecycleUnit[playerIndex].Name;
+    dialogData.Title = Localization.get("recycle.dialog.title", g_CurrentClickRecycleUnit[playerIndex].Name)
 
     dialogData.OnChoice = function(self, buttonIndex)
         if buttonIndex <= 4 then
@@ -922,7 +929,7 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
                 end
                 ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, count * g_CurrentClickRecycleUnit[playerIndex2].Money * discount) ;
                 -- 同时也要告诉盟友
-                local msg = "$p"..tostring(playerIndex2).."Name回收了" .. tostring(count) .. "个" .. g_CurrentClickRecycleUnit[playerIndex2].Name .. ", 剩余" .. tostring(leftCount) .. "个";
+                local msg = Localization.get("recycle.message", tostring(playerIndex2), count, g_CurrentClickRecycleUnit[playerIndex2].Name, tostring(leftCount));
                 if playerIndex2 >= 4 then
                     exAddTextToPublicBoardForPlayer("Player_4", msg, 5);
                     exAddTextToPublicBoardForPlayer("Player_5", msg, 5);
@@ -938,10 +945,10 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
         end
     end
 
-    tinsert(dialogData.Choices, '回收1个')
-    tinsert(dialogData.Choices, '回收5个')
-    tinsert(dialogData.Choices, '回收10个')
-    tinsert(dialogData.Choices, '回收20个')
-    tinsert(dialogData.Choices, '取消')
+    tinsert(dialogData.Choices, Localization.get("recycle.choice.1"))
+    tinsert(dialogData.Choices, Localization.get("recycle.choice.5"))
+    tinsert(dialogData.Choices, Localization.get("recycle.choice.10"))
+    tinsert(dialogData.Choices, Localization.get("recycle.choice.20"))
+    tinsert(dialogData.Choices, Localization.get("recycle.choice.cancel"))
     ButtonChoiceDialogManager:ShowDialog(dialogData)
 end

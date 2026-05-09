@@ -130,24 +130,24 @@ function CenterTopBtnFunc_InitializeAutoSurrender()
 end
 
 function RequestSurrender(playerIndex, isAutoSurrender)
-    local side, sideName, sideAiPlayer, sidePlayerIndexOffset = "devil", "恶魔", "PlyrCivilian", 0
+    local side, sideName, sideAiPlayer, sidePlayerIndexOffset = "devil", Localization.get("side.devil"), "PlyrCivilian", 0
     if playerIndex >= 4 then
-        side, sideName, sideAiPlayer, sidePlayerIndexOffset = "angel", "天使", "PlyrCreeps", 3
+        side, sideName, sideAiPlayer, sidePlayerIndexOffset = "angel", Localization.get("side.angel"), "PlyrCreeps", 3
     end
     local globalVariableName = format("%s_surrender", side)
     setglobal(globalVariableName, 0)
     exEnableWBScript(format("%s/%s_surrender", sideAiPlayer, side))
-    exAddTextToPublicBoard(format("%s$p%dName发起了投降", sideName, playerIndex), 10)
-    local voteText = '                                                          正在投票\n规则:投降大于战斗则为成功投降,票数相等会继续游戏\n全局每个人只能发动一次投降'
+    exAddTextToPublicBoard(Localization.get("surrender.public.start", sideName, playerIndex), 10)
+    local voteText = Localization.get("surrender.vote_text")
     for i = 1, 3, 1 do
         local p = sidePlayerIndexOffset + i
         local targetPlayerName = format("Player_%d", p)
         exHideCustomBtnChoiceDialogForPlayer(targetPlayerName)
         exHideLongTextDialogForPlayer(targetPlayerName)
-        exShowLongTextDialogForPlayer(targetPlayerName, 200 + p, voteText, '投降', '弃权', '战斗')
+        exShowLongTextDialogForPlayer(targetPlayerName, 200 + p, voteText, Localization.get("surrender.choice.surrender"), Localization.get("surrender.choice.pass"), Localization.get("surrender.choice.fight"))
     end
     if isAutoSurrender then
-        exAddTextToPublicBoard(format("%s$p%dName选择投降", sideName, playerIndex), 30)
+        exAddTextToPublicBoard(Localization.get("surrender.public.auto", sideName, playerIndex), 30)
         setglobal(globalVariableName, getglobal(globalVariableName) + 1)
     end
     return true
@@ -165,8 +165,8 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             PlayerIndex = playerIndex,
             ButtonIndex = 1,
             IconId = 'Button_Toggle_Power',
-            Title = '请选择你的技能组',
-            Description = '选择后可获得两个强力技能，请尽快选择',
+            Title = Localization.get("button.choose_skill.title"),
+            Description = Localization.get("button.choose_skill.description"),
             IsEnabled = true,
             IsHighlighted = true,
             OnClick = function(self)
@@ -187,8 +187,8 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 4,
         IconId = 'Button_PlayerPower_FreeTrade',
-        Title = '交易市场',
-        Description = '购买理财项目或者定向转移资金',
+        Title = Localization.get("button.market.title"),
+        Description = Localization.get("button.market.description"),
         IsEnabled = true,
         OnClick = function(self)
             BtnChoiceDialogEventFunc_ShowMarketDialog(self.PlayerIndex)
@@ -200,8 +200,8 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 6,
         IconId = 'Allied_topmenu_communicator',
-        Title = '投降',
-        Description = '召开一次严肃的会议试图结束游戏',
+        Title = Localization.get("button.surrender.title"),
+        Description = Localization.get("button.surrender.description"),
         MaxUseCount = 1,
         SharedCooldownId = 'surrender',
         SharedCooldownSeconds = 3,
@@ -238,17 +238,17 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
         buttons[1] = CreateRepeatEnemySpecialPowerButton(playerIndex)
         buttons[2] = CreateRepeatSelfSpecialPowerButton(playerIndex)
     else
-        exMessageAppendToMessageArea("错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效")
+        exMessageAppendToMessageArea(Localization.get("error.invalid_kind"))
         return
     end
     for j = 1, 2 do
         if playerIndex <= 3 then
             for i = 1, 3 do
-                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 8)
+                exAddTextToPublicBoardForPlayer("Player_" .. i, Localization.get("button.skill_selected", playerIndex, buttons[j].Title), 8)
             end
         else
             for i = 4, 6 do
-                exAddTextToPublicBoardForPlayer("Player_" .. i, format('$p%dName选择了' .. buttons[j].Title, playerIndex), 8)
+                exAddTextToPublicBoardForPlayer("Player_" .. i, Localization.get("button.skill_selected", playerIndex, buttons[j].Title), 8)
             end
         end
     end
@@ -282,8 +282,8 @@ function CreateDestructionButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'Button_SovietTeslaMissile',
-        Title = '局部毁灭武器',
-        Description = '摧毁战场中央区域（己方与敌方的防御塔之间）的所有敌方单位，无视铁幕效果',
+        Title = Localization.get("button.destruction.title"),
+        Description = Localization.get("button.destruction.description"),
         IsEnabled = true,
         MaxUseCount = 1,
         SharedCooldownId = "destruction",
@@ -301,8 +301,8 @@ function CreateDamoclesSwordButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'Button_CelestialPantaOrbitalStrike',
-        Title = '达摩克利斯之剑',
-        Description = '请求太空的卫星对敌方随机单位启用12秒的精准卫星打击',
+        Title = Localization.get("button.damocles.title"),
+        Description = Localization.get("button.damocles.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -321,8 +321,8 @@ function CreateIronCurtainButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'Button_PlayerPower_IronCurtain',
-        Title = '铁幕演说',
-        Description = '发表铁幕演说,让全体单位套上坚不可摧的铁幕，持续15秒',
+        Title = Localization.get("button.iron_curtain.title"),
+        Description = Localization.get("button.iron_curtain.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -341,8 +341,8 @@ function CreateTimeStopButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'AUA_Timebelt',
-        Title = '时空管理局',
-        Description = '借助未来科技的力量时停对方单位13秒',
+        Title = Localization.get("button.time_stop.title"),
+        Description = Localization.get("button.time_stop.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -361,10 +361,9 @@ function CreateDragonshipButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'CEL_DragonShipLand',
-        Title = '龙行天下',
-        Description = '召唤龙船(第5回合起可以使用)',
-        UnlockedDescription = '召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘'
-            .. '\n龙船出现得越迟，血量越高，第18回合后血量抵达上限\n冷却时间1回合',
+        Title = Localization.get("button.dragonship.title"),
+        Description = Localization.get("button.dragonship.description"),
+        UnlockedDescription = Localization.get("button.dragonship.unlocked_description"),
         IsLocked = true,
         MaxUseCount = 2,
         CooldownRounds = 1,
@@ -402,8 +401,8 @@ function CreateAirMarshalButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'Button_SovietInterceptorAircraft',
-        Title = '空军元帅',
-        Description = '请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击\n【仅对空、不可攻击敌方空军元帅】',
+        Title = Localization.get("button.air_marshal.title"),
+        Description = Localization.get("button.air_marshal.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -422,8 +421,8 @@ function CreateRepeatSelfSpecialPowerButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'CelestialPowerPlantDetection',
-        Title = '复制己方技能',
-        Description = '复制己方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)',
+        Title = Localization.get("center_top.copy_our_skill.title"),
+        Description = Localization.get("center_top.copy_our_skill.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 30,
@@ -443,8 +442,8 @@ function CreateRepeatEnemySpecialPowerButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'CelestialSonarOn',
-        Title = '复制敌方技能',
-        Description = '复制敌方最近一次使用的技能（如果最近一次是复制技能，则一直回溯到最近一次非复制的技能），如果没有找到合适的技能，则不释放(冷却30s)',
+        Title = Localization.get("center_top.copy_enemy_skill.title"),
+        Description = Localization.get("center_top.copy_enemy_skill.description"),
         IsEnabled = true,
         MaxUseCount = 1,
         CooldownSeconds = 30,
@@ -483,8 +482,8 @@ function CreateNanoMaintainHiveButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 2,
         IconId = 'Button_JapanNanoMaintainHive',
-        Title = '纳米维修',
-        Description = '在陆地前线防御塔周围生成1个纳米维修立场和4个大型维修天灯，治愈己方部队和前线防御塔\n【仅可支援陆地】',
+        Title = Localization.get("center_top.nano_repair.title"),
+        Description = Localization.get("center_top.nano_repair.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 10,
@@ -504,8 +503,8 @@ function CreateSpawnArmyImmediatelyButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'Button_JapanKamikazeTeammate',
-        Title = '补充军队',
-        Description = '立即触发一次生成陆地和空中部队(冷却70秒)',
+        Title = Localization.get("center_top.reinforce_army.title"),
+        Description = Localization.get("center_top.reinforce_army.description"),
         IsEnabled = true,
         MaxUseCount = 2,
         CooldownSeconds = 70,
@@ -524,8 +523,8 @@ function CreateCashBonusButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 1,
         IconId = 'AUA_Bribe',
-        Title = '杀敌奖励',
-        Description = '为所有敌方陆地单位（不包括空军）套上钱套子(持续30秒)，击杀后使用技能者获得金钱(冷却40秒)',
+        Title = Localization.get("center_top.kill_reward.title"),
+        Description = Localization.get("center_top.kill_reward.description"),
         IsEnabled = true,
         MaxUseCount = 1,
         CooldownSeconds = 70,
@@ -544,9 +543,9 @@ function CreateChronosphereButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 3,
         IconId = 'AUA_Aegis_Shield',
-        Title = '超时空突袭',
-        Description = '请建造盟军小超武「超时空传送仪」以解锁此按钮',
-        UnlockedDescription = '打开时空裂缝让主战坦克突袭敌方后排并获得短暂的铁幕\n冷却时间三回合',
+        Title = Localization.get("center_top.temporal_raid.title"),
+        Description = Localization.get("center_top.temporal_raid.description"),
+        UnlockedDescription = Localization.get("center_top.temporal_raid.unlocked_description"),
         IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownRounds = 3,
@@ -565,9 +564,9 @@ function CreateJapanShieldButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 3,
         IconId = 'Button_PlayerPower_PointDefenseDrones',
-        Title = '全体护盾',
-        Description = '请激活帝国最高机密协议「机械化组装」以解锁此按钮',
-        UnlockedDescription = '为所有己方载具套上纳米护盾\n冷却时间200秒',
+        Title = Localization.get("center_top.japan_shield.title"),
+        Description = Localization.get("center_top.japan_shield.description"),
+        UnlockedDescription = Localization.get("center_top.japan_shield.unlocked_description"),
         IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownSeconds = 200,
@@ -586,9 +585,9 @@ function CreateCelestialMoraleButton(playerIndex)
         PlayerIndex = playerIndex,
         ButtonIndex = 3,
         IconId = 'CelestialLightningTroop_Lv3',
-        Title = '士气提升',
-        Description = '请建造神州小超武「日晷阵列」（止戈力场）以解锁此按钮',
-        UnlockedDescription = '己方全体单位获得18秒的1.25倍移速和伤害加成\n冷却时间220秒',
+        Title = Localization.get("center_top.morale_boost.title"),
+        Description = Localization.get("center_top.morale_boost.description"),
+        UnlockedDescription = Localization.get("center_top.morale_boost.unlocked_description"),
         IsLocked = true,
         MaxUseCount = nil, -- 没有限制
         CooldownSeconds = 220,
@@ -602,13 +601,13 @@ function CreateCelestialMoraleButton(playerIndex)
 end
 
 function RequestDestruction(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideScript = "KW"
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideScript = "KB"
     end
-    exMessageAppendToMessageArea(format("%s方使用了局部杀伤性武器！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.local_destruction", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
     exEnableWBScript(sideScript)
     if playerIndex <= 3 then
@@ -620,11 +619,11 @@ function RequestDestruction(playerIndex)
 end
 
 function RequestBuyOver(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
     end
-    exMessageAppendToMessageArea(format("%s方使用了策反！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.bribe", sideName))
     --ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
 
     if playerIndex <= 3 then
@@ -636,13 +635,13 @@ function RequestBuyOver(playerIndex)
 end
 
 function RequestDamoclesSword(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideScript = "devil_nemesisplay"
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideScript = "angel_nemesisplay"
     end
-    exMessageAppendToMessageArea(format("%s方落下了达摩克利斯之剑！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.damocles_struck", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "CelestialEnergyGatling_Select")
     exEnableWBScript(sideScript)
     if playerIndex <= 3 then
@@ -654,13 +653,13 @@ function RequestDamoclesSword(playerIndex)
 end
 
 function RequestIronCurtain(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local referenceObject = T74
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         referenceObject = T84
     end
-    exMessageAppendToMessageArea(format("%s方发表了铁幕演说！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.iron_curtain_speech", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "SOV_IronCurtain_Cast")
     local units, count = ObjectFindObjects(referenceObject, nil, FilterALLUNIT)
     for i = 1, count, 1 do
@@ -675,13 +674,13 @@ function RequestIronCurtain(playerIndex)
 end
 
 function RequestTimeStop(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideScript = "devilstop"
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideScript = "angelstop"
     end
-    exMessageAppendToMessageArea(format("%s方竟然让时间停止！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.time_stop", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Off")
     exEnableWBScript(sideScript)
     if playerIndex <= 3 then
@@ -694,24 +693,24 @@ end
 
 function RequestDragonShip(playerIndex, count)
     if count ~=1 and count ~= 2 then
-        exMessageAppendToMessageArea("错误：龙船召唤失败，数量必须为1或2")
+        exMessageAppendToMessageArea(Localization.get("center_top.error.dragonship_invalid_number"))
         return nil
     end
     local cutMCV = 5
     local counterValue = exCounterGetByName("lvc");
     if counterValue < cutMCV then
-        exMessageAppendToMessageArea("龙船召唤失败，回合数不足！")
+        exMessageAppendToMessageArea(Localization.get("center_top.error.dragonship_round_insufficient"))
         return nil
     end
 
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideAIPlayer = "PlyrCivilian"
     -- local mcvHealthScript = "MCVhealthD"
     local dragonshipAngle = "0"
     local waypoint = "TD7"
     local tower = T74
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideAIPlayer = "PlyrCreeps"
         -- mcvHealthScript = "MCVhealthA"
         dragonshipAngle = "180"
@@ -720,7 +719,7 @@ function RequestDragonShip(playerIndex, count)
     end
     local aiTeamName = sideAIPlayer .. '/ATTACK'
 
-    exMessageAppendToMessageArea(format("%s方召唤了青龙核心战斗舰！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.dragon_core_called", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_DragonShip_VoicePack")
     local pos = exWaypointGetPos(waypoint)
     local x1 = pos[1];
@@ -753,7 +752,7 @@ function RequestDragonShip(playerIndex, count)
         ExecuteAction("SET_UNIT_REFERENCE", str, dragonship)
         ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
         local currentHp = ObjectGetCurrentHealth(dragonship)
-        exMessageAppendToMessageArea(format("龙船#%d 血量%d->%d", id, previousHp, currentHp))
+        exMessageAppendToMessageArea(Localization.get("center_top.dragonship.hp_change", id, previousHp, currentHp))
     end
 
     if playerIndex <= 3 then
@@ -765,13 +764,13 @@ function RequestDragonShip(playerIndex, count)
 end
 
 function RequestAirMarshal(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideScript = "devil_air"
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideScript = "angel_air"
     end
-    exMessageAppendToMessageArea(format("%s方请求了空军元帅！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.air_marshal", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "SOV_SukhoiInterceptor_VoiceAttack")
     ExecuteAction("PLAY_SOUND_EFFECT", "CEL_NukeIncoming")
     exEnableWBScript(sideScript)
@@ -785,7 +784,7 @@ function RequestAirMarshal(playerIndex)
 end
 
 function RequestNanoMaintainHive(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideAIPlayer = "PlyrCivilian"
     local tower = T74
     local positions = { X = 3000, Y = 3104, Z = 210 }
@@ -796,7 +795,7 @@ function RequestNanoMaintainHive(playerIndex)
         { X = 3200, Y = 2900, Z = 210 },
     }
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideAIPlayer = "PlyrCreeps"
         tower = T84
         positions = { X = 4030, Y = 3104, Z = 210 }
@@ -808,7 +807,7 @@ function RequestNanoMaintainHive(playerIndex)
         }
     end
 
-    exMessageAppendToMessageArea(format("%s方启动了纳米维修！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.nano_repair", sideName))
 
     ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions, 0)
     for j = 1, 4, 1 do
@@ -831,9 +830,9 @@ function RequestNanoMaintainHive(playerIndex)
 end
 
 function RequestRepeatSelfSpecialPower(playerIndex, self)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
     end
     local destPowerFunc = nil;
     local history = g_evilButtonClickHistory;
@@ -841,7 +840,7 @@ function RequestRepeatSelfSpecialPower(playerIndex, self)
         history = g_angelButtonClickHistory;
     end
     if getn(history) == 0 then
-        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, "未释放过技能，无法复制技能", 8)
+        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, Localization.get("center_top.error.no_skill_to_copy"), 8)
         return false;
     end
     for i = getn(history), 1, -1 do
@@ -852,7 +851,7 @@ function RequestRepeatSelfSpecialPower(playerIndex, self)
     end
 
     if destPowerFunc ~= nil then
-        exMessageAppendToMessageArea(format("%s方使用了复制己方技能！", sideName))
+        exMessageAppendToMessageArea(Localization.get("center_top.used.copy_our_skill", sideName))
         if destPowerFunc == RequestDragonShip then
             if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
                 self.DragonshipNumber = 2
@@ -864,16 +863,16 @@ function RequestRepeatSelfSpecialPower(playerIndex, self)
         end
 
     else
-        exAddTextToPublicBoardForPlayer("Player_" .. i, "未找到合适的技能，无法复制技能", 8)
+                        exAddTextToPublicBoardForPlayer("Player_" .. i, Localization.get("center_top.error.no_suitable_skill"), 8)
         return false;
     end
 
 end
 
 function RequestRepeatEnemySpecialPower(playerIndex, self)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
     end
     local destPowerFunc = nil;
     local history = g_angelButtonClickHistory;
@@ -881,7 +880,7 @@ function RequestRepeatEnemySpecialPower(playerIndex, self)
         history = g_evilButtonClickHistory;
     end
     if getn(history) == 0 then
-        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, "敌方未释放过技能，无法复制技能", 8)
+        exAddTextToPublicBoardForPlayer("Player_" .. playerIndex, Localization.get("center_top.error.enemy_no_skill_to_copy"), 8)
         return false;
     end
     for i = getn(history), 1, -1 do
@@ -892,7 +891,7 @@ function RequestRepeatEnemySpecialPower(playerIndex, self)
     end
 
     if destPowerFunc ~= nil then
-        exMessageAppendToMessageArea(format("%s方使用了复制敌方技能！", sideName))
+        exMessageAppendToMessageArea(Localization.get("center_top.used.copy_enemy_skill", sideName))
         if destPowerFunc == RequestDragonShip then
             if RequestDragonShip(self.PlayerIndex, self.DragonshipNumber) then
                 self.DragonshipNumber = 2
@@ -904,18 +903,18 @@ function RequestRepeatEnemySpecialPower(playerIndex, self)
         end
 
     else
-        exAddTextToPublicBoardForPlayer("Player_" .. i, "未找到合适的技能，无法复制技能", 8)
+        exAddTextToPublicBoardForPlayer("Player_" .. i, Localization.get("center_top.error.no_suitable_skill"), 8)
         return false;
     end
 
 end
 
 function RequestSpawnArmyImmediately(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
     end
-    exMessageAppendToMessageArea(format("%s方使用了补充军队！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.reinforce_army", sideName))
     if playerIndex <= 3 then
         SchedulerModule.delay_call(function()
             UNITSPST_left (1,step1,INFANTSP,INFANTTEAM,INFANTATTACK,INFANTSPCH)
@@ -970,16 +969,16 @@ end
 
 function RequestChronosphere(playerIndex)
     if g_AlliedSuperWeaponBuilt[playerIndex] ~= 1 then
-        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未建造超时空。", playerIndex))
+        exMessageAppendToMessageArea(Localization.get("center_top.error.player_not_built_chronosphere", playerIndex))
         return false
     end
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local sideScript = "PlyrCivilian/devilASuper"
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         sideScript = "PlyrCreeps/angelASuper"
     end
-    exMessageAppendToMessageArea(format("%s方使用了超时空突袭！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.temporal_raid", sideName))
     ExecuteAction("PLAY_SOUND_EFFECT", "ALL_Chronosphere_Die")
     exEnableWBScript(sideScript)
     return true
@@ -987,20 +986,20 @@ end
 
 function RequestJapanShield(playerIndex)
     if g_ProductionBonus_JapanGet[playerIndex] ~= 1 then
-        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未获得帝国机械化组装协议。", playerIndex))
+        exMessageAppendToMessageArea(Localization.get("center_top.error.player_not_emp_mech_protocol", playerIndex))
         return false
     end
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local filterObj = T74
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         filterObj = T84
     end
     
-    exMessageAppendToMessageArea(format("%s $p%dName使用了由帝国机械化组装协议提供的纳米护盾！", sideName, playerIndex))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.emp_nano_shield", sideName, playerIndex))
     local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleFilter)
     if count == 0 then
-        exMessageAppendToMessageArea("错误：没有找到任何坦克单位，无法施加纳米护盾。")
+        exMessageAppendToMessageArea(Localization.get("center_top.error.no_tank_found"))
         return false
     end
     for i = 1, count, 1 do
@@ -1015,17 +1014,17 @@ function RequestJapanShield(playerIndex)
 end
 
 function RequestCashBonus(playerIndex)
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local filterObj = T84
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         filterObj = T74
     end
 
-    exMessageAppendToMessageArea(format("%s方使用了杀敌奖励！", sideName))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.kill_reward", sideName))
     local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_MoneyBonusTargetFilter)
     if count == 0 then
-        exMessageAppendToMessageArea("错误：没有找到任何陆地单位，无法释放杀敌奖励")
+        exMessageAppendToMessageArea(Localization.get("center_top.error.no_land_unit_found"))
         return false
     end
     local fireObject = GetObjectByScriptName("wan" .. tostring(playerIndex))
@@ -1047,20 +1046,20 @@ end
 
 function RequestCelestialMorale(playerIndex)
     if g_CelestialSuperWeapon_Get[playerIndex] ~= 1 then
-        exMessageAppendToMessageArea(format("错误：玩家 %d 尚未获得止戈立场。", playerIndex))
+        exMessageAppendToMessageArea(Localization.get("center_top.error.player_not_obtained_morale", playerIndex))
         return false
     end
-    local sideName = "恶魔"
+    local sideName = Localization.get("side.devil")
     local filterObj = T74
     if playerIndex >= 4 then
-        sideName = "天使"
+        sideName = Localization.get("side.angel")
         filterObj = T84
     end
     
-    exMessageAppendToMessageArea(format("%s $p%dName使用了由止戈立场提供的全图士气提升技能！", sideName, playerIndex))
+    exMessageAppendToMessageArea(Localization.get("center_top.used.global_morale", sideName, playerIndex))
     local matchedObjects, count = ObjectFindObjects(filterObj, nil, g_VehicleInfantryAircraftFilter)
     if count == 0 then
-        exMessageAppendToMessageArea("错误：没有找到任何单位，无法施加士气提升。")
+        exMessageAppendToMessageArea(Localization.get("center_top.error.no_unit_found"))
         return false
     end
     for i = 1, count, 1 do

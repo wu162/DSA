@@ -32,7 +32,7 @@ SchedulerModule.call_every_x_frame(function()
             end
             if round >= 9 and CelestialCenturionUpgradeLevel[i] == 1 then
                 CelestialCenturionUpgradeLevel[i] = 2
-                exMessageAppendToMessageArea("$p" .. i .. "Name解锁千夫长/万夫长!")
+                exMessageAppendToMessageArea(Localization.get("celestial_centurion.unlock", i))
             end
             CelestialCenturionUpgradeUseCount[i] = 1
         end

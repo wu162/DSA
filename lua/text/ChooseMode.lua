@@ -1,4 +1,4 @@
-exMessageAppendToMessageArea("等待房主选择游戏模式")
+exMessageAppendToMessageArea(Localization.get("dialog.choose_mode.waiting"))
 g_objectTeamNameToPlayerName = {
     ["teamPlayer_1"] = "Player_1",
     ["teamPlayer_2"] = "Player_2",

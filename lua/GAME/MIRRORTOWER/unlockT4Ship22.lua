@@ -17,7 +17,7 @@ for i = 4 , 6 , 1 do
     end
 end
 
-exAddTextToPublicBoard('天使方摧毁敌方海3塔，立即释放一次达摩克利斯之剑(不消耗释放次数)!',10)
+exAddTextToPublicBoard(Localization.get("mirrortower.unlock_t4_ship.angel"), 10)
 
 SchedulerModule.delay_call(function()
     ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", "Sea3ProtectShip7", "JapanFortressShip", "PlyrCivilian/teamPlyrCivilian", "seaTower7");

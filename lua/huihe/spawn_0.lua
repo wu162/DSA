@@ -72,10 +72,10 @@ if not RoundLuaManager then
         end
         local level = exCounterGetByName("lvc")
         if level ~= nil and level > 0 then
-            exAddTextToPublicBoard(format("第%d回合，开始！", level), 10)
+            exAddTextToPublicBoard(Localization.get("round.begin", level), 10)
             if level == 1 then
-                exAddTextToPublicBoard("战场右侧：天使$p4Name $p5Name $p6Name", 20)
-                exAddTextToPublicBoard("战场左侧：恶魔$p1Name $p2Name $p3Name", 20)
+                exAddTextToPublicBoard(Localization.get("round.angel_formation"), 20)
+                exAddTextToPublicBoard(Localization.get("round.devil_formation"), 20)
             end
         end
     end, { list })
@@ -93,12 +93,12 @@ if countD>countA then
     ExecuteAction('PLAYER_GIVE_MONEY','Player_1',devil_money)
     ExecuteAction('PLAYER_GIVE_MONEY','Player_2',devil_money)
     ExecuteAction('PLAYER_GIVE_MONEY','Player_3',devil_money)
-    exAddTextToPublicBoard('恶魔方本回合胜!',10)
+    exAddTextToPublicBoard(Localization.get('round.devil_win'),10)
     if devil_max>=1200 then
-        exAddTextToPublicBoard('恶魔方终结连胜!',10)
+        exAddTextToPublicBoard(Localization.get('round.devil_end_streak'),10)
     end
     if angel_max>=1200 then
-        exAddTextToPublicBoard('恶魔方正在连胜!',10)
+        exAddTextToPublicBoard(Localization.get('round.devil_on_streak'),10)
     end
     devil_money=0
     angel_money=0
@@ -115,12 +115,12 @@ elseif countD<countA then
     ExecuteAction('PLAYER_GIVE_MONEY','Player_4',angel_money)
     ExecuteAction('PLAYER_GIVE_MONEY','Player_5',angel_money)
     ExecuteAction('PLAYER_GIVE_MONEY','Player_6',angel_money)
-    exAddTextToPublicBoard('天使方本回合胜!',10)
+    exAddTextToPublicBoard(Localization.get('round.angel_win'),10)
     if devil_max>=1200 then
-        exAddTextToPublicBoard('天使方正在连胜!',10)
+        exAddTextToPublicBoard(Localization.get('round.angel_on_streak'),10)
     end
     if angel_max>=1200 then
-        exAddTextToPublicBoard('天使方终结连胜!',10)
+        exAddTextToPublicBoard(Localization.get('round.angel_end_streak'),10)
     end
     devil_money=0
     angel_money=0
@@ -135,5 +135,5 @@ elseif countD<countA then
 else
     devil_money=0
     angel_money=0
-    exAddTextToPublicBoard('本回合暂无胜者',10)
+    exAddTextToPublicBoard(Localization.get('round.no_winner'),10)
 end
