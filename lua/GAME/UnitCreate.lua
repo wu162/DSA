@@ -8,7 +8,7 @@ function ShowTimedHelp(ownerPlayerName, name, localizedText, x, y, z)
         Y = y,
         Z = z,
     }, 0)
-    ExecuteAction("NAMED_SHOW_INFOBOX", name, localizedText, 0, "")
+    TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", name, localizedText, 0, "")
     SchedulerModule.delay_call(function(id)
         -- 这里使用 id 而不是 name 是因为 name 有可能被重复利用
         -- 我们并不希望删除新的同名对象

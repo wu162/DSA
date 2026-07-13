@@ -443,3 +443,16 @@ g_RecycleBtnHandlers = {
     end
 }
 
+ButtonManager:RegisterCustomButtonHandler(function(playerName, index)
+    local handled = nil
+    if g_RecycleBtnHandlers[index] then
+        g_RecycleBtnHandlers[index](playerName, index);
+        handled = true
+    end
+    if index > 30 and index < 80 then
+        RecycleUnitBtnsClick(playerName, index);
+        handled = true
+    end
+    return handled
+end)
+

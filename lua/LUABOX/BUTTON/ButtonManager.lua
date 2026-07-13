@@ -1,7 +1,22 @@
 ButtonManager = {
     _data = {},
     _sharedCooldown = {}, -- 用于存储共享冷却时间
+    _customButtonHandlers = {},
 }
+
+function onCustomBtnClickEvent(playerName, index)
+    local list = ButtonManager._customButtonHandlers
+    for i = 1, getn(list), 1 do
+        local f = list[i]
+        if f(playerName, index) then
+            return
+        end
+    end
+end
+
+function ButtonManager.RegisterCustomButtonHandler(self, handler)
+    tinsert(self._customButtonHandlers, handler)
+end
 
 function ButtonManager.GetButton(self, playerName, buttonIndex)
     local playerData = self._data[playerName]

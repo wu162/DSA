@@ -96,19 +96,10 @@ function PurchaseTechMode_Setting()
 
 end
 
-
-
-function onCustomBtnClickEvent(playerName, index)
-    if index == 7 then
-
-        BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
-
+ButtonManager:RegisterCustomButtonHandler(function(playerName, index)
+    if index ~= 7 then
+        return nil    
     end
-
-    if g_RecycleBtnHandlers[index] then
-        g_RecycleBtnHandlers[index](playerName, index);
-    end
-    if index > 30 and index < 80 then
-        RecycleUnitBtnsClick(playerName, index);
-    end
-end
+    BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
+    return 1
+end)

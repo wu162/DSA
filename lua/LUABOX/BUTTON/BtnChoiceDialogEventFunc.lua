@@ -34,6 +34,27 @@ g_SkillNames = {
     Localization.get("skill.name.4"),
     Localization.get("skill.name.5"),
 }
+Localization.on_language_changed(function()
+    g_GameModeName = {
+        [1] = Localization.get("game_mode.name.1"),
+        [2] = Localization.get("game_mode.name.2"),
+        [3] = Localization.get("game_mode.name.3"),
+    }
+    g_GameModeOptions = {
+        { Name = Localization.get("game_mode.option.1.name") },
+        { Name = Localization.get("game_mode.option.2.name") },
+        { Name = Localization.get("game_mode.option.3.name") },
+        { Name = Localization.get("game_mode.option.4.name") },
+        { Name = Localization.get("game_mode.option.5.name") },
+    }
+    g_SkillNames = {
+        Localization.get("skill.name.1"),
+        Localization.get("skill.name.2"),
+        Localization.get("skill.name.3"),
+        Localization.get("skill.name.4"),
+        Localization.get("skill.name.5"),
+    }
+end)
 g_PreselectedSkillIndices = {}
 
 g_BuyTowerId = {

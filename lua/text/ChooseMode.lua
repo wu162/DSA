@@ -7,6 +7,10 @@ g_objectTeamNameToPlayerName = {
     ["teamPlayer_5"] = "Player_5",
     ["teamPlayer_6"] = "Player_6",
 }
+-- 移除语言按钮
+exCustomBtnRemove(999)
+exCustomBtnRemove(1000)
+exCustomTextUpdateVisibility(1000, 0)
 
 local previous = SetWorldBuilderThisPlayer(1)
 

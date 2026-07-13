@@ -13,6 +13,9 @@ PlayerTech_ProductionBonus_JapanId = FastHash('PlayerTech_ProductionBonus_Japan'
 exTogglePlayerGetTechEvent(1)
 
 PlayerSideName = Localization.map("player_side_name")
+Localization.on_language_changed(function()
+    PlayerSideName = Localization.map("player_side_name")
+end)
 
 PlayerIndex = {
     ["Player_1"] = 1,

@@ -70,5 +70,58 @@ function onUserLongTextDialogEvent(playerName, btnIndex, dialogId)
     if btnIndex==2 then
         ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT",playerName,'AlliedWallPiece','PlyrCreeps/teamPlyrCreeps','toupiaodian'..o)
         exMessageAppendToMessageArea(Localization.get("dialog.read_completed", o))
+        exCustomBtnRemoveForPlayer(playerName, 999)
+        exCustomBtnRemoveForPlayer(playerName, 1000)
+        exCustomTextUpdateVisibilityForPlayer(playerName, 1000, 0)
     end
 end
+
+local LanguageButtonX = 1366 / 2
+local LanguageButtonY = 550
+exCreateCustomImage({
+    Index = 999,
+    TextureName = "AptWhiteBox",
+    X = LanguageButtonX - 80,
+    Y = LanguageButtonY - 5 ,
+    SizeX = 160,
+    SizeY = 60,
+    GroupIndex = 999,
+})
+exCreateCustomButton({
+    Index = 1000 ,
+    TextureName = "AptWhiteBox",
+    Desc = "切换语言\nChange Language",
+    X = LanguageButtonX  - 75,
+    Y = LanguageButtonY ,
+    SizeX = 150,
+    SizeY = 50,
+    GroupIndex = 1000,
+})
+exCreateCustomText({
+    Index = 1000,
+    Content = "中文 / English",
+    X = LanguageButtonX  + 30,
+    Y = LanguageButtonY + 10,
+    Color = HexToInt32("0xFFFFFF"),
+    Size = 18,
+})
+exCustomImageGroupSetColor(1000, HexToInt32("0xFF800000"))
+exCustomBtnGroupSortDepthAboveAnotherGroup(1000, 999)
+ButtonManager:RegisterCustomButtonHandler(function(playerName, index)
+    if playerName ~= exGetLocalPlayer() or index ~= 1000 then
+        return nil
+    end
+    if Localization.lang == "zh" then
+        Localization.set_language("en")
+    else
+        Localization.set_language("zh")
+    end
+    g_RuleText = Localization.get("game.rules")
+    g_UpdateBoxTextNum = getn(g_UpdateBoxText);
+    g_QQGroupText = Localization.get('game.qq_group');
+    exShowLongTextDialog(1, g_QQGroupText .. g_RuleText, '', Localization.get('dialog.read_done'), Localization.get('dialog.update_log'))
+    return 1
+end)
+
+TextDoActionLocalized("NAMED_SHOW_INFOBOX", "overlord8", "SCRIPT:lightsoul", "0", "")
+TextDoActionLocalized("NAMED_SHOW_INFOBOX", "overlord7", "SCRIPT:darksoul", "0", "")
