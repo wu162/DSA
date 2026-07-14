@@ -122,6 +122,7 @@ local upgrades = {
     "Upgrade_SovietGloriousArmedForce",
 
     "Upgrade_AlliedCryoWeaponArray",
+    "Upgrade_SovietAdvancedTeslaCoil",
 }
 RANK3_NAME = "Upgrade_CelestialTech_RANK3"
 RANK3_ID = FastHash(RANK3_NAME)

@@ -67,6 +67,7 @@ Localization._text_sources = {
     ["upgrade.Upgrade_JapanIntelligentAmmunition"] = { zh = "获得白田火控AI!", en = "Unlocked Shirada Intelligent Ammunition!" },
     ["upgrade.Upgrade_SovietGloriousArmedForce"] = { zh = "获得光荣武装!", en = "Unlocked SovietGloriousArmedForce!" },
     ["upgrade.Upgrade_AlliedCryoWeaponArray"] = { zh = "获得冰冻武器阵列!", en = "Unlocked AlliedCryoWeaponArray!" },
+    ["upgrade.Upgrade_SovietAdvancedTeslaCoil"] = { zh = "获得过载线圈!", en = "Unlocked SovietAdvancedTeslaCoil!" },
 
     -- === 游戏模式 ===
     ["game_mode.name.1"] = { zh = "正常模式", en = "Normal Mode" },
