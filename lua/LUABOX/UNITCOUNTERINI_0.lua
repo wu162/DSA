@@ -129,6 +129,49 @@ index = index + 1 ;
 UNITLIST [index] = "Overlordtank"
 index = index + 1 ;
 UNITLIST [index] = "AlliedBattleFortress"
+
+-- 陆地箱子单位统一放在这里吧
+g_GroundCrateUnits = {
+    "SovietAntiAirVehicle",
+    "VUAntiAirVehicleTech1",
+    "VUAntiInfantryVehicleTech1",
+    "VUAntiVehicleVehicleTech1",
+    "SovietHeavyGrinder",
+    "CelestialWaveriderIFV_DragonBreathe",
+    "AlliedAvengerAttackAircraft",
+    "AlliedPacifierFAV",
+    "CelestialWaveriderIFV_Mortar",
+    "CelestialWaveriderIFV_ATGM",
+    "SovietTransportAircraft_HeavyCannon",
+    "SovietHeavyAntiAirVehicleTech2",
+    "AlliedHumveeVehicle",
+    "JapanKamikazeInfantry",
+    "CelestialWheeledAssaultVehicle",
+    "CelestialMBT99A",
+    "WinterArmyKoelAttackUAV",
+    "VUMissileAntiVehicleVehicleTech1",
+    "VUBmptVehicle",
+    "AlliedGrizzlyMainBattleTank",
+    "RheinEntenteNimravusMBT",
+    "RheinEntentePalaeoloxodonTD",
+    "CelestialMBT99B",
+    "WinterArmyReaperHeavyMecha",
+    "CelestialSaluteGun"
+}
+g_SeaCrateUnits = {
+    "CelestialWaveriderIFV_Water",
+    "AlliedLandingCraftAirCushion",
+    "AlliedThetisBattleShip",
+    "JapanYumiAircraftCarrier",
+    "CelestialSeized_JapanAntiNavyShipTech3",
+    "AlliedGaintAirCraftCarrier_B",
+}
+
+for i = 1 , getn(g_GroundCrateUnits) , 1 do
+    index = index + 1 ;
+    UNITLIST [index] = g_GroundCrateUnits[i]
+end
+
 index = index + 1 ;
 --exMessageAppendToMessageArea("indexHEAVYVEH"..index)
 step3 = index-1
@@ -219,6 +262,13 @@ index = index + 1 ;
 UNITLIST [index] = "AlliedAntiNavyShipTech1"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiNavyShipTech1"
+
+-- 海上箱子单位
+for i = 1 , getn(g_SeaCrateUnits) , 1 do
+    index = index + 1 ;
+    UNITLIST [index] = g_SeaCrateUnits[i]
+end
+
 index = index + 1 ;
 --UNITLIST [index] = "JapanFortressShip"
 --index = index + 1 ;
@@ -265,6 +315,16 @@ end
 ----------------------------------------------------------------
 function unitgetcountanddelet (playindex)
     --exMessageAppendToMessageArea("unitgetcountanddelet")
+    -- 先让单位下车
+    for unitindex = 1 , unitcountmax , 1 do
+        local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
+        for i = 1 , count , 1  do
+            if ObjectGetContainerObject(TAR[i]) ~= nil then
+                ExecuteAction("NAMED_EXIT_BUILDING", TAR[i])
+            end
+        end
+    end
+    -- 然后再计数
     for unitindex = 1 , unitcountmax , 1 do
         local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
 

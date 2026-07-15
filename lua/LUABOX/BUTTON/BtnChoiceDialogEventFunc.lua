@@ -17,6 +17,7 @@ g_GameModeOptions = {
     { Name = Localization.get("game_mode.option.3.name") },
     { Name = Localization.get("game_mode.option.4.name") },
     { Name = Localization.get("game_mode.option.5.name") },
+    { Name = Localization.get("game_mode.option.6.name") },
 }
 
 MARKET_DIALOG_ID_OFFSET = 100
@@ -40,13 +41,12 @@ Localization.on_language_changed(function()
         [2] = Localization.get("game_mode.name.2"),
         [3] = Localization.get("game_mode.name.3"),
     }
-    g_GameModeOptions = {
-        { Name = Localization.get("game_mode.option.1.name") },
-        { Name = Localization.get("game_mode.option.2.name") },
-        { Name = Localization.get("game_mode.option.3.name") },
-        { Name = Localization.get("game_mode.option.4.name") },
-        { Name = Localization.get("game_mode.option.5.name") },
-    }
+    g_GameModeOptions[1].Name = Localization.get("game_mode.option.1.name")
+    g_GameModeOptions[2].Name = Localization.get("game_mode.option.2.name")
+    g_GameModeOptions[3].Name = Localization.get("game_mode.option.3.name")
+    g_GameModeOptions[4].Name = Localization.get("game_mode.option.4.name")
+    g_GameModeOptions[5].Name = Localization.get("game_mode.option.5.name")
+    g_GameModeOptions[6].Name = Localization.get("game_mode.option.6.name")
     g_SkillNames = {
         Localization.get("skill.name.1"),
         Localization.get("skill.name.2"),
@@ -389,6 +389,11 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         local hasSelected = false
         for i = 1, getn(g_GameModeOptions) do
             local option = g_GameModeOptions[i]
+            if i == 6 then
+                if g_LuckyCrateMode and g_LuckyCrateMode ~= 0 then
+                    option.IsSelected = true
+                end
+            end
             if option.IsSelected then
                 tinsert(self.Choices, option.Name .. Localization.get("game_mode.selected_suffix"))
                 hasSelected = true
@@ -406,11 +411,13 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         local shrinkGameOption = g_GameModeOptions[3]
         local purchaseTechMode = g_GameModeOptions[4]
         local banSeaGameOption = g_GameModeOptions[5]
+        local luckyCrateGameOption = g_GameModeOptions[6]
         -- 是否选择了确认按钮
         if buttonIndex == getn(g_GameModeOptions) + 1 then
             -- 假如选择了确认按钮，设置游戏模式
             g_EnableDeathModeEffect = self:BooleanToNumber(deathGameOption.IsSelected)
             g_DisableSeaArmy = self:BooleanToNumber(banSeaGameOption.IsSelected)
+            g_LuckyCrateMode = self:BooleanToNumber(luckyCrateGameOption.IsSelected)
             if shrinkGameOption.IsSelected then
                 g_GameMode = 3
             elseif purchaseTechMode.IsSelected then
@@ -648,6 +655,9 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
     end
     if g_DisableSeaArmy == 1 then
         gameModeText = gameModeText .. Localization.get("game_mode.no_navy_suffix")
+    end
+    if g_LuckyCrateMode == 1 then
+        gameModeText = gameModeText .. Localization.get("game_mode.lucky_crate_suffix")
     end
     local preselectedSkillCount = getn(g_PreselectedSkillIndices)
     if preselectedSkillCount == 6 then

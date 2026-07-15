@@ -78,6 +78,7 @@ Localization._text_sources = {
     ["game_mode.option.3.name"] = { zh = "缩小模式", en = "Shrink Mode" },
     ["game_mode.option.4.name"] = { zh = "升本模式", en = "Level-Up Mode" },
     ["game_mode.option.5.name"] = { zh = "禁止海军", en = "No Navy" },
+    ["game_mode.option.6.name"] = { zh = "抽卡模式", en = "Lucky Crate" },
     ["game_mode.dialog.title"] = { zh = "请选择游戏模式", en = "Please choose a game mode" },
     ["game_mode.confirm"] = { zh = ">>确认<<", en = ">>Confirm<<" },
     ["game_mode.selected_suffix"] = { zh = "(已选择)", en = "(Selected)" },
@@ -90,6 +91,7 @@ Localization._text_sources = {
     ["game_mode.shrink_with_effect"] = { zh = "缩小模式(启用死亡模式效果)", en = "Shrink Mode (Death Mode effect enabled)" },
     ["game_mode.level_up"] = { zh = "升本模式", en = "Level-Up Mode" },
     ["game_mode.no_navy_suffix"] = { zh = " (禁止海军)", en = " (No Navy)" },
+    ["game_mode.lucky_crate_suffix"] = { zh = " 已启用抽卡模式", en = " Lucky Crate Enabled" },
 
     -- === 技能系统 ===
     ["skill.name.1"] = { zh = "炸弹+达摩克利斯之剑", en = "Bomb＆DamoclesSword" },
@@ -353,6 +355,7 @@ Localization._text_sources = {
 
     -- === 错误信息 ===
     ["error.invalid_kind"] = { zh = "错误：CenterTopBtnFunc_CreatePlayerSkillButtons 的 kind 参数无效", en = "Error: invalid kind parameter in CenterTopBtnFunc_CreatePlayerSkillButtons" },
+    ["error.crate_in_battlefield"] = { zh = "禁止把抽卡箱子放在中央战场，作为惩罚，箱子会被随机分配！", en = "Placing a crate in the central battlefield is prohibited. As a penalty, the crate will be randomly distributed!" },
 
     -- === 游戏规则与更新日志 ===
     ["dialog.choose_mode.waiting"] = { zh = "等待房主选择游戏模式", en = "Waiting for host to choose game mode" },
@@ -369,6 +372,7 @@ Localization._text_sources = {
 3. 电厂提供收入，请尽快造满电厂以避免卡钱；苏联超级反应堆和神州导流尖塔不提供收入（仅解锁科技）；建造T4高科附赠精兵学院
 正常模式：前期收入有限，请摧毁敌方防御塔来解锁更多的电厂和科技
 死亡模式：双方开局就只剩最后一座塔
+抽卡模式：可以使用抽卡技能获得额外单位。禁止在战场中央抽卡！
 可点击下方"更新日志"按钮查看更新内容]],
         en = [[DSA Game Rules:
 1. Units you build are recorded. At the start of each round, all units you've built are respawned on the battlefield under AI control.
@@ -376,6 +380,7 @@ Localization._text_sources = {
 3. Power plants provide income. Build power plants ASAP to avoid running out of money. Soviet Super Reactors and Celestial Diversion Spire do not provide income (tech unlock only). Building T4 high-tech grants a free Veteran Academy.
 Normal Mode: Limited income in early stages. Destroy enemy defense towers to unlock more power plants and technology.
 Death Mode: Both sides start with only the last tower remaining.
+Lucky Crate Mode: Use the Lucky Crate Boxes to gain extra units. Do not use Lucky Crate in the central battlefield!
 Click the "Update Log" button below to view update details.]]
     },
     ["game.qq_group"] = { 
@@ -503,6 +508,10 @@ Localization.on_language_changed = function(f, data)
         return
     end
     Localization._language_changed_callbacks = Localization._language_changed_callbacks or {}
+    if getn(Localization._language_changed_callbacks) > 200 then
+        _ALERT("Localization.on_language_changed: too many callbacks registered, possible memory leak, aborting")
+        return
+    end
     tinsert(Localization._language_changed_callbacks, { f = f, data = data })
 end
 

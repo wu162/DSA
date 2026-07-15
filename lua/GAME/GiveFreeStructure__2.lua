@@ -29,3 +29,5 @@ for i = 1, 6, 1 do
         end
     end
 end
+
+TryEnableLuckyCrateIfAllowed()
