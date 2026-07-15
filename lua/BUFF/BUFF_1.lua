@@ -169,21 +169,21 @@ function ANTIGROUNDAIRCRAFTBUFF ()
     end
 end
 
-FilterCelestialAntiInfantryInfantryAdvanced=CreateObjectFilter({
-    Rule="ANY",
+-- FilterCelestialAntiInfantryInfantryAdvanced=CreateObjectFilter({
+--     Rule="ANY",
 
-    IncludeThing = {
-        "SovietHeavyAntiVehicleInfantry"
-    }
-})
+--     IncludeThing = {
+--         "SovietHeavyAntiVehicleInfantry"
+--     }
+-- })
 
-function CelestialAntiInfantryInfantryAdvancedBUFF ()
-    local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterCelestialAntiInfantryInfantryAdvanced)
-    --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
-    for i = 1 , COUNTX ,1 do
-        ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GenericBOSSAIUnitCheat",9999)
-    end
-end
+-- function CelestialAntiInfantryInfantryAdvancedBUFF ()
+--     local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterCelestialAntiInfantryInfantryAdvanced)
+--     --exMessageAppendToMessageArea("COUNTX:"..COUNTX)
+--     for i = 1 , COUNTX ,1 do
+--         ObjectLoadAttributeModifier(TAR[i], "AttributeMod_GenericBOSSAIUnitCheat",9999)
+--     end
+-- end
 
 FilterCelestialAntiInfantryInfantryAdvancedSINGLE=CreateObjectFilter({
     Rule="ANY",
