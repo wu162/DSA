@@ -2,7 +2,13 @@ unitallEnv = CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
     IncludeThing={},
-    ExcludeThing={},--某一类型
+    ExcludeThing={
+        "JapanFortressShip",
+        "Overlordtank",
+        "JapanLightTransportVehicle",
+        "AlliedNightinaleHelicopter",
+        "AlliedMCV",
+    },
     Include="SELECTABLE",
     Exclude="STRUCTURE",
 })

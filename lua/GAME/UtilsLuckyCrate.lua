@@ -6,10 +6,6 @@ end
 function TryEnableLuckyCrateIfAllowed()
     local previous = SetWorldBuilderThisPlayer(1)
     local EnableLuckyCrateImplementation = function(enable)
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrate", "Disabled")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrateX10", "Disabled")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrate", "Hidden")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrateX10", "Hidden")
         if not enable or enable == 0 then
             return
         end
@@ -19,8 +15,6 @@ function TryEnableLuckyCrateIfAllowed()
         g_LuckyCreateEnableComplete = 1
         ExecuteAction("PLAYER_GRANT_SPECIAL_POWER", "SpecialPower_LuckyUnitCrate", "<All Human Players>")
         ExecuteAction("PLAYER_GRANT_SPECIAL_POWER", "SpecialPower_LuckyUnitCrateX10", "<All Human Players>")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Human Players>", "SpecialPower_LuckyUnitCrate", "Available")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Human Players>", "SpecialPower_LuckyUnitCrateX10", "Available")
         for i = 1, 6, 1 do
             local playerName = "Player_" .. i
             local isHuman = EvaluateCondition("PLAYER_IS_HUMAN_OR_AI_PERSONALITY", playerName, "Human")
@@ -60,16 +54,12 @@ SchedulerModule.delay_call(function()
     local crateFilter = CreateObjectFilter({ IncludeThing = { "GenericCrateSpawner" } })
     local units, count = ObjectFindObjects(nil, nil, crateFilter)
     for j = 1, count, 1 do
-        ExecuteAction("NAMED_KILL", units[j])
         -- 先禁用抽卡技能（后面可以启用）
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrate", "Disabled")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrateX10", "Disabled")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrate", "Hidden")
-        ExecuteAction("PLAYER_SPECIAL_POWER_AVAILABILITY", "<All Players>", "SpecialPower_LuckyUnitCrateX10", "Hidden")
+        ExecuteAction("NAMED_DELETE", units[j])
         -- 此外假如检测到随机宝箱，就默认启用抽卡模式
         g_LuckyCrateMode = 1
     end
-end, 15, {})
+end, 1, {})
 SchedulerModule.delay_call(function()
     local crateFilter = CreateObjectFilter({
         IncludeThing = {

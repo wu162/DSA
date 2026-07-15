@@ -325,7 +325,7 @@ function JapanAntiNavyShipTech3MICROCONTROL ()
         for i = 1 , count , 1 do
             local selfId = ObjectGetId(SELF[i])
             local countdown = exObjectGetSpecialCountDownFrame(selfId, "SpecialPower_JANSTier3CombatMode")
-            if countdown ~= nil and countdown > 570 then
+            if countdown ~= nil and countdown > 600 then
                 -- 不能让太刀无限制使用技能，让它冷却一下吧
             else
                 ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode" )
