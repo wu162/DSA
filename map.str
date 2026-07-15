@@ -274,3 +274,9 @@ end
 SCRIPT:CelestialReinforcementHelp_EN
 "Each time the Celestial Reinforcement is used, the corresponding units will be added in all subsequent rounds"
 end
+SCRIPT:CrateEnabled
+"抽卡模式已启用"
+end
+SCRIPT:CrateEnabled_EN
+"Lucky Crate Enabled"
+end
