@@ -121,6 +121,14 @@ FilterCelestialAdvanceAircraftTech4=CreateObjectFilter({
     }
 })
 
+FilterJapanAntiNavyShipTech3=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    IncludeThing = {
+        "JapanAntiNavyShipTech3"
+    }
+})
+
 FilterALLENEMYUNIT=CreateObjectFilter({
     Rule="ANY",
     Relationship="ENEMIES",
@@ -308,4 +316,20 @@ function CelestialAdvanceAircraftTech4MICROCONTROL ()
         end
     end
 end
---exMessageAppendToMessageArea("定义")
+
+
+function JapanAntiNavyShipTech3MICROCONTROL ()
+    for playindex = 7 , 8 , 1 do
+        local SELF, count = ObjectFindObjects(P[playindex], nil, FilterJapanAntiNavyShipTech3)
+        ----exMessageAppendToMessageArea("count"..count)
+        for i = 1 , count , 1 do
+            local selfId = ObjectGetId(SELF[i])
+            local countdown = exObjectGetSpecialCountDownFrame(selfId, "SpecialPower_JANSTier3CombatMode")
+            if countdown ~= nil and countdown > 570 then
+                -- 不能让太刀无限制使用技能，让它冷却一下吧
+            else
+                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode" )
+            end
+        end
+    end
+end
