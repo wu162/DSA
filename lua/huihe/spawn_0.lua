@@ -64,7 +64,7 @@ if not RoundLuaManager then
         })
     end
 
-    exSetPublicBoardColor(HexToUInt32("00FFFF"))
+    exSetPublicBoardColor(HexToUInt32("FFFF00"))
     local list = { "INFANT12", "INFANT15", "INFANT23", "INFANT24", "AIR14", "AIR16", "AIR24", "AIR26" }
     RoundLuaManager.CallOnEveryRoundBegin(function(list)
         for i = 1, getn(list), 1 do

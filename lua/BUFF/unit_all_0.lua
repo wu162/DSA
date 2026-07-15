@@ -1,11 +1,12 @@
+
+-- 目前 unitall 似乎只是给剑用的
+-- 这里面写什么，剑就会打什么
 unitall = CreateObjectFilter({
-   Rule="ANY",
- Relationship="SAME_PLAYER",
-   IncludeThing={'AlliedAC130GunshipAircraft',"AlliedAntiAirShip","AlliedConstructionYard","AlliedBaseDefense","AlliedBaseDefenseAdvanced","AlliedWallPiece","AlliedAntiAirVehicleTech1","AlliedAntiGroundAircraft","AlliedAntiInfantryInfantry","AlliedAntiInfantryVehicle","AlliedAntiNavalScout","AlliedAntiNavyShipTech1","AlliedAntiNavyShipTech3","AlliedAntiStructureBomberAircraft","AlliedAntiStructureShip","AlliedAntiStructureVehicle","AlliedAntiVehicleInfantry","AlliedAntiVehicleVehicleTech1","AlliedAntiVehicleVehicleTech3","AlliedBomberAircraft","AlliedAntiInfantryVehicle_Ground","AlliedCommandoTech1","AlliedCryoLegionnaire","AlliedEngineer","AlliedFighterAircraft","AlliedFutureTank","AlliedGunshipAircraft","AlliedInfiltrationInfantry","AlliedInterceptorAircraft","AlliedMCV","AlliedMiner","AlliedPrismTank","AlliedScoutInfantry","AlliedSupportAircraft","AlliedPrismTank_Enhanced",
-   "CelestialAdvanceAircraftTech4","celestiallongrangemissilevehicle_b","CelestialConstructionYard","CelestialAlmightlyShip","CelestialAlmightlyShip_AA","CelestialAntiAirShip","CelestialWallPiece","CelestialFighterAircraft","CelestialSupportAircraft","CelestialAttackerAircraft","CelestialAntiAirShip_Enhanced_Water","CelestialAntiInfantryInfantry","CelestialAntiInfantryInfantryAdvanced","CelestialAntiInfantryVehicle","CelestialAntiInfantryVehicle_B","CelestialAntiInfantryVehicle_Dropped","CelestialAntiInfantryVehicle_Water","CelestialAirDrop_Land","CelestialAntiNavyShipTech1","CelestialAntiNavyShipTech3","CelestialAntiStructureShip","CelestialAntiStructureVehicle","CelestialAntiVehicleInfantry","CelestialAntiVehicleVehicleTech1","CelestialAntiVehicleVehicleTech3","CelestialAntiVehicleVehicleTech4","CelestialBomberAircraft","CelestialDF41","CelestialEngineer","CelestialFireworkTrigger","CelestialHeavyAntiAirVehicleTech3","CelestialHJ-10","CelestialInfiltrationInfantry","CelestialInterceptorAircraft","CelestialMCV","CelestialMiner","CelestialScoutDrone",
-   "JapanAntiAirShip","JapanConstructionYard","JapanAntiAirVehicleTech1","JapanWallPiece","JapanAntiInfantryInfantry","JapanAntiInfantryVehicle","JapanAntiStructureShip","JapanAntiStructureVehicle","JapanAntiVehicleInfantry","JapanAntiVehicleInfantryTech3","japanantinavyshiptech3","JapanAntiVehicleShip","JapanAntiVehicleVehicleTech1","JapanAntiVehicleVehicleTech3","JapanArcherInfantry","JapanCommandoTech1","JapanEngineer","JapanFortressShip","JapanInfiltrationInfantry","JapanBaseDefense","JapanBaseDefense_Enhanced","JapanInterceptorAircraft","JapanInterceptorAircraft_Ground","JapanLightTransportVehicle","JapanKamikazeInfantry","JapanMCV","JapanMechaX","JapanMissileMechaAdvanced","JapanMiner","JapanNavyScoutShip","JapanRefineryEgg","JapanScoutInfantry","JapanSentinelVehicle","JapanBaseDefenseEgg","JapanBaseDefenseAdvancedEgg",
-   "SovietAntiAirShip","SovietConstructionYard","SovietAntiAirShip_Ground","SovietWallPiece","SovietAntiGroundAircraft","SovietAntiGroundAttacker","SovietAntiInfantryInfantry","SovietAntiInfantryVehicle","SovietAntiNavyShipTech1","SovietAntiNavyShipTech2","SovietAntiNavyShipTech3","SovietAntiStructureShip","SovietAntiStructureVehicle","SovietAntiVehicleInfantry","SovietAntiVehicleVehicleTech2","SovietAntiVehicleVehicleTech1","SovietAntiVehicleVehicleTech3","SovietAntiVehicleVehicleTech4","SovietBomberAircraft","SovietCommandoTech1","SovietBaseDefenseAdvanced_Enhanced","SovietBaseDefenseAir","SovietBaseDefenseGround","SovietBunker","SovietHeavyAntiAirMissileTurret","SovietEngineer","SovietFighterAircraft","SovietHeavyAntiVehicleInfantry","SovietHeavyAntiVehicleVehicleTech2","SovietInterceptorAircraft","SovietMCV","SovietMiner","SovietScoutInfantry","SovietScoutVehicle","SovietSledgehammerSPG","SovietSPG","SovietSurveyor","SovietTeslaAirAssault","SovietTransportAircraft",
-   "AlliedBattleFortress", "SovietHeavyMortarVehicle",
-   "AlliedAirForceDispatchVehicle", "CelestialAntiAirVehicleTech3", "JapanAntiAirVehicleTech3", "SovietElectronicRadarTruck",
-  },--某一类型
+  Rule="ANY",
+  Relationship="SAME_PLAYER",
+  IncludeThing={ "SovietBaseDefenseGround" },
+  ExcludeThing={},
+  Include="SELECTABLE",
+  -- 除了哨兵枪以外的所有建筑都被排除
+  Exclude="STRUCTURE",
 })
