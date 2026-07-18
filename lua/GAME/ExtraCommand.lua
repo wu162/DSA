@@ -34,9 +34,10 @@ function MsgCommand_BanInfantry()
     end
 end
 
-exRegisterHotKey(76, 0, 1)
+-- exRegisterHotKey(76, 0, 1)
 
 function onUserHotKeyEvent(playerName, commandCode, mouseWorldPos)
+    if 1 then return end
     -- todo 必须要在第一回合开始前20秒内输入
     if commandCode == 1 and playerName == g_RoomOwnerPlayer then
         local round = exCounterGetByName("lvc")

@@ -389,7 +389,8 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         local hasSelected = false
         for i = 1, getn(g_GameModeOptions) do
             local option = g_GameModeOptions[i]
-            if i == 6 then
+            if i == 6 and not self._initialized then
+                -- 假如随机宝箱模式已经开启，则默认选中抽卡模式
                 if g_LuckyCrateMode and g_LuckyCrateMode ~= 0 then
                     option.IsSelected = true
                 end
@@ -404,6 +405,7 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         if hasSelected then
             tinsert(self.Choices, Localization.get("game_mode.confirm"))
         end
+        self._initialized = true
     end
     dialogData.OnChoice = function(self, buttonIndex)
         local normalGameOption = g_GameModeOptions[1]

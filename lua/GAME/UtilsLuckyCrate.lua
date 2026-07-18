@@ -30,7 +30,7 @@ function TryEnableLuckyCrateIfAllowed()
                     position, 
                     0
                 )
-                TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", GetObjectById(nextObjectId), "SCRIPT:CrateEnabled", 15, "")
+                TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", GetObjectById(nextObjectId), "SCRIPT:CrateEnabled", 30, "")
                 -- 给工程师加速
                 ObjectLoadAttributeModifier(nextObjectId, g_SuperSpeedModifier)
             end
@@ -48,6 +48,42 @@ function CountAsFortressShipEgg(createdObjId, createdObjInstanceId, ownerPlayerN
 end
 g_UnitCreateEventFunc[FastHash("JapanFortressShip")] = CountAsFortressShipEgg
 g_UnitCreateEventFunc[FastHash("JapanGigaFortress_Land")] = CountAsFortressShipEgg
+
+-- 箱子里开出来的航母 / 战列舰有存活时间
+exObjectRegisterCreateEvent("AlliedGaintAirCraftCarrier_B")
+exObjectRegisterCreateEvent("AlliedThetisBattleShip")
+exObjectRegisterCreateEvent("JapanYumiAircraftCarrier")
+function SetCrateShipLifetime(createdObjId, createdObjInstanceId, ownerPlayerName)
+    if ownerPlayerName ~= "PlyrCreeps"
+        and ownerPlayerName ~= "PlyrCivilian" then
+        return
+    end
+    local lifetime = 2
+    if createdObjInstanceId == FastHash("AlliedGaintAirCraftCarrier_B") then
+        lifetime = 1
+    end
+    RoundLuaManager.DelayCallOnRoundBegin(function(id)
+        if not ObjectIsAlive(id) then
+            return
+        end
+        ExecuteAction("NAMED_KILL", GetObjectById(id))
+    end, { createdObjId }, lifetime)
+end
+g_UnitCreateEventFunc[FastHash("AlliedGaintAirCraftCarrier_B")] = SetCrateShipLifetime
+g_UnitCreateEventFunc[FastHash("AlliedThetisBattleShip")] = SetCrateShipLifetime
+g_UnitCreateEventFunc[FastHash("JapanYumiAircraftCarrier")] = SetCrateShipLifetime
+
+-- 箱子里开出来的龙船禁止攻击
+exObjectRegisterCreateEvent("CelestialMCV")
+function DisableCrateDragonAttack(createdObjId, createdObjInstanceId, ownerPlayerName)
+    Scheduler.delay_call(function(id)
+        if not ObjectIsAlive(id) then
+            return
+        end
+        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", GetObjectById(id), "NO_ATTACK", 1)
+    end, 1, { createdObjId })
+end
+g_UnitCreateEventFunc[FastHash("CelestialMCV")] = DisableCrateDragonAttack
 
 -- 箱子模式：只允许抽卡，不允许在地图上刷随机箱子（万一被 AI 捡了太麻烦）
 SchedulerModule.delay_call(function()

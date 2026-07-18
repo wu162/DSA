@@ -16,10 +16,10 @@ unitallEnv = CreateObjectFilter({
 RoundLuaManager.CallOnEveryRoundBegin(function(list)
     local level = exCounterGetByName("lvc")
     if level ~= nil and g_GameMode == 1 then
-        if level == 8 then
+        if level == 8 or level == 22 then
             exAddTextToPublicBoard(Localization.get("env_kill_all_unit.warning_next_round"), 15)
         end
-        if level == 9 then
+        if level == 9 or level == 23 then
             exAddTextToPublicBoard(Localization.get("env_kill_all_unit.execute"), 10)
             local units, count = ObjectFindObjects(T74, nil,unitallEnv);
             for i = 1 , count , 1 do
@@ -31,6 +31,5 @@ RoundLuaManager.CallOnEveryRoundBegin(function(list)
                 ExecuteAction("NAMED_KILL", units2[i]);
             end
         end
-
     end
 end, {  })
