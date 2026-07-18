@@ -73,7 +73,7 @@ g_InfantrySoviet = {
 
 g_InfantryJapan = {
     {Type = "JapanScoutInfantry", Image = "Button_JapanScoutInfantry", Name = Localization.recycle('unit.JapanScoutInfantry'), Money = 300},
-    {Type = "JapanAntiInfantryInfantry", Image = "Button_JapanAntiInfantryInfantry", Name = Localization.recycle('unit.JapanAntiInfantryInfantry'), Money = 150},
+    {Type = "JapanAntiInfantryInfantry", Image = "Button_JapanAntiInfantryInfantry", Name = Localization.recycle('unit.JapanAntiInfantryInfantry'), Money = 75},
     {Type = "JapanAntiVehicleInfantry", Image = "Button_JapanAntiVehicleInfantry", Name = Localization.recycle('unit.JapanAntiVehicleInfantry'), Money = 300},
     {Type = "JapanArcherInfantry", Image = "Button_JapanArcherMaiden", Name = Localization.recycle('unit.JapanArcherInfantry'), Money = 400},
     {Type = "JapanInfiltrationInfantry", Image = "Button_JapanInfiltrationInfantry", Name = Localization.recycle('unit.JapanInfiltrationInfantry'), Money = 850},
@@ -269,6 +269,113 @@ g_ShipCelestial = {
     --{Type = "CelestialAntiStructureShip", Image = "Button_CelestialAntiStructureShipB", Name = Localization.recycle('unit.CelestialAntiStructureShip'), Money = 5000},
 }
 
+g_CrateUnitsTemplate = {
+    [1] = {
+        { Type = "JapanKamikazeInfantry", Money = 75 },
+    },
+    [2] = {
+        { Type = "CelestialSaluteGun" },
+        { Type = "CelestialWheeledAssaultVehicle", Count = 4,
+            Name = Localization.recycle('unit.CelestialWheeledAssualtGun'),
+            Image = "Button_CelestialWheeledAssualtGun" },
+        { Type = "CelestialWaveriderIFV_DragonBreathe", Count = 4 },
+        { Type = "CelestialWaveriderIFV_Mortar", Count = 3 },
+        { Type = "CelestialWaveriderIFV_ATGM", Count = 2 },
+        { Type = "CelestialMBT99A", Count = 4,
+            Image = "Button_CelestialMBT99A1" },
+        { Type = "CelestialMBT99B", Count = 3,
+            Image = "Button_CelestialMBT99B1" },
+
+        { Type = "AlliedHumveeVehicle", Count = 4,
+            Image = "Portrait_AlliedIFV" },
+        { Type = "AlliedPacifierFAV", Count = 2,
+            Image = "Button_AlliedPacifierVehicle" },
+        { Type = "AlliedGrizzlyMainBattleTank", Count = 2 },
+        { Type = "RheinEntenteNimravusMBT", Count = 2 },
+        { Type = "RheinEntentePalaeoloxodonTD", Count = 2 },
+
+        { Type = "SovietAntiAirVehicle", Count = 3 },
+        { Type = "SovietHeavyAntiAirVehicleTech2", Count = 3 },
+        { Type = "SovietHeavyGrinder", Count = 2,
+            Image = "Button_SovietGrinder" },
+
+        { Type = "VUAntiAirVehicleTech1", Count = 3,
+            Image = "Button_VDVAntiAirVehicleTech1" },
+        { Type = "VUAntiInfantryVehicleTech1", Count = 4,
+            Image = "Button_VDVAntiInfantryVehicleTech1" },
+        { Type = "VUAntiVehicleVehicleTech1", Count = 3,
+            Image = "Button_VDVAntiVehicleVehicleTech1" },
+        { Type = "VUMissileAntiVehicleVehicleTech1", Count = 2,
+            Image = "Button_VDVMissileAntiVehicleVehicleTech1" },
+        { Type = "VUBmptVehicle", Count = 2,
+            Image = "Button_VDVBmptVehicle" },
+
+        { Type = "WinterArmyReaperHeavyMecha", Count = 2 },
+        
+    },
+    [3] = {
+        { Type = "AlliedAvengerAttackAircraft", Count = 2 },
+        { Type = "WinterArmyKoelAttackUAV", Count = 6 },
+        { Type = "SovietTransportAircraft_HeavyCannon",
+            Image = "Button_SovietTransportAircraft" },
+    },
+    [4] = {
+        { Type = "CelestialWaveriderIFV_Water", Count = 4,
+            Name = Localization.recycle('unit.CelestialAntiInfantryVehicle') },
+        { Type = "AlliedLandingCraftAirCushion", Count = 2 },
+        { Type = "AlliedThetisBattleShip" },
+        { Type = "JapanYumiAircraftCarrier" },
+        { Type = "CelestialSeized_JapanAntiNavyShipTech3" },
+        { Type = "AlliedGaintAirCraftCarrier_B",
+            Image = "Button_AlliedGaintAircraftCarrier" },
+    },
+}
+function getCrateUnitsInfoFromTemplate(crateType)
+    local crateUnitsInfo = g_CrateUnitsTemplate[crateType]
+    if crateUnitsInfo == nil then
+        return {}
+    end
+    local result = {}
+    for i = 1, getn(crateUnitsInfo) do
+        local unitInfo = crateUnitsInfo[i]
+        local unitType = unitInfo.Type
+        local unitImage = unitInfo.Image or 'Button_' .. unitType
+        local unitName = unitInfo.Name or Localization.recycle('unit.' .. unitType)
+        local unitMoney = unitInfo.Money
+        if unitMoney == nil then
+            -- 从箱子单位的最大获取数量中获取价格
+            local maxCount = unitInfo.Count or 1
+            -- 玩家可以获取(1~maxCount)个单位，期望数量是 (1 + maxCount) / 2
+            -- 我们希望玩家在回收“期望数量”的单位时能拿回 1500
+            -- 所以依据这个：
+            -- 最大数量1： 1500
+            -- 最大数量2： 1500 / 1.5 = 1000
+            -- 最大数量3： 1500 / 2 = 750
+            -- 最大数量4： 1500 / 2.5 = 600
+            if maxCount == 1 then
+                unitMoney = 1500
+            elseif maxCount == 2 then
+                unitMoney = 1000
+            elseif maxCount == 3 then
+                unitMoney = 750
+            else
+                unitMoney = 600
+            end
+        end
+        tinsert(result, {
+            Type = unitType,
+            Image = unitImage,
+            Name = unitName,
+            Money = unitMoney,
+        })
+    end
+    return result
+end
+g_CrateUnits = {}
+for i = 1, 4 do
+    g_CrateUnits[i] = getCrateUnitsInfoFromTemplate(i)
+end
+
 --g_RecycleBtnsMap = {
 --    [1] = g_Infantry,
 --    [2] = g_Vehicle,
@@ -302,6 +409,7 @@ g_RecycleBtnsMapByFaction = {
         [4] = g_ShipCelestial,
     },
 }
+g_RecycleBtnsMapByPlayerIndex = {}
 
 function createRecycleBtns()
     -- TODO 挡住顶部技能栏的文字了
@@ -362,6 +470,55 @@ function createRecycleBtns()
 
 end
 
+function updateRecycleBtnsForPlayerName(playerName)
+    local playerIndex = g_PlayerNameToIndex[playerName]
+    local playerFaction = g_PlayerSide[playerIndex]
+    local newMap = {
+        [1] = {},
+        [2] = {},
+        [3] = {},
+        [4] = {},
+    }
+    for i = 1, 4 do
+        local references = {}
+        -- 优先显示玩家当前阵营的所有该类型单位
+        tinsert(references, g_RecycleBtnsMapByFaction[playerFaction][i])
+        -- 但是玩家也有可能获得了其他阵营的单位，所以也要显示其他阵营的该类型单位
+        for j = 1, 4 do
+            if j ~= playerFaction then
+                tinsert(references, g_RecycleBtnsMapByFaction[j][i])
+            end
+        end
+        -- 也加入箱子单位的该类型单位
+        tinsert(references, g_CrateUnits[i])
+        for j = 1, getn(references) do
+            local btns = references[j]
+            for k = 1, getn(btns) do
+                local shouldInsert = false
+                if j == 1 
+                    -- or j == getn(references) -- 暂时无条件显示箱子单位
+                then
+                    -- 玩家本阵营的单位无条件显示
+                    shouldInsert = true
+                else
+                    -- 其他阵营的单位不显示，只有当玩家拥有该单位时才显示
+                    local unitTypeIndex = g_UnitNameToUnitIndex[btns[k].Type]
+                    if unitTypeIndex ~= nil then
+                        local unitCount = UNITCOUNT[playerIndex][unitTypeIndex]
+                        if unitCount ~= nil and unitCount > 0 then
+                            shouldInsert = true
+                        end
+                    end
+                end
+                if shouldInsert then
+                    tinsert(newMap[i], btns[k])
+                end
+            end
+        end
+    end
+    g_RecycleBtnsMapByPlayerIndex[playerIndex] = newMap
+end
+
 function RecycleUnit_Setting()
     createRecycleBtns();
 end
@@ -372,18 +529,18 @@ function RecycleUnitBtnsClear(playerName)
     --    exCustomBtnRemove(g_RecycleBtnsShowed[playerIndex][i]);
     --end
 
-    --目前只能这样先把按钮移到一边去   但是不能超出屏幕，不然会卡住界面  所以只能摆在边角上，但注意不要响应点击
-    for i = 1, 20 do
-        exCreateCustomButtonForPlayer(playerName, {
-            Index = g_RecycleBtnsIndexStart + i,
-            TextureName = "Button_AlliedScoutInfantry_on",
-            Desc = "",
-            X = -100,
-            Y = -100,
-            GroupIndex = 3,
-            AlignX = "left",
-            AlignY = "top",
-        })
+    local playerIndex = g_PlayerNameToIndex[playerName]
+    local playerButtons = g_RecycleBtnsShowed[playerIndex]
+    if not playerButtons then
+        for i = 1, 50 do
+            local buttonIndex = g_RecycleBtnsIndexStart + i;
+            exCustomBtnRemoveForPlayer(playerName, buttonIndex);
+        end
+        return
+    end
+    for i = 1, getn(playerButtons) do
+        local buttonIndex = g_RecycleBtnsIndexStart + playerButtons[i];
+        exCustomBtnRemoveForPlayer(playerName, buttonIndex);
     end
 end
 
@@ -398,7 +555,8 @@ function RecycleTypeBtnClick(playerName, index)
     SchedulerModule.delay_call(function(playerName1, index1)
         local playerIndex1 = g_PlayerNameToIndex[playerName1];
         local playerFaction = g_PlayerSide[playerIndex1];
-        local btns = g_RecycleBtnsMapByFaction[playerFaction][index1 - 20];
+        updateRecycleBtnsForPlayerName(playerName1)
+        local btns = g_RecycleBtnsMapByPlayerIndex[playerIndex1][index1 - 20];
         for i = 1, getn(btns) do
             local currentBtn = btns[i];
             exCreateCustomButtonForPlayer(playerName1, {
@@ -420,7 +578,10 @@ end
 function RecycleUnitBtnsClick(playerName, index)
     local playerIndex = g_PlayerNameToIndex[playerName];
     local playerFaction = g_PlayerSide[playerIndex];
-    local btnMap = g_RecycleBtnsMapByFaction[playerFaction][g_CurrentRecycleType[playerIndex]];
+    if g_RecycleBtnsMapByPlayerIndex[playerIndex] == nil then
+        _ALERT("g_RecycleBtnsMapByPlayerIndex[playerIndex] == nil, playerName=" .. playerName .. ", index=" .. index);
+    end
+    local btnMap = g_RecycleBtnsMapByPlayerIndex[playerIndex][g_CurrentRecycleType[playerIndex]];
     g_CurrentClickRecycleUnit[playerIndex] = btnMap[index - g_RecycleBtnsIndexStart];
     BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName);
 end

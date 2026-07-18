@@ -1,6 +1,8 @@
 FilterLIST = {}
 UNITLIST = {}
 UNITCOUNT = {}
+CRATEUNITCOUNT = {} -- 箱子单位计数，主要是为了回收单位时区别对待箱子单位，避免无限抽卡
+g_UnitNameToUnitIndex = {}
 P = {}
 ANYUNITCOUNT = {}
 --unitcountmax = 200
@@ -138,17 +140,14 @@ g_GroundCrateUnits = {
     "VUAntiVehicleVehicleTech1",
     "SovietHeavyGrinder",
     "CelestialWaveriderIFV_DragonBreathe",
-    "AlliedAvengerAttackAircraft",
     "AlliedPacifierFAV",
     "CelestialWaveriderIFV_Mortar",
     "CelestialWaveriderIFV_ATGM",
-    "SovietTransportAircraft_HeavyCannon",
     "SovietHeavyAntiAirVehicleTech2",
     "AlliedHumveeVehicle",
     "JapanKamikazeInfantry",
     "CelestialWheeledAssaultVehicle",
     "CelestialMBT99A",
-    "WinterArmyKoelAttackUAV",
     "VUMissileAntiVehicleVehicleTech1",
     "VUBmptVehicle",
     "AlliedGrizzlyMainBattleTank",
@@ -165,6 +164,11 @@ g_SeaCrateUnits = {
     "JapanYumiAircraftCarrier",
     "CelestialSeized_JapanAntiNavyShipTech3",
     "AlliedGaintAirCraftCarrier_B",
+}
+g_AirCrateUnits = {
+    "AlliedAvengerAttackAircraft",
+    "WinterArmyKoelAttackUAV",
+    "SovietTransportAircraft_HeavyCannon",
 }
 
 for i = 1 , getn(g_GroundCrateUnits) , 1 do
@@ -227,6 +231,12 @@ index = index + 1 ;
 UNITLIST [index] = "CelestialSupportAircraft"
 index = index + 1 ;
 UNITLIST [index] = "CelestialAdvanceAircraftTech4"
+
+for i = 1 , getn(g_AirCrateUnits) , 1 do
+    index = index + 1 ;
+    UNITLIST [index] = g_AirCrateUnits[i]
+end
+
 index = index + 1 ;
 step35 = index-1
 UNITLIST [index] = "JapanAntiStructureShip"
@@ -296,8 +306,10 @@ unitcountmax = index-1
 -----------------------------------------
 for playindex = 1 , 6 , 1 do
     UNITCOUNT[playindex] = {}
+    CRATEUNITCOUNT[playindex] = {}
     for unitindex = 1 , unitcountmax , 1 do
         UNITCOUNT[playindex][unitindex] = 0 ;
+        CRATEUNITCOUNT[playindex][unitindex] = 0 ;
     end
 end
 --exMessageAppendToMessageArea("二维数组完毕")
@@ -310,6 +322,7 @@ for i = 1 , unitcountmax , 1 do
             UNITLIST[i],
         },
     })
+    g_UnitNameToUnitIndex[UNITLIST[i]] = i
 end
 --exMessageAppendToMessageArea("过滤器完毕")
 ----------------------------------------------------------------
@@ -337,6 +350,11 @@ function unitgetcountanddelet (playindex)
             --exMessageAppendToMessageArea("ID:".. UNITLIST[unitindex])
             --exMessageAppendToMessageArea("GET:".. UNITCOUNT[playindex][unitindex])
             for i = 1 , count , 1  do
+                local producer = ObjectGetProducerObject(TAR[i])
+                if producer == nil then
+                    -- 没有生产者的单位，说明是箱子单位
+                    CRATEUNITCOUNT[playindex][unitindex] = CRATEUNITCOUNT[playindex][unitindex] + 1
+                end
                 ExecuteAction("NAMED_DELETE",TAR[i])
             end
         end

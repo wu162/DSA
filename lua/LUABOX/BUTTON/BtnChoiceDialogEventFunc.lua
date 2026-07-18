@@ -932,13 +932,7 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
 
             local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
 
-            local targetUnitIndex = -1;
-            for unitindex = 1 , unitcountmax , 1 do
-                if UNITLIST[unitindex] == g_CurrentClickRecycleUnit[playerIndex2].Type then
-                    targetUnitIndex = unitindex;
-                    break;
-                end
-            end
+            local targetUnitIndex = g_UnitNameToUnitIndex[g_CurrentClickRecycleUnit[playerIndex2].Type] or -1
 
             if targetUnitIndex > 0 then
                 local count = g_RecycleUnitCount[buttonIndex];

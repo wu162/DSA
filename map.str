@@ -223,25 +223,25 @@ SCRIPT:darksoul
 "-------黑暗之魂-------"
 end
 SCRIPT:darksoul_EN
-">> Dark Soul <<"
+">>Dark Soul<<"
 end
 SCRIPT:lightsoul
 "-------光明之魂-------"
 end
 SCRIPT:lightsoul_EN
-">> Light Soul <<"
+">>Light Soul<<"
 end
 SCRIPT:devil
 "-------地狱守护者-------"
 end
 SCRIPT:devil_EN
-">> Hell Guardian <<"
+">>Hell Guardian<<"
 end
 SCRIPT:Angel
 "-------天界守护者-------"
 end
 SCRIPT:Angel_EN
-">> Heaven Guardian <<"
+">>Heaven Guardian<<"
 end
 devil_surrender
 "恶魔投降投票中"
