@@ -1,8 +1,15 @@
-condition=CreateObjectFilter({
+FilterPowerPlantOrEggNotCelestial=CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
     IncludeThing = {
         'JapanPowerPlantEgg',"AlliedPowerPlant","JapanPowerPlant","SovietPowerPlant"
+    }
+})
+FilterAnyPowerPlantOrEgg=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    IncludeThing = {
+        'CelestialPowerPlant','JapanPowerPlantEgg',"AlliedPowerPlant","JapanPowerPlant","SovietPowerPlant"
     }
 })
 FilterPower=CreateObjectFilter({

@@ -334,8 +334,8 @@ Localization._text_sources = {
     ["purchase_tech.celestial_plants"] = { zh = "己方神州电厂最大数量: %d", en = "Max Celestial power plants: %d" },
 
     -- === 记分牌 ===
-    ["board.title.troop_count"] = { zh = "部队数量", en = "Troop Count" },
-    ["board.title.current_round"] = { zh = "当前回合:", en = "Current Round:" },
+    ["board.title.troop_count"] = { zh = "部队数量", en = "Unit Count" },
+    ["board.title.current_round"] = { zh = "当前回合:", en = "Round:" },
     ["board.role.devil1"] = { zh = "恶魔1号", en = "Devil 1" },
     ["board.role.devil2"] = { zh = "恶魔2号", en = "Devil 2" },
     ["board.role.devil3"] = { zh = "恶魔3号", en = "Devil 3" },

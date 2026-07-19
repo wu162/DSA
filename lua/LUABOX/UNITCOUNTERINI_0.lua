@@ -342,18 +342,15 @@ function unitgetcountanddelet (playindex)
         local TAR, count = ObjectFindObjects(P[playindex], nil, FilterLIST[unitindex])
 
         if count > 0 then
-
-            --exMessageAppendToMessageArea("count:"..count)
-
-            ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + count ;
-            UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + count
-            --exMessageAppendToMessageArea("ID:".. UNITLIST[unitindex])
-            --exMessageAppendToMessageArea("GET:".. UNITCOUNT[playindex][unitindex])
             for i = 1 , count , 1  do
-                local producer = ObjectGetProducerObject(TAR[i])
-                if producer == nil then
-                    -- 没有生产者的单位，说明是箱子单位
-                    CRATEUNITCOUNT[playindex][unitindex] = CRATEUNITCOUNT[playindex][unitindex] + 1
+                if ObjectIsAlive(TAR[i]) then
+                    local producer = ObjectGetProducerObject(TAR[i])
+                    if producer == nil then
+                        -- 没有生产者的单位，说明是箱子单位
+                        CRATEUNITCOUNT[playindex][unitindex] = CRATEUNITCOUNT[playindex][unitindex] + 1
+                    end
+                    ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1
+                    UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + 1
                 end
                 ExecuteAction("NAMED_DELETE",TAR[i])
             end
