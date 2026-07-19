@@ -147,6 +147,18 @@ function JapanPointDefenseDroneBorn(createdObjId, createdObjInstanceId, ownerPla
     end, 1, {createdObjId})
 end
 
+function JapanKamikazeInfantryBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    -- 仅对于电脑的步兵：1秒后自动启用技能
+    if ownerPlayerName == "PlyrCreeps"
+        or ownerPlayerName == "PlyrCivilian" then
+        SchedulerModule.delay_call(function(id)
+            if ObjectIsAlive(id) then
+                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", GetObjectById(id), "Command_SpecialPowerJapanKamikazeBonzai")
+            end
+        end, 15, {createdObjId})
+    end
+end
+
 g_UnitCount = {
     [FastHash("JapanGigaFortressShipEgg")] = {
         [1] = 0,
@@ -214,6 +226,8 @@ g_UnitCreateEventFunc[FastHash("JapanCommandoTech1")] = GetLimitCommandoUnitCrea
 
 g_UnitCreateEventFunc[FastHash("JapanPointDefenseDrone")] = JapanPointDefenseDroneBorn
 
+g_UnitCreateEventFunc[FastHash("JapanKamikazeInfantry")] = JapanKamikazeInfantryBorn
+
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialPower")
 --exObjectRegisterCreateEvent("CelestialElectricitySale_ForCelestialAdvancedPower")
 --exObjectRegisterCreateEvent("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")
@@ -235,6 +249,8 @@ exObjectRegisterCreateEvent("AlliedCommandoTech1")
 exObjectRegisterCreateEvent("JapanCommandoTech1")
 
 exObjectRegisterCreateEvent("JapanPointDefenseDrone")
+
+exObjectRegisterCreateEvent("JapanKamikazeInfantry")
 
 function onUnitCreateEvent(createdObjId, createdObjInstanceId, ownerPlayerName)
     g_UnitCreateEventFunc[createdObjInstanceId](createdObjId, createdObjInstanceId, ownerPlayerName)

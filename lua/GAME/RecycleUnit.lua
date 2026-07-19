@@ -73,7 +73,7 @@ g_InfantrySoviet = {
 
 g_InfantryJapan = {
     {Type = "JapanScoutInfantry", Image = "Button_JapanScoutInfantry", Name = Localization.recycle('unit.JapanScoutInfantry'), Money = 300},
-    {Type = "JapanAntiInfantryInfantry", Image = "Button_JapanAntiInfantryInfantry", Name = Localization.recycle('unit.JapanAntiInfantryInfantry'), Money = 75},
+    {Type = "JapanAntiInfantryInfantry", Image = "Button_JapanAntiInfantryInfantry", Name = Localization.recycle('unit.JapanAntiInfantryInfantry'), Money = 100},
     {Type = "JapanAntiVehicleInfantry", Image = "Button_JapanAntiVehicleInfantry", Name = Localization.recycle('unit.JapanAntiVehicleInfantry'), Money = 300},
     {Type = "JapanArcherInfantry", Image = "Button_JapanArcherMaiden", Name = Localization.recycle('unit.JapanArcherInfantry'), Money = 400},
     {Type = "JapanInfiltrationInfantry", Image = "Button_JapanInfiltrationInfantry", Name = Localization.recycle('unit.JapanInfiltrationInfantry'), Money = 850},
@@ -271,7 +271,7 @@ g_ShipCelestial = {
 
 g_CrateUnitsTemplate = {
     [1] = {
-        { Type = "JapanKamikazeInfantry", Money = 75 },
+        { Type = "JapanKamikazeInfantry", Money = 100 },
     },
     [2] = {
         { Type = "CelestialSaluteGun" },

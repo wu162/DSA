@@ -3,12 +3,16 @@ UNITLIST = {}
 UNITCOUNT = {}
 CRATEUNITCOUNT = {} -- 箱子单位计数，主要是为了回收单位时区别对待箱子单位，避免无限抽卡
 g_UnitNameToUnitIndex = {}
+g_PlayerGiftStates = {}
 P = {}
 ANYUNITCOUNT = {}
 --unitcountmax = 200
 for i = 1 , 8 , 1 do
     P[i] = GetObjectByScriptName("P"..i) ;
     ANYUNITCOUNT[i] = 0 ;
+    g_PlayerGiftStates[i] = {
+        GiftJapanKamikazeInfantry = 0,
+    }
 end
 UNITLIST [1] = "SovietCommandoTech1"
 UNITLIST [2] = "JapanCommandoTech1"
@@ -351,6 +355,21 @@ function unitgetcountanddelet (playindex)
                     end
                     ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1
                     UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + 1
+
+                    -- 每两个 JapanAntiInfantryInfantry 赠送一个 JapanKamikazeInfantry
+                    if UNITLIST[unitindex] == "JapanAntiInfantryInfantry" then
+                        local playerGiftState = g_PlayerGiftStates[playindex]
+                        local kamikazeState = playerGiftState.GiftJapanKamikazeInfantry or 0
+                        kamikazeState = kamikazeState + 1
+                        if kamikazeState >= 2 then
+                            kamikazeState = 0
+                            -- 赠送一个 JapanKamikazeInfantry
+                            ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1
+                            local kamikazeIndex = g_UnitNameToUnitIndex["JapanKamikazeInfantry"]
+                            UNITCOUNT[playindex][kamikazeIndex] = UNITCOUNT[playindex][kamikazeIndex] + 1
+                        end
+                        playerGiftState.GiftJapanKamikazeInfantry = kamikazeState
+                    end
                 end
                 ExecuteAction("NAMED_DELETE",TAR[i])
             end
