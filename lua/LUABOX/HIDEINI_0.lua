@@ -1,7 +1,7 @@
 FilterJapanLightTransportVehicle=CreateObjectFilter({
   Rule="ANY",
   IncludeThing = {
- "JapanLightTransportVehicle"
+ "JapanLightTransportVehicle","AlliedNightinaleHelicopter"
   }
 })
 
