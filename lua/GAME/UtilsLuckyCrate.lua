@@ -30,7 +30,7 @@ function TryEnableLuckyCrateIfAllowed()
                     position, 
                     0
                 )
-                TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", GetObjectById(nextObjectId), "SCRIPT:CrateEnabled", 30, "")
+                TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", GetObjectById(nextObjectId), "SCRIPT:CrateEnabled", 120, "")
                 -- 给工程师加速
                 ObjectLoadAttributeModifier(nextObjectId, g_SuperSpeedModifier)
             end
