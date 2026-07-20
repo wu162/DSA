@@ -509,7 +509,7 @@ function CreateSpawnArmyImmediatelyButton(playerIndex)
         MaxUseCount = 2,
         CooldownSeconds = 70,
         SharedCooldownId = "SpawnArmyImmediately",
-        SharedCooldownSeconds = 70,
+        SharedCooldownSeconds = 15,
         OnClick = function(self)
             return RequestSpawnArmyImmediately(self.PlayerIndex)
         end,
