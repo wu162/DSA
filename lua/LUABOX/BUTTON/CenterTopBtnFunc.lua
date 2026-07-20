@@ -787,6 +787,7 @@ function RequestNanoMaintainHive(playerIndex)
     local sideName = Localization.get("side.devil")
     local sideAIPlayer = "PlyrCivilian"
     local tower = T74
+    local seaTowers = { "T71F", "T72F", "T73F" }
     local positions = { X = 3000, Y = 3104, Z = 210 }
     local position2 = {
         { X = 3200, Y = 3200, Z = 210 },
@@ -798,6 +799,7 @@ function RequestNanoMaintainHive(playerIndex)
         sideName = Localization.get("side.angel")
         sideAIPlayer = "PlyrCreeps"
         tower = T84
+        seaTowers = { "T81F", "T82F", "T83F" }
         positions = { X = 4030, Y = 3104, Z = 210 }
         position2 = {
             { X = 3830, Y = 3200, Z = 210 },
@@ -808,6 +810,15 @@ function RequestNanoMaintainHive(playerIndex)
     end
 
     exMessageAppendToMessageArea(Localization.get("center_top.used.nano_repair", sideName))
+    -- 给海塔回血 15%
+    for i = 1, getn(seaTowers), 1 do
+        local seaTower = GetObjectByScriptName(seaTowers[i])
+        if ObjectIsAlive(seaTower) then
+            local currentHp = ObjectGetCurrentHealth(seaTower)
+            local maxHp = ObjectGetInitialHealth(seaTower)
+            exObjectSetHealth(seaTower, min(currentHp + maxHp * 0.15, maxHp))
+        end
+    end
 
     ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions, 0)
     for j = 1, 4, 1 do
