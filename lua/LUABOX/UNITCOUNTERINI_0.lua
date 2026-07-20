@@ -327,6 +327,7 @@ for i = 1 , unitcountmax , 1 do
         },
     })
     g_UnitNameToUnitIndex[UNITLIST[i]] = i
+    g_UnitNameToUnitIndex[FastHash(UNITLIST[i])] = i
 end
 --exMessageAppendToMessageArea("过滤器完毕")
 ----------------------------------------------------------------
@@ -347,17 +348,24 @@ function unitgetcountanddelet (playindex)
 
         if count > 0 then
             for i = 1 , count , 1  do
-                if ObjectIsAlive(TAR[i]) then
-                    local producer = ObjectGetProducerObject(TAR[i])
+                local unitId = ObjectGetId(TAR[i])
+                if ObjectIsAlive(unitId) then
+                    -- 如果有精确匹配的 index，优先使用该 index
+                    local actualUnitIndex = g_UnitNameToUnitIndex[ObjectGetInstanceId(unitId)]
+                    if not actualUnitIndex then
+                        actualUnitIndex = unitindex
+                    end
+                    -- 检查箱子单位
+                    local producer = ObjectGetProducerObject(unitId)
                     if producer == nil then
                         -- 没有生产者的单位，说明是箱子单位
-                        CRATEUNITCOUNT[playindex][unitindex] = CRATEUNITCOUNT[playindex][unitindex] + 1
+                        CRATEUNITCOUNT[playindex][actualUnitIndex] = CRATEUNITCOUNT[playindex][actualUnitIndex] + 1
                     end
                     ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1
-                    UNITCOUNT[playindex][unitindex] = UNITCOUNT[playindex][unitindex] + 1
+                    UNITCOUNT[playindex][actualUnitIndex] = UNITCOUNT[playindex][actualUnitIndex] + 1
 
                     -- 每两个 JapanAntiInfantryInfantry 赠送一个 JapanKamikazeInfantry
-                    if UNITLIST[unitindex] == "JapanAntiInfantryInfantry" then
+                    if UNITLIST[actualUnitIndex] == "JapanAntiInfantryInfantry" then
                         local playerGiftState = g_PlayerGiftStates[playindex]
                         local kamikazeState = playerGiftState.GiftJapanKamikazeInfantry or 0
                         kamikazeState = kamikazeState + 1
@@ -371,7 +379,7 @@ function unitgetcountanddelet (playindex)
                         playerGiftState.GiftJapanKamikazeInfantry = kamikazeState
                     end
                 end
-                ExecuteAction("NAMED_DELETE",TAR[i])
+                ExecuteAction("NAMED_DELETE", unitId)
             end
         end
     end
