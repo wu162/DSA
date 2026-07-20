@@ -148,14 +148,14 @@ function JapanPointDefenseDroneBorn(createdObjId, createdObjInstanceId, ownerPla
 end
 
 function JapanKamikazeInfantryBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
-    -- 仅对于电脑的步兵：1秒后自动启用技能
+    -- 仅对于电脑的步兵：5 秒后自动启用技能
     if ownerPlayerName == "PlyrCreeps"
         or ownerPlayerName == "PlyrCivilian" then
         SchedulerModule.delay_call(function(id)
             if ObjectIsAlive(id) then
                 ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", GetObjectById(id), "Command_SpecialPowerJapanKamikazeBonzai")
             end
-        end, 15, {createdObjId})
+        end, 15 * 5, {createdObjId})
     end
 end
 

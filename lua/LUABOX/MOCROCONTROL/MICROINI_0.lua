@@ -317,7 +317,11 @@ function CelestialAdvanceAircraftTech4MICROCONTROL ()
     end
 end
 
-
+g_FilterOnlyOverWater = CreateObjectFilter({
+    Rule="ALL",
+    StatusBitFlags="OVER_WATER"
+})
+g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = 0
 function JapanAntiNavyShipTech3MICROCONTROL ()
     for playindex = 7 , 8 , 1 do
         local SELF, count = ObjectFindObjects(P[playindex], nil, FilterJapanAntiNavyShipTech3)
@@ -325,10 +329,21 @@ function JapanAntiNavyShipTech3MICROCONTROL ()
         for i = 1 , count , 1 do
             local selfId = ObjectGetId(SELF[i])
             local countdown = exObjectGetSpecialCountDownFrame(selfId, "SpecialPower_JANSTier3CombatMode")
-            if countdown ~= nil and countdown > 700 then
+            if countdown ~= nil and countdown > 750 then
                 -- 不能让太刀无限制使用技能，让它冷却一下吧
             else
-                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode" )
+                ObjectUnloadAttributeModifier(selfId, "AttributeModifier_JANSTier3CombatMode")
+                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode")
+                if selfId > g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData then
+                    -- ID 是单调递增的，所以只要 ID 大于上次记录的 ID，就说明是新生成的单位
+                    -- 为它设置索敌信息
+                    ObjectSetCustomTargetChooserData(selfId, {
+                        CustomFilter = g_FilterOnlyOverWater
+                    })
+                    -- 更新最后记录的 ID
+                    g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = selfId
+                end
+                ObjectSetTargetChooserNextAutoAcquireDelay(selfId, 0)
             end
         end
     end
