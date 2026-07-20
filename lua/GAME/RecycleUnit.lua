@@ -124,8 +124,8 @@ g_InfantryCelestial = {
 --}
 
 g_VehicleAllied = {
-    --{Type = "AlliedAntiInfantryVehicle", Image = "Button_AlliedAntiInfantryVehicle_on", Name = "ACV"},
-    {Type = "AlliedAntiAirVehicleTech1", Image = "Button_AlliedIFV_B_on", Name = "ifv", Money = 800},
+    {Type = "AlliedAntiInfantryVehicle_Ground", Image = "Button_AlliedAntiInfantryVehicle_on", Name = Localization.recycle('unit.AlliedAntiInfantryVehicle'), Money = 750},
+    {Type = "AlliedAntiAirVehicleTech1", Image = "Button_AlliedIFV_B_on", Name = Localization.recycle('unit.AlliedAntiAirVehicleTech1'), Money = 800},
     {Type = "AlliedAntiVehicleVehicleTech1", Image = "Button_AlliedAntiVehicleVehicleTech1_on", Name = Localization.recycle('unit.AlliedAntiVehicleVehicleTech1'), Money = 950},
     {Type = "prismtank", Image = "Button_PrismTank_B", Name = Localization.recycle('unit.prismtank'), Money = 1400},
     {Type = "AlliedAntiStructureVehicle", Image = "Button_AlliedAntiStructureVehicle_on", Name = Localization.recycle('unit.AlliedAntiStructureVehicle'), Money = 1800},
@@ -240,7 +240,8 @@ g_AirCraftCelestial = {
 --}
 
 g_ShipAllied = {
-    {Type = "AlliedAntiNavalScout", Image = "Button_AlliedAntiNavalScout_on", Name = "", Money = 750},
+    {Type = "AlliedAntiNavalScout", Image = "Button_AlliedAntiNavalScout_on", Name = Localization.recycle('unit.AlliedAntiNavalScout'), Money = 750},
+    {Type = "AlliedAntiInfantryVehicle", Image = "Button_AlliedAntiInfantryVehicle_on", Name = Localization.recycle('unit.AlliedAntiInfantryVehicle'), Money = 750},
     {Type = "AlliedAntiAirShip", Image = "Button_AlliedAntiAirShip_on", Name = Localization.recycle('unit.AlliedAntiAirShip'), Money = 900},
     {Type = "AlliedAntiNavyShipTech1", Image = "Button_AlliedAntiNavyShipTech1_on", Name = Localization.recycle('unit.AlliedAntiNavyShipTech1'), Money = 1600},
     {Type = "AlliedAntiNavyShipTech3", Image = "Button_AlliedAntiNavyShipTech3", Name = Localization.recycle('unit.AlliedAntiNavyShipTech3'), Money = 4000},
@@ -495,11 +496,11 @@ function updateRecycleBtnsForPlayerName(playerName)
             local btns = references[j]
             for k = 1, getn(btns) do
                 local shouldInsert = false
-                if j == 1 
+                if false
+                    -- j == 1 
                     -- or j == getn(references) -- 暂时无条件显示箱子单位
                 then
-                    -- 玩家本阵营的单位无条件显示
-                    shouldInsert = true
+                    -- shouldInsert = true -- 玩家本阵营的单位无条件显示
                 else
                     -- 其他阵营的单位不显示，只有当玩家拥有该单位时才显示
                     local unitTypeIndex = g_UnitNameToUnitIndex[btns[k].Type]
