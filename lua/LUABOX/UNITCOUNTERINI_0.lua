@@ -381,7 +381,7 @@ function unitgetcountanddelet (playindex)
                         playerGiftState.GiftJapanKamikazeInfantry = kamikazeState
                     end
                 end
-                ExecuteAction("NAMED_DELETE", unitId)
+                ExecuteAction("NAMED_DELETE", TAR[i])
             end
         end
     end

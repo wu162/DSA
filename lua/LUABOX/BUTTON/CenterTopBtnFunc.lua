@@ -815,8 +815,10 @@ function RequestNanoMaintainHive(playerIndex)
         local seaTower = GetObjectByScriptName(seaTowers[i])
         if ObjectIsAlive(seaTower) then
             local currentHp = ObjectGetCurrentHealth(seaTower)
-            local maxHp = ObjectGetInitialHealth(seaTower)
-            exObjectSetHealth(seaTower, min(currentHp + maxHp * 0.15, maxHp))
+            -- 塔的血量被改过因此不适用 ObjectGetInitialHealth
+            local maxHp = exObjectGetMaxHealth(ObjectGetId(seaTower))
+            local healAmount = maxHp * 0.15
+            ExecuteAction("NAMED_DAMAGE", seaTower, -healAmount)
         end
     end
 

@@ -297,8 +297,11 @@ g_CrateUnitsTemplate = {
 
         { Type = "SovietAntiAirVehicle", Count = 3 },
         { Type = "SovietHeavyAntiAirVehicleTech2", Count = 3 },
+        { Type = "SovietAntiVehicleVehicleTech1", Count = 3,
+            Image = "Button_SovietAntiVehicleVehicleTech1_small" },
         { Type = "SovietHeavyGrinder", Count = 2,
             Image = "Button_SovietGrinder" },
+        { Type = "SovietHeavyMortarVehicle", Count = 2 },
 
         { Type = "VUAntiAirVehicleTech1", Count = 3,
             Image = "Button_VDVAntiAirVehicleTech1" },
@@ -316,6 +319,7 @@ g_CrateUnitsTemplate = {
     },
     [3] = {
         { Type = "AlliedAvengerAttackAircraft", Count = 2 },
+        { Type = "AlliedNightinaleHelicopter", Count = 2 },
         { Type = "WinterArmyKoelAttackUAV", Count = 6 },
         { Type = "SovietTransportAircraft_HeavyCannon",
             Image = "Button_SovietTransportAircraft" },
