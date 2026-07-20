@@ -1,8 +1,9 @@
 -- 大概以后会扩充成生成所有陆军  目前先只管acv
-
 function SpawnLandUnit()
-    SpawnLandUnit_left()
-    SpawnLandUnit_right()
+    -- 但情况又发生了变化！ACV 现在不需要特殊处理了，而目前的这里的代码还没有实现“扩充成生成所有陆军”
+    -- 所以实际上应该还是先禁用这段代码
+    -- SpawnLandUnit_left()
+    -- SpawnLandUnit_right()
 end
 
 function SpawnLandUnit_left()

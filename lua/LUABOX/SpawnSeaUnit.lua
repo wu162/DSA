@@ -1,8 +1,10 @@
 -- 大概以后会扩充成生成所有海军  目前先只管acv
 
 function SpawnSeaUnit()
-    SpawnSeaUnit_left()
-    SpawnSeaUnit_right()
+    -- 但情况又发生了变化！ACV 现在不需要特殊处理了，而目前的这里的代码还没有实现“扩充成生成所有海军”
+    -- 所以实际上应该还是先禁用这段代码
+    -- SpawnSeaUnit_left()
+    -- SpawnSeaUnit_right()
 end
 
 function SpawnSeaUnit_left()

@@ -168,6 +168,7 @@ g_UnitCount = {
         [5] = 0,
         [6] = 0,
     },
+    -- ACV 不需要特殊处理了，所以下面这两个应该是没用了？
     [FastHash("AlliedAntiInfantryVehicle")] = {
         [1] = 0,
         [2] = 0,
@@ -216,8 +217,9 @@ g_UnitCreateEventFunc[FastHash("CelestialCenturionUpgradeObject")] = CelestialCe
 g_UnitCreateEventFunc[FastHash("AlliedSuperWeapon")] = AlliedSuperWeaponBorn
 
 g_UnitCreateEventFunc[FastHash("JapanGigaFortressShipEgg")] = UnitCountFunc
-g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle")] = UnitCountFunc
-g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle_Ground")] = UnitCountFunc
+-- ACV 不需要特殊处理了
+-- g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle")] = UnitCountFunc
+-- g_UnitCreateEventFunc[FastHash("AlliedAntiInfantryVehicle_Ground")] = UnitCountFunc
 
 -- 谭雅只让造两个
 g_UnitCreateEventFunc[FastHash("AlliedCommandoTech1")] = GetLimitCommandoUnitCreateFunc("AlliedCommandoTech1", 2)
@@ -242,8 +244,9 @@ exObjectRegisterCreateEvent("CelestialSpaceReinforceMarker")
 exObjectRegisterCreateEvent("CelestialCenturionUpgradeObject")
 exObjectRegisterCreateEvent("AlliedSuperWeapon")
 exObjectRegisterCreateEvent("JapanGigaFortressShipEgg")
-exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle")
-exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle_Ground")
+-- ACV 不需要特殊处理了
+-- exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle")
+-- exObjectRegisterCreateEvent("AlliedAntiInfantryVehicle_Ground")
 
 exObjectRegisterCreateEvent("AlliedCommandoTech1")
 exObjectRegisterCreateEvent("JapanCommandoTech1")
