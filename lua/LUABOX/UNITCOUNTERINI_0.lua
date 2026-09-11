@@ -12,6 +12,7 @@ for i = 1 , 8 , 1 do
     ANYUNITCOUNT[i] = 0 ;
     g_PlayerGiftStates[i] = {
         GiftJapanKamikazeInfantry = 0,
+        -- GiftSovietAntiInfantryInfantry = 0, -- 暂停：动员兵造二送一
     }
 end
 UNITLIST [1] = "SovietCommandoTech1"
@@ -71,8 +72,6 @@ UNITLIST [index] = "CelestialAntiVehicleVehicleTech1"
 index = index + 1 ;
 UNITLIST [index] = "CelestialLongRangeMissileVehicle"
 index = index + 1 ;
-UNITLIST [index] = "JapanAntiInfantryVehicle"
-index = index + 1 ;
 UNITLIST [index] = "JapanAntiAirVehicleTech1"
 index = index + 1 ;
 UNITLIST [index] = "JapanAntiVehicleVehicleTech1"
@@ -98,8 +97,6 @@ index = index + 1 ;
 UNITLIST [index] = "SovietHeavyMortarVehicle"
 index = index + 1 ;
 UNITLIST [index] = "JapanAntiStructureVehicle"
-index = index + 1 ;
-UNITLIST [index] = "JapanMissileMechaAdvanced"
 index = index + 1 ;
 UNITLIST [index] = "CelestialAntiStructureVehicle"
 index = index + 1 ;
@@ -184,6 +181,11 @@ index = index + 1 ;
 --exMessageAppendToMessageArea("indexHEAVYVEH"..index)
 step3 = index-1
 --index = 151
+-- 天狗、心神按飞机批次登场，并使用飞机队伍及出生时序。
+UNITLIST [index] = "JapanAntiInfantryVehicle"
+index = index + 1 ;
+UNITLIST [index] = "JapanMissileMechaAdvanced"
+index = index + 1 ;
 UNITLIST [index] = "JapanScoutInfantry"
 index = index + 1 ;
 UNITLIST [index] = "CelestialScoutDrone"
@@ -219,8 +221,6 @@ index = index + 1 ;
 UNITLIST [index] = "JapanAntiVehicleInfantryTech3"
 index = index + 1 ;
 UNITLIST [index] = "JapanInterceptorAircraft"
-index = index + 1 ;
-UNITLIST [index] = "JapanAntiAirShip"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiGroundAircraft"
 index = index + 1 ;
@@ -269,6 +269,9 @@ UNITLIST [index] = "JapanAntiVehicleShip"
 index = index + 1 ;
 UNITLIST [index] = "JapanNavyScoutShip"
 index = index + 1 ;
+-- 海翼属于海军：启用海军时以潜艇形态从海军生成点登场。
+UNITLIST [index] = "JapanAntiAirShip"
+index = index + 1 ;
 UNITLIST [index] = "JapanAntiNavyShipTech3"
 index = index + 1 ;
 UNITLIST [index] = "SovietAntiNavyShipTech2"
@@ -305,7 +308,7 @@ UNITLIST [index] = "AlliedAirForceDispatchVehicle"
 index = index + 1 ;
 UNITLIST [index] = "JapanAntiAirVehicleTech3"
 index = index + 1 ;
-UNITLIST [index] = "SovietElectronicRadarTruck"
+UNITLIST [index] = "SovietPineElectronicRadarTruck"
 index = index + 1 ;
 step6= index-1
 unitcountmax = index-1
@@ -330,6 +333,20 @@ for i = 1 , unitcountmax , 1 do
     })
     g_UnitNameToUnitIndex[UNITLIST[i]] = i
     g_UnitNameToUnitIndex[FastHash(UNITLIST[i])] = i
+end
+-- 摇光普通/强化形态共享同一个自走棋计数槽。
+local yaoguangIndex = g_UnitNameToUnitIndex["CelestialAdvanceAircraftTech4"]
+if yaoguangIndex ~= nil then
+    FilterLIST[yaoguangIndex] = CreateObjectFilter({
+        Rule="ANY",
+        Relationship="SAME_PLAYER",
+        IncludeThing = {
+            "CelestialAdvanceAircraftTech4",
+            "CelestialAdvanceAircraftTech4_Enhanced"
+        }
+    })
+    g_UnitNameToUnitIndex["CelestialAdvanceAircraftTech4_Enhanced"] = yaoguangIndex
+    g_UnitNameToUnitIndex[FastHash("CelestialAdvanceAircraftTech4_Enhanced")] = yaoguangIndex
 end
 --exMessageAppendToMessageArea("过滤器完毕")
 ----------------------------------------------------------------
@@ -380,6 +397,20 @@ function unitgetcountanddelet (playindex)
                         end
                         playerGiftState.GiftJapanKamikazeInfantry = kamikazeState
                     end
+
+                    -- 暂停：与帝国武士相同，每生产两个苏联动员兵，额外记入一个动员兵。
+                    -- if UNITLIST[actualUnitIndex] == "SovietAntiInfantryInfantry" then
+                    --     local playerGiftState = g_PlayerGiftStates[playindex]
+                    --     local conscriptState = playerGiftState.GiftSovietAntiInfantryInfantry or 0
+                    --     conscriptState = conscriptState + 1
+                    --     if conscriptState >= 2 then
+                    --         conscriptState = 0
+                    --         ANYUNITCOUNT[playindex] = ANYUNITCOUNT[playindex] + 1
+                    --         local conscriptIndex = g_UnitNameToUnitIndex["SovietAntiInfantryInfantry"]
+                    --         UNITCOUNT[playindex][conscriptIndex] = UNITCOUNT[playindex][conscriptIndex] + 1
+                    --     end
+                    --     playerGiftState.GiftSovietAntiInfantryInfantry = conscriptState
+                    -- end
                 end
                 ExecuteAction("NAMED_DELETE", TAR[i])
             end
@@ -389,7 +420,38 @@ function unitgetcountanddelet (playindex)
 end
 --exMessageAppendToMessageArea("定义函数1完毕")
 -------------------------------------------------------------------------------
+g_SovietMortarCycleUnlocked = 0
+
+-- 第一回合起解除地图对火炮机车的禁造；单位自身的原生前置仍由游戏处理。
+function UpdateSovietMortarCycleBuildability()
+    if g_SovietMortarCycleUnlocked == 1 then
+        return
+    end
+    if exCounterGetByName("lvc") < 1 then
+        return
+    end
+    for playindex = 1, 6, 1 do
+        ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_" .. playindex, "SovietMortarCycle", 1)
+    end
+    g_SovietMortarCycleUnlocked = 1
+end
+
+function UpdateNoNavyTeslaBoatBuildability()
+    if g_DisableSeaArmy ~= 1 or g_NoNavyTeslaBoatUnlocked == 1 then
+        return
+    end
+    if exCounterGetByName("lvc") < 3 then
+        return
+    end
+    for playindex = 1, 6, 1 do
+        ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_" .. playindex, "SovietAntiNavyShipTech1", 1)
+    end
+    g_NoNavyTeslaBoatUnlocked = 1
+end
+
 function unitgenerate ()
+    UpdateSovietMortarCycleBuildability()
+    UpdateNoNavyTeslaBoatBuildability()
     ----exMessageAppendToMessageArea("unitgenerate")
     for playindex = 1 , 6 , 1 do
         local units, unitsCount = CopyPlayerRegisteredObjectSet("Player_"..playindex, "UNITS")
