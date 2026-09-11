@@ -218,6 +218,8 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             ButtonManager:SetButton(button)
         end
     end
+    -- 如果解锁事件早于按钮初始化发生，则在初始按钮创建后按已记录状态重新解锁。
+    CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
 end
 
 function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
@@ -260,12 +262,13 @@ end
 function CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
     local playerName = "Player_" .. playerIndex
     local button = nil
-    if g_ProductionBonus_JapanGet[playerIndex] == 1 then
-        button = CreateJapanShieldButton(playerIndex)
-    elseif g_CelestialSuperWeapon_Get[playerIndex] == 1 then
-        button = CreateCelestialMoraleButton(playerIndex)
-    elseif g_AlliedSuperWeaponBuilt[playerIndex] == 1 then
+    local playerSide = g_PlayerSide[playerIndex]
+    if playerSide == 1 and g_AlliedSuperWeaponBuilt[playerIndex] == 1 then
         button = CreateChronosphereButton(playerIndex)
+    elseif playerSide == 3 and g_ProductionBonus_JapanGet[playerIndex] == 1 then
+        button = CreateJapanShieldButton(playerIndex)
+    elseif playerSide == 4 and g_CelestialSuperWeapon_Get[playerIndex] == 1 then
+        button = CreateCelestialMoraleButton(playerIndex)
     end
     if button then
         button.Description = button.UnlockedDescription
@@ -274,6 +277,15 @@ function CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
         button:FormatText()
         ButtonManager:SetButton(button)
     end
+end
+
+function CenterTopBtnFunc_UnlockChronosphere(playerIndex)
+    if type(playerIndex) ~= "number" or playerIndex < 1 or playerIndex > 6 then
+        return false
+    end
+    g_AlliedSuperWeaponBuilt[playerIndex] = 1
+    CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
+    return true
 end
 
 function CreateDestructionButton(playerIndex)
@@ -788,6 +800,7 @@ function RequestNanoMaintainHive(playerIndex)
     local sideAIPlayer = "PlyrCivilian"
     local tower = T74
     local seaTowers = { "T71F", "T72F", "T73F" }
+    local seaSupportDirection = 1
     local positions = { X = 3000, Y = 3104, Z = 210 }
     local position2 = {
         { X = 3200, Y = 3200, Z = 210 },
@@ -800,6 +813,7 @@ function RequestNanoMaintainHive(playerIndex)
         sideAIPlayer = "PlyrCreeps"
         tower = T84
         seaTowers = { "T81F", "T82F", "T83F" }
+        seaSupportDirection = -1
         positions = { X = 4030, Y = 3104, Z = 210 }
         position2 = {
             { X = 3830, Y = 3200, Z = 210 },
@@ -810,17 +824,6 @@ function RequestNanoMaintainHive(playerIndex)
     end
 
     exMessageAppendToMessageArea(Localization.get("center_top.used.nano_repair", sideName))
-    -- 给海塔回血 15%
-    for i = 1, getn(seaTowers), 1 do
-        local seaTower = GetObjectByScriptName(seaTowers[i])
-        if ObjectIsAlive(seaTower) then
-            local currentHp = ObjectGetCurrentHealth(seaTower)
-            -- 塔的血量被改过因此不适用 ObjectGetInitialHealth
-            local maxHp = exObjectGetMaxHealth(ObjectGetId(seaTower))
-            local healAmount = maxHp * 0.15
-            ExecuteAction("NAMED_DAMAGE", seaTower, -healAmount)
-        end
-    end
 
     ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions, 0)
     for j = 1, 4, 1 do

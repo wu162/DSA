@@ -5,11 +5,38 @@ FilterPowerPlantOrEggNotCelestial=CreateObjectFilter({
         'JapanPowerPlantEgg',"AlliedPowerPlant","JapanPowerPlant","SovietPowerPlant"
     }
 })
+
+-- ADDMONEY 可能早于 BasicVar1 执行，先为欠债状态提供安全默认值。
+g_PlayerInDebt = g_PlayerInDebt or {}
+for i = 1, 6, 1 do
+    local playerName = "Player_" .. i
+    if g_PlayerInDebt[playerName] == nil then
+        g_PlayerInDebt[playerName] = 0
+    end
+end
+
 FilterAnyPowerPlantOrEgg=CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
     IncludeThing = {
         'CelestialPowerPlant','JapanPowerPlantEgg',"AlliedPowerPlant","JapanPowerPlant","SovietPowerPlant"
+    }
+})
+
+FilterPlayerYaoguang=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    IncludeThing = {
+        "CelestialAdvanceAircraftTech4",
+        "CelestialAdvanceAircraftTech4_Enhanced"
+    }
+})
+FilterPlayerGuardianTank=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    IncludeThing = {
+        "AlliedAntiVehicleVehicleTech1",
+        "AlliedAntiVehicleVehicleTech1_Enhanced"
     }
 })
 FilterPower=CreateObjectFilter({
