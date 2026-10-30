@@ -428,7 +428,6 @@ Localization._text_sources = {
     ["ai.infantry_built"] = { zh = "AI步兵建造完毕", en = "AI infantry build complete" },
     ["game.rules"] = { 
         zh = [[自走棋游戏规则简介：
-本地图为格格子协助开发的测试版本，具有很多实验性内容和不稳定因素，测试通过的内容会更新并合并到正式版本DSA_XXX地图中
 1. 玩家造出的单位会被记录，每个回合开始时，战场上都会重新刷出玩家造过的所有单位，由电脑控制
 2. 上方玩家（天使）单位出现在战场右侧，下方玩家（恶魔）单位出现在战场左侧
 3. 电厂提供收入，请尽快造满电厂以避免卡钱；苏联超级反应堆和神州导流尖塔不提供收入（仅解锁科技）；建造T4高科附赠精兵学院
@@ -441,7 +440,7 @@ Localization._text_sources = {
 海克斯符文：发放回合为第 3/10/18/27 回合，每次全场统一发放稀有度为 棱彩/黄金/白银 的海克斯符文，为战场带来随机可能性！按 J 键可收起/重新展开选择界面，上方技能栏有海克斯面板可查看全场玩家符文。
 可点击下方"更新日志"按钮查看更新内容]],
         en = [[DSA Game Rules:
-This map is a test version developed with assistance from GGZ. It contains many experimental features and may be unstable. Features that pass testing will be updated and merged into the official DSA_XXX map.
+This map is developed with assistance from Latticeshop. It contains many experimental features and may be unstable. Features that pass testing will be updated and merged into the official DSA_XXX map.
 1. Units you build are recorded. At the start of each round, all units you've built are respawned on the battlefield under AI control.
 2. Upper-side players (Angel) units appear on the right side of the battlefield. Lower-side players (Devil) units appear on the left side.
 3. Power plants provide income. Build power plants ASAP to avoid running out of money. Soviet Super Reactors and Celestial Diversion Spire do not provide income (tech unlock only). Building T4 high-tech grants a free Veteran Academy.
