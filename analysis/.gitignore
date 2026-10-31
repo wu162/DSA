@@ -3,4 +3,8 @@
 *.lua
 *.ps1
 *.js
+*.bin
+__pycache__/
 luac.exe
+# tools/ 放编译与开发工具（payload、主同步、节点插入、文档搬运），随仓库上传；
+!tools/*.py

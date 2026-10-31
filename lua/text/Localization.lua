@@ -70,35 +70,77 @@ Localization._text_sources = {
     ["upgrade.Upgrade_SovietAdvancedTeslaCoil"] = { zh = "获得过载线圈!", en = "Unlocked SovietAdvancedTeslaCoil!" },
 
     -- === 游戏模式 ===
-    ["game_mode.name.1"] = { zh = "正常模式", en = "Normal Mode" },
+    ["game_mode.name.1"] = { zh = "标准模式", en = "Standard Mode" },
     ["game_mode.name.2"] = { zh = "死亡模式", en = "Death Mode" },
-    ["game_mode.name.3"] = { zh = "缩小模式", en = "Shrink Mode" },
-    ["game_mode.option.1.name"] = { zh = "正常模式", en = "Normal Mode" },
+    ["game_mode.name.4"] = { zh = "升本模式", en = "Level-Up Mode" },
+    ["game_mode.option.1.name"] = { zh = "标准模式", en = "Standard Mode" },
     ["game_mode.option.2.name"] = { zh = "死亡模式", en = "Death Mode" },
-    ["game_mode.option.3.name"] = { zh = "缩小模式", en = "Shrink Mode" },
-    ["game_mode.option.4.name"] = { zh = "升本模式", en = "Level-Up Mode" },
-    ["game_mode.option.5.name"] = { zh = "禁止海军", en = "No Navy" },
-    ["game_mode.option.6.name"] = { zh = "抽卡模式", en = "Lucky Crate" },
+    ["game_mode.option.3.name"] = { zh = "升本模式", en = "Level-Up Mode" },
+    ["game_mode.option.4.name"] = { zh = "抽卡模式选择", en = "Draw Mode Selection" },
+    ["game_mode.option.5.name"] = { zh = "海克斯符文设置", en = "Hextech Rune Settings" },
+    ["game_mode.option.6.name"] = { zh = "更多选项", en = "More Options" },
     ["game_mode.dialog.title"] = { zh = "请选择游戏模式", en = "Please choose a game mode" },
     ["game_mode.confirm"] = { zh = ">>确认<<", en = ">>Confirm<<" },
     ["game_mode.selected_suffix"] = { zh = "(已选择)", en = "(Selected)" },
     ["game_mode.error.invalid_button"] = { zh = "错误：玩家 %s 点击了非法按钮 %d", en = "Error: player %s clicked invalid button %d" },
     ["game_mode.host.selected"] = { zh = "房主已选择%s", en = "Host selected %s" },
     ["game_mode.host.canceled"] = { zh = "房主已取消选择%s", en = "Host canceled selection of %s" },
-    ["game_mode.normal"] = { zh = "正常模式", en = "Normal Mode" },
+    ["game_mode.standard"] = { zh = "标准模式", en = "Standard Mode" },
+    ["game_mode.normal"] = { zh = "标准模式", en = "Standard Mode" },
     ["game_mode.death"] = { zh = "死亡模式", en = "Death Mode" },
     ["game_mode.shrink"] = { zh = "缩小模式", en = "Shrink Mode" },
     ["game_mode.shrink_with_effect"] = { zh = "缩小模式(启用死亡模式效果)", en = "Shrink Mode (Death Mode effect enabled)" },
     ["game_mode.level_up"] = { zh = "升本模式", en = "Level-Up Mode" },
+    ["game_mode.shrink_suffix"] = { zh = " (缩小)", en = " (Shrink)" },
     ["game_mode.no_navy_suffix"] = { zh = " (禁止海军)", en = " (No Navy)" },
-    ["game_mode.lucky_crate_suffix"] = { zh = " 已启用抽卡模式", en = " Lucky Crate Enabled" },
+    ["game_mode.lucky_crate_suffix"] = { zh = "已启用抽卡功能", en = "Lucky Crate Enabled" },
+    ["game_mode.pure_draw_suffix"] = { zh = "已启用抽卡模式", en = "Pure Draw Enabled" },
+    ["game_mode.shrink_name"] = { zh = "缩小", en = "Shrink" },
+    ["game_mode.no_navy_name"] = { zh = "禁海", en = "No Navy" },
+    ["game_mode.feature_separator"] = { zh = "，", en = ", " },
+    ["game_mode.feature_bracket"] = { zh = "（%s）", en = " (%s)" },
+    ["draw_mode.dialog.title"] = { zh = "请选择抽卡模式", en = "Choose a draw mode" },
+    ["draw_mode.open"] = { zh = "抽卡模式选择：%s", en = "Draw Mode: %s" },
+    ["draw_mode.disabled"] = { zh = "不启用抽卡", en = "Draw Disabled" },
+    ["draw_mode.original"] = { zh = "抽卡功能", en = "Lucky Crate" },
+    ["draw_mode.pure"] = { zh = "抽卡模式", en = "Pure Draw" },
+    ["draw_mode.back"] = { zh = "返回上一页", en = "Back" },
+    ["more_options.dialog.title"] = { zh = "更多选项", en = "More Options" },
+    ["more_options.entry"] = { zh = "更多选项", en = "More Options" },
+    ["more_options.shrink"] = { zh = "缩小模式", en = "Shrink Mode" },
+    ["more_options.no_navy"] = { zh = "禁止海军", en = "No Navy" },
+    ["more_options.back"] = { zh = "返回上一页", en = "Back" },
+    ["more_options.ban_mode"] = { zh = "禁用模式", en = "Ban Modes" },
+    ["ban_mode.dialog.title"] = { zh = "选择要禁用的兵种（最多 3 项）", en = "Ban unit types (up to 3)" },
+    ["ban_mode.option.infantry"] = { zh = "禁用步兵", en = "Ban Infantry" },
+    ["ban_mode.option.vehicle"] = { zh = "禁用载具", en = "Ban Vehicles" },
+    ["ban_mode.option.aircraft"] = { zh = "禁用空军", en = "Ban Aircraft" },
+    ["ban_mode.option.navy"] = { zh = "禁用海军", en = "Ban Navy" },
+    ["ban_mode.name.infantry"] = { zh = "禁步兵", en = "No Infantry" },
+    ["ban_mode.name.vehicle"] = { zh = "禁载具", en = "No Vehicles" },
+    ["ban_mode.name.aircraft"] = { zh = "禁空军", en = "No Aircraft" },
+    ["ban_mode.name.navy"] = { zh = "禁海", en = "No Navy" },
+    ["ban_mode.suffix"] = { zh = "(%s)", en = " (%s)" },
+    ["ban_mode.short.infantry"] = { zh = "步兵", en = "Inf" },
+    ["ban_mode.short.vehicle"] = { zh = "载具", en = "Veh" },
+    ["ban_mode.short.aircraft"] = { zh = "空军", en = "Air" },
+    ["ban_mode.short.navy"] = { zh = "海军", en = "Navy" },
+    ["ban_mode.auto_clear"] = { zh = "已禁满 3 项，自动取消「%s」", en = "3 bans reached; auto-cleared \"%s\"" },
+    ["ban_mode.back"] = { zh = "返回上一页", en = "Back" },
+    ["pure_draw.quota.refreshed"] = { zh = "生产余额已补满：%d", en = "Production quota refilled: %d" },
+    ["pure_draw.quota.remaining"] = { zh = "剩余生产余额：%d", en = "Production quota remaining: %d" },
+    ["pure_draw.quota.exceeded"] = { zh = "生产余额不足，超额单位已取消", en = "No production quota remained; the extra unit was cancelled" },
+    ["draw.unit_received"] = { zh = "获得了%d个%s喵~", en = "Obtained %d %s, meow~" },
+    ["pure_draw.airdrop"] = { zh = "中央战场出现了一次十连空投！", en = "A ten-crate airdrop has landed in the center!" },
 
     -- === 技能系统 ===
     ["skill.name.1"] = { zh = "炸弹+达摩克利斯之剑", en = "Bomb＆DamoclesSword" },
     ["skill.name.2"] = { zh = "铁幕+时停", en = "IronCurtain＆TimeStop" },
     ["skill.name.3"] = { zh = "龙船+空军元帅", en = "DragonShip＆AirMarshal" },
     ["skill.name.4"] = { zh = "补充军队+纳米维修", en = "ReinforceArmy＆Repair" },
-    ["skill.name.5"] = { zh = "复制己方技能+复制敌方技能", en = "Copy Other Players Skills" },
+    -- 序号即对话框行号（kind 同值）；复制组固定在最后一行，新技能组插在它上面。
+    ["skill.name.5"] = { zh = "九头蛇万岁+冰天雪地", en = "Hail Hydra＆Frozen Wasteland" },
+    ["skill.name.6"] = { zh = "复制己方技能+复制敌方技能", en = "Copy Other Players Skills" },
     ["skill_mode.dialog.title"] = { zh = "请选择技能组模式", en = "Please choose a skill group mode" },
     ["skill_mode.choose_yourself"] = { zh = "让每个玩家自行选择", en = "Let players chooose" },
     ["skill_mode.host_symmetric"] = { zh = "房主规定技能组(对称)", en = "Host-defined" },
@@ -137,10 +179,11 @@ Localization._text_sources = {
     ["market.next_investment.benefit"] = { zh = "\n若回合胜利可获收益\n　", en = "" }, -- 英文写不下就不写了
     ["market.transfer.choice"] = { zh = "向%s%s转移1000资金", en = "1000＄ to %s%s" },
     ["market.back_to_battle"] = { zh = "回到战场", en = "Back to Battle" },
-    ["market.buy_shield_tower"] = { zh = "购买护盾塔(%d)", en = "Buy Shield Tower %d＄" },
-    ["market.buy_poplar_tower"] = { zh = "购买胡杨塔(%d)", en = "Buy AA Tower %d＄" },
+    ["market.buy_shield_tower"] = { zh = "购买护盾投射塔(%d)", en = "Buy Shield Projector Tower %d＄" },
+    ["market.buy_poplar_tower"] = { zh = "购买胡杨防空系统(%d)", en = "Buy Poplar AA System %d＄" },
     ["market.buy_sakura_well"] = { zh = "购买樱花井(%d)", en = "Buy Sakura Well %d＄" },
     ["market.buy_aegis_shield_generator"] = { zh = "购买埃奎斯护盾发生器(%d)", en = "Buy Aegis Shield Generator %d＄" },
+    ["market.buy_tianmen_bow"] = { zh = "购买天门神弓(%d)", en = "Buy Tianmen Bow %d＄" },
     ["market.more_defense_buildings"] = { zh = "更多防御建筑", en = "More Defense Buildings" },
     ["market.back_to_main_page"] = { zh = "返回上一页", en = "Back to Previous Page" },
     ["market.transfer.success"] = { zh = "成功转账1000给$p%dName", en = "Successfully transferred 1000＄ to $p%dName" },
@@ -156,7 +199,7 @@ Localization._text_sources = {
 
     -- === 游戏开局 ===
     ["game.start.begin"] = { zh = "游戏开始！已选择游戏模式：%s", en = "Game starting! Selected game mode: %s" },
-    ["game.start.economic_multiplier"] = { zh = "经济倍率: %.2f", en = "Economic multiplier: %.2f" },
+    ["game.start.economic_multiplier"] = { zh = "经济倍率: %.2f，回收倍率: %d%%", en = "Economic multiplier: %.2f, recycle rate: %d%%" },
     ["game.start.skill_prefix"] = { zh = "技能组：", en = "Skill set: " },
     ["game.start.skill_free_choice"] = { zh = "技能组：由玩家自由选择", en = "Skill set: chosen freely by players" },
     ["game.start.skill_random_symmetric"] = { zh = "技能组：随机（可重复，对称）", en = "Skill set: random (repeatable, symmetric)" },
@@ -181,7 +224,11 @@ Localization._text_sources = {
     ["button.dragonship.description"] = { zh = "召唤龙船(第5回合起可以使用)", en = "Summon a Dragon Ship (available starting from round 5)" },
     ["button.dragonship.unlocked_description"] = { zh = "召唤龙船于主巨炮位置\n第一次召唤1艘，第二次召唤2艘\n龙船出现得越迟，血量越高，第18回合后血量抵达上限\n冷却时间1回合", en = "Summon Dragon Ships at the main cannon position\nFirst summon: 1 ship, second summon: 2 ships\nThe later the ship appears, the higher its health. Health caps after round 18\nCooldown: 1 round" },
     ["button.air_marshal.title"] = { zh = "空军元帅", en = "Air Marshal" },
-    ["button.air_marshal.description"] = { zh = "请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的攻击\n【仅对空、不可攻击敌方空军元帅】", en = "Request a super Sukhoi squad to reach the battlefield and deal devastating damage to enemy air units\n[Air only; cannot attack the enemy Air Marshal]" },
+    ["button.air_marshal.description"] = { zh = "请求超级苏霍伊群抵达战场对敌方的空军造成毁灭性的伤害\n【仅对空、不可攻击敌方空军元帅】", en = "Request a super Sukhoi squad to reach the battlefield and deal devastating damage to enemy air units\n[Air only; cannot attack the enemy Air Marshal]" },
+    ["button.hydra.title"] = { zh = "九头蛇万岁", en = "Hail Hydra" },
+    ["button.hydra.description"] = { zh = "派出间谍渗透敌后，战场上随机一半的敌方单位心控为己方单位(冷却70秒)", en = "Send spies behind enemy lines; half of the enemy field units are mind-controlled into your side (70s cooldown)" },
+    ["button.snowstorm.title"] = { zh = "冰天雪地", en = "Frozen Wasteland" },
+    ["button.snowstorm.description"] = { zh = "召唤极地寒流覆盖战场，敌方场上全部单位立刻冻结！\n【不含防御塔与建筑】", en = "An arctic front covers the battlefield: every enemy field unit is frozen at once!\n[Towers and buildings excluded]" },
     ["button.skill_selected"] = { zh = "$p%dName选择了%s", en = "$p%dName selected %s" },
 
     -- CenterTop specific
@@ -213,22 +260,25 @@ Localization._text_sources = {
     ["center_top.temporal_raid.unlocked_description"] = { zh = "打开时空裂缝让主战坦克突袭敌方后排并获得短暂的铁幕\n冷却时间三回合", en = "Open a temporal rift to raid enemy backline with tanks; 3-round cooldown" },
     ["center_top.japan_shield.title"] = { zh = "全体护盾", en = "All Point Defense Drones" },
     ["center_top.japan_shield.description"] = { zh = "请激活帝国最高机密协议「机械化组装」以解锁此按钮", en = "Requiers Robotic Assembly protocol to unlock" },
-    ["center_top.japan_shield.unlocked_description"] = { zh = "为所有己方载具套上纳米护盾\n冷却时间200秒", en = "Apply Point Defense Drones to all friendly vehicles; 200s cooldown" },
+    ["center_top.japan_shield.unlocked_description"] = { zh = "为所有己方载具与舰船套上纳米护盾\n冷却时间200秒", en = "Apply Point Defense Drones to all friendly vehicles and ships; 200s cooldown" },
     ["center_top.morale_boost.unlocked_description"] = { zh = "己方全体单位获得18秒的1.25倍移速和伤害加成\n冷却时间220秒", en = "All friendly units gain 1.25x speed and damage for 18s; 220s cooldown" },
     ["center_top.used.damocles_struck"] = { zh = "%s方落下了达摩克利斯之剑！", en = "%s's Damocles Sword struck!" },
     ["center_top.used.iron_curtain_speech"] = { zh = "%s方发表了铁幕演说！", en = "%s gave an Iron Curtain speech!" },
     ["center_top.used.time_stop"] = { zh = "%s方竟然让时间停止！", en = "%s actually stopped time!" },
     ["center_top.used.dragon_core_called"] = { zh = "%s方召唤了青龙核心战斗舰！", en = "%s summoned DragonShip!" },
     ["center_top.used.air_marshal"] = { zh = "%s方请求了空军元帅！", en = "%s requested Air Marshal!" },
+    ["center_top.used.hydra"] = { zh = "%s方发动了九头蛇万岁！", en = "%s hailed Hydra!" },
+    ["center_top.hydra.controlled_count"] = { zh = "九头蛇万岁：心控敌方单位%d个", en = "Hail Hydra: %d enemy units mind-controlled" },
+    ["center_top.used.snowstorm"] = { zh = "%s方借助极地的严寒冻结敌方单位！", en = "%s froze the enemy units with arctic cold!" },
+    ["center_top.error.no_unit_to_freeze"] = { zh = "敌方场上没有可冻结的单位，冰天雪地未生效", en = "No enemy field units to freeze, Frozen Wasteland had no effect" },
     ["center_top.error.enemy_no_skill_to_copy"] = { zh = "敌方未释放过技能，无法复制技能", en = "Enemy hasn't released skills, cannot copy" },
     ["center_top.error.player_not_built_chronosphere"] = { zh = "错误：玩家 %d 尚未建造超时空。", en = "Error: player %d hasn't built Chronosphere." },
     ["center_top.error.player_not_emp_mech_protocol"] = { zh = "错误：玩家 %d 尚未获得帝国机械化组装协议。", en = "Error: player %d hasn't obtained Empire mech protocol." },
     ["center_top.error.player_not_obtained_morale"] = { zh = "错误：玩家 %d 尚未获得止戈立场。", en = "Error: player %d hasn't obtained Array of Sundial." },
-    ["center_top.error.no_tank_found"] = { zh = "错误：没有找到任何坦克单位，无法施加纳米护盾。", en = "Error: no tank units found, cannot apply nano shield." },
+    ["center_top.error.no_tank_found"] = { zh = "错误：没有找到任何载具或舰船单位，无法施加纳米护盾。", en = "Error: no vehicles or ships found, cannot apply nano shield." },
     ["center_top.error.no_land_unit_found"] = { zh = "错误：没有找到任何陆地单位，无法释放杀敌奖励", en = "Error: no land units found, cannot cash bounty" },
     ["center_top.error.no_unit_found"] = { zh = "错误：没有找到任何单位，无法施加士气提升。", en = "Error: no units found, cannot apply morale boost" },
     ["center_top.used.local_destruction"] = { zh = "%s方使用了局部杀伤性武器！", en = "%s used Local Destruction Weapon!" },
-    ["center_top.used.bribe"] = { zh = "%s方使用了策反！", en = "%s used Bribe!" },
     ["center_top.used.emp_nano_shield"] = { zh = "%s $p%dName使用了由帝国机械化组装协议提供的纳米护盾！", en = "%s $p%dName used Empire Nano Shield from Robotic Assembly!" },
     ["center_top.used.kill_reward"] = { zh = "%s方使用了杀敌奖励！", en = "%s used Kill Reward!" },
     ["center_top.used.global_morale"] = { zh = "%s $p%dName使用了由止戈立场提供的全图士气提升技能！", en = "%s $p%dName used Global Morale Boost from Array of Sundial!" },
@@ -316,6 +366,12 @@ Localization._text_sources = {
     ["recycle.choice.20"] = { zh = "回收20个", en = "Recycle 20" },
     ["recycle.choice.cancel"] = { zh = "取消", en = "Cancel" },
     ["recycle.message"] = { zh = "$p%dName回收了%d个%s，剩余%d个", en = "$p%dName recycled %d %s, %d remaining" },
+    -- 盟军 ACV 是两套模板但引擎名称键只有一个，用形态前缀区分面板与符文卡面：海军ACV / 陆军ACV
+    ["recycle.unit_prefix.navy"] = { zh = "海军", en = "Naval " },
+    ["recycle.unit_prefix.ground"] = { zh = "陆军", en = "Ground " },
+    ["player_dragonship.converted"] = { zh = "获得神州MCV，已在基地处生成伏龙殿。", en = "Celestial MCV acquired. A Celestial Construction Yard has been spawned at your base." },
+    ["player_dragonship.recycled"] = { zh = "你已经拥有伏龙殿，多余的神州MCV已自动回收，返还$%d。", en = "You already own a Celestial Construction Yard. The extra Celestial MCV was recycled for $%d." },
+    ["player_dragonship.recycled_no_base"] = { zh = "无法定位你的基地，神州MCV已自动回收，返还$%d。", en = "Your base could not be located. The Celestial MCV was recycled for $%d." },
 
     -- 回收按钮描述文字
     ["recycle.desc.infantry"] = { zh = "回收步兵单位", en = "Recycle infantry units" },
@@ -375,17 +431,26 @@ Localization._text_sources = {
 1. 玩家造出的单位会被记录，每个回合开始时，战场上都会重新刷出玩家造过的所有单位，由电脑控制
 2. 上方玩家（天使）单位出现在战场右侧，下方玩家（恶魔）单位出现在战场左侧
 3. 电厂提供收入，请尽快造满电厂以避免卡钱；苏联超级反应堆和神州导流尖塔不提供收入（仅解锁科技）；建造T4高科附赠精兵学院
-正常模式：前期收入有限，请摧毁敌方防御塔来解锁更多的电厂和科技
-死亡模式：双方开局就只剩最后一座塔
-抽卡模式：可以使用抽卡技能获得额外单位。禁止在战场中央抽卡！
+标准模式：前期收入有限，请摧毁敌方防御塔来解锁更多的电厂和科技
+死亡模式：双方开局就只剩最后一座塔，且无科技权限限制
+升本模式：玩家需要花钱来解锁更多的电厂和更高科技权限，科技权限所需金额随时间减少，同一阵营共同解锁
+缩小模式：场上的单位获得缩小BUFF！
+抽卡功能：可以使用抽卡技能获得额外单位。禁止在战场中央抽卡！
+抽卡模式：开局开放抽卡；每3回合内只能生产5个单位，抽卡结果有一半概率替换为全阵营加权生产单位，场地中间会有随机空投！
+海克斯符文：发放回合为第 3/10/18/27 回合，每次全场统一发放稀有度为 棱彩/黄金/白银 的海克斯符文，为战场带来随机可能性！按 J 键可收起/重新展开选择界面，上方技能栏有海克斯面板可查看全场玩家符文。
 可点击下方"更新日志"按钮查看更新内容]],
         en = [[DSA Game Rules:
+This map is developed with assistance from Latticeshop. It contains many experimental features and may be unstable. Features that pass testing will be updated and merged into the official DSA_XXX map.
 1. Units you build are recorded. At the start of each round, all units you've built are respawned on the battlefield under AI control.
 2. Upper-side players (Angel) units appear on the right side of the battlefield. Lower-side players (Devil) units appear on the left side.
 3. Power plants provide income. Build power plants ASAP to avoid running out of money. Soviet Super Reactors and Celestial Diversion Spire do not provide income (tech unlock only). Building T4 high-tech grants a free Veteran Academy.
-Normal Mode: Limited income in early stages. Destroy enemy defense towers to unlock more power plants and technology.
-Death Mode: Both sides start with only the last tower remaining.
-Lucky Crate Mode: Use the Lucky Crate Boxes to gain extra units. Do not use Lucky Crate in the central battlefield!
+Standard Mode: Limited income in early stages. Destroy enemy defense towers to unlock more power plants and technology.
+Death Mode: Both sides start with only their final tower remaining, with no tech-access restrictions.
+Level-Up Mode: Players spend money to unlock more power plants and higher tech tiers. Tech unlock costs decrease over time, and players of the same faction share their unlocks.
+Shrink Mode: Units on the battlefield receive the Shrink buff!
+Lucky Crate Feature: Use the Lucky Crate skill to gain extra units. Do not use it in the central battlefield!
+Pure Draw Mode: Lucky Crates are available from the start. Only 5 units may be produced during each 3-round cycle. Half of all draws are replaced with weighted buildable units from all factions, and random airdrops appear in the center of the battlefield!
+Hextech Runes: Granted on rounds 3/10/18/27, each time with one rarity for the whole field (Prismatic/Gold/Silver), bringing random twists to battle! Press J to hide or restore the selection screen. Use the Hextech Panel in the top button bar to view every player's runes.
 Click the "Update Log" button below to view update details.]]
     },
     ["game.qq_group"] = { 
@@ -422,7 +487,9 @@ end
 
 Localization.get = function(...)
     local key = arg[1]
-    local source = Localization._text_sources[key]
+    -- 备用文案表：本文件受 payload 预算限制，其他系统的新文案登记在那里
+    -- （海克斯符文文案按模块集中放在 lua/GAME/HextechRune/03_text.lua）。
+    local source = Localization._text_sources[key] or (g_LocalizationExtraText and g_LocalizationExtraText[key])
     if not source then
         _ALERT("Localization: missing key " .. key)
         return key
@@ -453,7 +520,9 @@ Localization._objects_translate_map = {
     ["CELESTIALANTIVEHICLEVEHICLETECH1"] = "CelestialMBT",
     ["CELESTIALLONGRANGEMISSILEVEHICLE_B"] = "CelestialHJ-10",
     ["ALLIEDANTISTRUCTUREBOMBERAIRCRAFT"] = "AlliedBomberAircraft",
-    ["CELESTIALADVANCEDAIRCRAFTTECH4"] = "CelestialAdvanceAircraftTech4"
+    ["CELESTIALADVANCEDAIRCRAFTTECH4"] = "CelestialAdvanceAircraftTech4",
+    -- 旧联盟重型坦克：地编 ID 是 Overlordtank，引擎名称键是 SovietOverlordtank（见文档 §4.5.2）。
+    ["OVERLORDTANK"] = "SovietOverlordtank"
 }
 Localization.ObjectsTranslate = function(id)
     local t = Localization.InternalTranslate

@@ -1,0 +1,284 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.13
+
+g_LocalizationExtraText = {
+    -- === 模式与入口 ===
+    ["game_mode.hextech_name"] = { zh = "海克斯符文", en = "Hextech Rune" },
+    ["hextech.entry"] = { zh = "海克斯符文设置：%s", en = "Hextech Rune Settings: %s" },
+    ["hextech.dialog.title"] = { zh = "请选择本场海克斯符文数量", en = "Choose the number of Hextech runes" },
+    ["hextech.option.0"] = { zh = "不启用海克斯", en = "Disable Hextech" },
+    ["hextech.option.1"] = { zh = "本场一个海克斯", en = "One Hextech rune" },
+    ["hextech.option.2"] = { zh = "本场二个海克斯", en = "Two Hextech runes" },
+    ["hextech.option.3"] = { zh = "本场三个海克斯", en = "Three Hextech runes" },
+    ["hextech.option.4"] = { zh = "本场四个海克斯", en = "Four Hextech runes" },
+    ["hextech.back"] = { zh = "返回上一页", en = "Back" },
+
+    -- === 面板与阶级 ===
+    ["hextech.rarity.prismatic"] = { zh = "棱彩", en = "Prismatic" },
+    ["hextech.rarity.gold"] = { zh = "黄金", en = "Gold" },
+    ["hextech.rarity.silver"] = { zh = "白银", en = "Silver" },
+    ["hextech.picked"] = { zh = "你选择了符文：%s", en = "You picked the rune: %s" },
+    ["hextech.panel.title"] = { zh = "海克斯符文面板", en = "Hextech Rune Panel" },
+    ["hextech.panel.close"] = { zh = "关闭", en = "Close" },
+    ["hextech.error.not_enough_candidates"] = { zh = "当前阶级可用符文不足 3 个，无法生成选项", en = "Fewer than 3 eligible runes are available for this tier" },
+    -- 互斥兜底（顺手的事 × 赌怪）：同一批候选可能连选两张，点选时按当时持有再拦一次。
+    ["hextech.error.rune_exclusive"] = { zh = "已持有与【%s】互斥的符文，无法再选。", en = "You already own a rune that excludes [%s]." },
+
+    -- === 单位类型 ===
+    ["hextech.unit_type.infantry"] = { zh = "步兵", en = "Infantry" },
+    ["hextech.unit_type.vehicle"] = { zh = "载具", en = "Vehicle" },
+    ["hextech.unit_type.aircraft"] = { zh = "飞机", en = "Aircraft" },
+    ["hextech.unit_type.navy"] = { zh = "海军", en = "Navy" },
+    ["hextech.unit_type.suffix"] = { zh = "（%s）", en = " (%s)" },
+
+    -- === 符文名称与描述 ===
+    ["hextech.rune.strength.name"] = { zh = "大力", en = "Strength" },
+    ["hextech.rune.strength.desc"] = { zh = "你的 %s 单位造成的伤害提高 50%%。", en = "Your %s units deal 50%% increased damage." },
+    ["hextech.rune.swiftness.name"] = { zh = "迅捷", en = "Swiftness" },
+    ["hextech.rune.swiftness.desc"] = { zh = "你的 %s 单位攻速提高 50%%。", en = "Your %s units gain 50%% attack speed." },
+    ["hextech.rune.hunt.name"] = { zh = "神行", en = "Godspeed" },
+    ["hextech.rune.hunt.desc"] = { zh = "你的 %s 单位移动速度提高 40%%。", en = "Your %s units gain 40%% movement speed." },
+    ["hextech.rune.scope.silver.name"] = { zh = "通用瞄准镜", en = "Universal Scope" },
+    ["hextech.rune.scope.silver.desc"] = { zh = "你的 %s 单位射程提高 15%%。", en = "Your %s units gain 15%% range." },
+    ["hextech.rune.astral_body.name"] = { zh = "星界躯体", en = "Astral Body" },
+    ["hextech.rune.astral_body.desc"] = { zh = "你的 %s 单位血量提高 75%%，但造成的伤害降低 25%%。", en = "Your %s units gain 75%% health but deal 25%% less damage." },
+    ["hextech.rune.scope.gold.name"] = { zh = "万用瞄准镜", en = "Universal Scope" },
+    ["hextech.rune.scope.gold.desc"] = { zh = "你的 %s 单位射程提高 25%%。", en = "Your %s units gain 25%% range." },
+    ["hextech.rune.sea_overlord.name"] = { zh = "海上霸主", en = "Ruler of the Seas" },
+    ["hextech.rune.sea_overlord.desc"] = { zh = "获得奥林匹斯级航空母舰和千鸟特攻母舰各 1 个。", en = "Gain 1 Olympus-class Aircraft Carrier and 1 Yumi Aircraft Carrier." },
+    ["hextech.rune.transcendent_evil.name"] = { zh = "超凡邪恶", en = "Transcendent Evil" },
+    ["hextech.rune.transcendent_evil.desc"] = { zh = "你的 %s 单位的血量和造成的伤害按回合数提高3%%。", en = "Your %s units gain 3%% health and damage multiplied by the current round." },
+    ["hextech.rune.brilliant_lights.name"] = { zh = "灯火辉煌", en = "Brilliant Lights" },
+    ["hextech.rune.brilliant_lights.desc"] = { zh = "在前线防御塔前方召唤 2 个中级天灯。", en = "Summon 2 intermediate repair drones in front of the frontline defense tower." },
+    ["hextech.rune.scope.prismatic.name"] = { zh = "万能瞄准镜", en = "Universal Scope" },
+    ["hextech.rune.scope.prismatic.desc"] = { zh = "你的 %s 单位射程提高 50%%。", en = "Your %s units gain 50%% range." },
+    ["hextech.rune.mcv.name"] = { zh = "MCV", en = "MCV" },
+    ["hextech.rune.mcv.desc"] = { zh = "获得一个非自身阵营的 MCV。", en = "Gain an MCV from a different faction." },
+    ["hextech.rune.oblivion_bomb.name"] = { zh = "湮灭炸弹", en = "Oblivion Bomb" },
+    ["hextech.rune.oblivion_bomb.desc"] = { zh = "获得 1 次湮灭炸弹部署次数。", en = "Gain 1 Oblivion Bomb deployment charge." },
+    ["hextech.oblivion_bomb.hotkey_hint"] = { zh = "按'K'键部署湮灭炸弹", en = "Press 'K' to deploy an Oblivion Bomb" },
+    ["hextech.rune.burn_furry.name"] = { zh = "烧福瑞", en = "Burning Furry" },
+    ["hextech.rune.burn_furry.desc"] = { zh = "回合开始时，将敌方 %d%% 的步兵变成警犬或战熊。", en = "At the start of each round, %d%% of enemy infantry become police dogs or war bears." },
+    ["hextech.rune.spawn_alien.name"] = { zh = "生异形", en = "Xenomorph" },
+    ["hextech.rune.spawn_alien.desc"] = { zh = "回合开始时，将敌方 %d%% 的载具变成恐怖机器人。", en = "At the start of each round, %d%% of enemy vehicles become Terror Drones." },
+    ["hextech.rune.angler.name"] = { zh = "钓鱼佬", en = "Angler" },
+    ["hextech.rune.angler.desc"] = {
+        zh = "回合开始时，将敌方 %d%% 的海军变成海翼。",
+        en = "At the start of each round, convert %d%% of enemy navy into Sea Wings." },
+    ["hextech.rune.sit_tight.name"] = { zh = "樱落", en = "Sakura Fall" },
+    ["hextech.rune.sit_tight.desc"] = {
+        zh = "回合开始时，将敌方 %d%% 的空军变成樱花回天雷。",
+        en = "At the start of each round, convert %d%% of enemy aircraft into Sakura Kamikaze." },
+    ["hextech.rune.giga_fortress.name"] = { zh = "超级要塞", en = "Giga Fortress" },
+    ["hextech.rune.giga_fortress.desc"] = { zh = "获得 1 个超级要塞核心。", en = "Gain 1 Giga Fortress Core." },
+    ["hextech.rune.five_tiger_generals.name"] = { zh = "百虎上将", en = "Hundred Tiger Generals" },
+    ["hextech.rune.five_tiger_generals.desc"] = { zh = "回合开始时，你的步兵获得一层百夫长。", en = "At the start of each round, your infantry gain a layer of Centurion." },
+    ["hextech.rune.quality_transformation.name"] = { zh = "质变", en = "Quality Transformation" },
+    ["hextech.rune.quality_transformation.desc"] = { zh = "获得更高一阶的随机符文。", en = "Gain a random rune of the next higher tier." },
+    ["hextech.rune.export_domestic.name"] = { zh = "出口内销", en = "Export for Domestic Sale" },
+    ["hextech.rune.export_domestic.desc"] = { zh = "你的太刀重巡洋舰单位会升级为一式磁轨炮重巡。", en = "Your Tachi heavy cruisers are upgraded to Type-1 Railgun Heavy Cruisers." },
+    ["hextech.rune.dual_purpose.name"] = { zh = "高平两用", en = "Dual-Purpose Artillery" },
+    ["hextech.rune.dual_purpose.desc"] = { zh = "你的牛蛙战车升级为“偏流”两栖高射炮。", en = "Your Bullfrogs are upgraded to Pianliu Amphibious Anti-Aircraft Guns." },
+    ["hextech.rune.dragon_breathe.name"] = { zh = "龙息凌波", en = "Dragon Breath Waverider" },
+    ["hextech.rune.dragon_breathe.desc"] = { zh = "你的凌波护卫战车升级为凌波龙息炮重型战车。", en = "Your Lingbo Waverider IFVs are upgraded to Dragon-Breath heavy IFVs." },
+    ["hextech.rune.advanced_artillery.name"] = { zh = "先进火炮", en = "Advanced Artillery" },
+    ["hextech.rune.advanced_artillery.desc"] = { zh = "你的先锋武装炮艇机“升级”为AC130版本。", en = "Your Vanguard Gunships are upgraded to the AC-130 variant." },
+    ["hextech.rune.five_centimeters.name"] = { zh = "秒速五厘米", en = "Five Centimeters per Second" },
+    ["hextech.rune.five_centimeters.desc"] = { zh = "你的樱花回天雷升级为鬼樱特攻机。", en = "Your Sakura Homing Rockets are upgraded to Ghost Sakura Strike Rockets." },
+    ["hextech.rune.wheeled_cannon.name"] = { zh = "轮式大炮", en = "Wheeled Cannon" },
+    ["hextech.rune.wheeled_cannon.desc"] = { zh = "你的犀牛坦克升级为ZSU-85自行防空炮。", en = "Your Rhino Tanks are upgraded to ZSU-85 Self-Propelled Anti-Aircraft Guns." },
+    ["hextech.rune.cloudbreaker.name"] = { zh = "穿云定海", en = "Cloudbreaker" },
+    ["hextech.rune.cloudbreaker.desc"] = { zh = "获得 1 个摇光。", en = "Gain 1 Yaoguang." },
+    ["hextech.rune.oil_king.name"] = { zh = "石油王", en = "Oil King" },
+    ["hextech.rune.oil_king.desc"] = { zh = "获得两个油井。", en = "Gain two Oil Derricks." },
+    ["hextech.rune.free_trade.name"] = { zh = "自由贸易", en = "Free Trade" },
+    ["hextech.rune.free_trade.desc"] = { zh = "获得自由贸易协议。", en = "Gain the Free Trade protocol." },
+    ["hextech.rune.at_field.name"] = { zh = "AT立场", en = "AT Field" },
+    ["hextech.rune.at_field.desc"] = { zh = "回合开始时，你的 %s 单位获得纳米护盾。", en = "At the start of each round, your %s units gain a nano shield." },
+    ["hextech.rune.at_field.ship"] = { zh = "海军", en = "Navy" },
+    ["hextech.rune.buy_two_get_one.name"] = { zh = "买二送一", en = "Buy Two, Get One" },
+    ["hextech.rune.buy_two_get_one.desc"] = { zh = "你的 %s 单位买二送一。", en = "Your %s units: buy two, get one free." },
+    ["hextech.rune.starting_funds.name"] = { zh = "启动资金", en = "Starting Funds" },
+    ["hextech.rune.starting_funds.desc"] = { zh = "立即获得 %d 资金。", en = "Immediately gain %d credits." },
+    ["hextech.rune.cash_reward.name"] = { zh = "现金奖励", en = "Cash Bounty" },
+    ["hextech.rune.cash_reward.desc"] = { zh = "获得现金奖励协议。", en = "Gain the Cash Bounty protocol." },
+    ["hextech.rune.cryo_satellite.name"] = { zh = "冷冻卫星", en = "Cryo Satellite" },
+    ["hextech.rune.cryo_satellite.desc"] = { zh = "获得冷冻卫星协议。", en = "Gain the Cryo Satellite protocol." },
+    ["hextech.rune.chicken_soup.name"] = { zh = "鸡汤来咯", en = "Here Comes the Chicken Soup" },
+    ["hextech.rune.chicken_soup.desc"] = { zh = "获得毒质腐蚀协议。", en = "Gain the Irradiate Target protocol." },
+    ["hextech.rune.divine_might.name"] = { zh = "神威", en = "Divine Might" },
+    ["hextech.rune.divine_might.desc"] = { zh = "获得时空裂缝协议。", en = "Gain the Chrono Rift protocol." },
+    ["hextech.rune.radiant_bliss.name"] = { zh = "享辐", en = "Radiant Bliss" },
+    ["hextech.rune.radiant_bliss.desc"] = { zh = "获得三级投毒协议。", en = "Gain the tier-3 Desolator Bomb protocol." },
+    ["hextech.rune.myriad_pull.name"] = { zh = "万象天引", en = "Myriad Pull" },
+    ["hextech.rune.myriad_pull.desc"] = { zh = "获得磁力奇点协议。", en = "Gain the Magnetic Singularity protocol." },
+    ["hextech.rune.icathia_surprise.name"] = { zh = "艾卡西亚的惊喜", en = "Icathia's Surprise" },
+    ["hextech.rune.icathia_surprise.desc"] = { zh = "获得三级时空炸弹协议。", en = "Gain the tier-3 Time Bomb protocol." },
+    ["hextech.rune.mass_production.name"] = { zh = "大生产", en = "Mass Production" },
+    ["hextech.rune.mass_production.desc"] = { zh = "获得大生产协议。", en = "Gain the Mass Production protocol." },
+    ["hextech.rune.safety.name"] = { zh = "安全感", en = "Sense of Security" },
+    ["hextech.rune.safety.desc"] = { zh = "获得 2 个埃奎斯护盾发生器。", en = "Gain 2 Aegis Shield Generators." },
+    ["hextech.rune.railgun_duel.name"] = { zh = "中门对狙", en = "Mid-Door Sniper Duel" },
+    ["hextech.rune.railgun_duel.desc"] = { zh = "获得一个天门神弓。", en = "Gain one Tianmen Bow." },
+    ["hextech.rune.fortified.name"] = { zh = "固若金汤", en = "Fortified" },
+    ["hextech.rune.fortified.desc"] = { zh = "最前端防御塔回满血量并增加 25%%。", en = "The frontmost defense tower is fully repaired and gains 25%% health." },
+    ["hextech.rune.recycler.name"] = { zh = "破烂王", en = "Recycler" },
+    ["hextech.rune.recycler.desc"] = { zh = "回收倍率提高 %d%%。", en = "Increase the recycling multiplier by %d%%." },
+    ["hextech.rune.infinite_ammo.name"] = { zh = "无限火力", en = "Infinite Ammo" },
+    ["hextech.rune.infinite_ammo.desc"] = { zh = "你的 %s 单位获得无限弹药。", en = "Your %s units gain unlimited ammunition." },
+    ["hextech.rune.broadband_jamming.name"] = { zh = "全频段阻塞干扰", en = "Broadband Jamming" },
+    ["hextech.rune.broadband_jamming.desc"] = { zh = "敌方全体单位射程降低 25%%。", en = "All enemy units lose 25%% range." },
+    ["hextech.rune.divine_intervention.name"] = { zh = "神圣干预", en = "Divine Intervention" },
+    ["hextech.rune.divine_intervention.desc"] = { zh = "己方全体单位和建筑每 30 秒获得 %s 秒铁幕。", en = "All allied units and structures gain Iron Curtain for %s seconds every 30 seconds." },
+    ["hextech.rune.five_thunder.name"] = { zh = "五雷天罚", en = "Five-Thunder Judgment" },
+    ["hextech.rune.five_thunder.desc"] = { zh = "每 3 回合获得一次五雷天罚。", en = "Gain one Five-Thunder Judgment every 3 rounds." },
+    ["hextech.rune.combustion_interest.name"] = { zh = "炽燃利息", en = "Combustion Interest" },
+    ["hextech.rune.combustion_interest.desc"] = { zh = "敌方每个死亡单位令你获得 %d 资金。", en = "Gain %d credits whenever an enemy unit dies." },
+    ["hextech.rune.war_efficiency.name"] = { zh = "以战养战", en = "War foraging" },
+    ["hextech.rune.war_efficiency.desc"] = { zh = "敌方每一个单位死亡都会为下回合你的 %s 单位提供增益！每一个T1/T2/T3/T4单位分别提供%s%%的血量/伤害/攻速/射程。", en = "Every enemy unit death empowers your %s units next round! Each T1/T2/T3/T4 unit grants %s%% health/damage/attack speed/range." },
+    ["hextech.rune.war_efficiency.broadcast"] = { zh = "本回合以战养战（%s）加成：%s血量%%,%s伤害%%,%s攻速%%,%s射程%%", en = "This round's War foraging (%s) bonus: %s health%%, %s damage%%, %s attack speed%%, %s range%%" },
+    ["hextech.rune.hunt_rhythm.name"] = { zh = "狩猎律动", en = "Hunt Rhythm" },
+    ["hextech.rune.hunt_rhythm.desc"] = { zh = "敌方每个 %s 死亡单位，使你的一个随机 %s 单位回复 10%% 血量。", en = "Each enemy %s death heals one random %s unit of yours for 10%% of its max health." },
+    ["hextech.rune.time_rift.name"] = { zh = "The World", en = "The World" },
+    ["hextech.rune.time_rift.desc"] = { zh = "敌方全体单位和建筑每 29 秒获得 %s 秒时停。", en = "All enemy units and structures are time-stopped for %s seconds every 29 seconds." },
+    ["hextech.rune.tesla_air_assault.name"] = { zh = "磁暴突袭", en = "Tesla Air Assault" },
+    ["hextech.rune.tesla_air_assault.desc"] = { zh = "获得磁暴突袭协议。", en = "Unlock the Tesla Air Assault protocol." },
+    ["hextech.rune.tower_defense_expert.name"] = { zh = "塔防专家", en = "Tower Defense Expert" },
+    ["hextech.rune.tower_defense_expert.desc"] = { zh = "你购买防御塔时无视数量限制，并且价格降低 50%%。", en = "Ignore defense tower limits and pay 50%% less when buying them." },
+    ["hextech.rune.ultimate_refresh.name"] = { zh = "终极刷新", en = "Ultimate Refresh" },
+    ["hextech.rune.ultimate_refresh.desc"] = { zh = "第一和第二技能的使用次数各增加 1 次。", en = "Increase the maximum uses of the first and second skills by 1." },
+    ["hextech.rune.gambling_addict.name"] = { zh = "赌怪", en = "Gambling Addict" },
+    ["hextech.rune.gambling_addict.desc"] = { zh = "获得两个随机符文。", en = "Gain two random runes." },
+    ["hextech.rune.ultimate_creature.name"] = { zh = "究极生物", en = "Ultimate Creature" },
+    ["hextech.rune.ultimate_creature.desc"] = {
+        zh = "你的一个 %s 单位进化成为究极生物！回收你当前的T1和T2单位，每回收一个T1/T2单位，分别增加7%%血量和3%%伤害/14%%攻速和6%%射程。获得一个 %s 单位。",
+        en = "One of your %s units evolves into an Ultimate Creature! Recycle your current T1 and T2 units; each recycled T1 unit grants 7%% health and 3%% damage, each recycled T2 unit grants 14%% attack speed and 6%% range. Gain 1 %s unit."
+    },
+    ["hextech.rune.ultimate_creature.broadcast"] = { zh = "究极生物加成：%d血量%%,%d伤害%%,%d攻速%%,%d射程%%", en = "Ultimate Creature: %d hp%%, %d dmg%%, %d rof%%, %d rng%%" },
+    -- 带弹药的飞机（阿波罗/阿瑞斯/凤凰/重明/米格/苏霍伊）额外吃一维弹药，文案单开一条。
+    ["hextech.rune.ultimate_creature.desc_ammo"] = {
+        zh = "你的一个 %s 单位进化成为究极生物！回收你当前的T1和T2单位，每回收一个T1/T2单位，分别增加7%%血量和3%%伤害和1%%弹药/14%%攻速和6%%射程。获得一个 %s 单位。",
+        en = "One of your %s units evolves into an Ultimate Creature! Recycle your current T1 and T2 units; each recycled T1 unit grants 7%% health, 3%% damage and 1%% ammo, each recycled T2 unit grants 14%% attack speed and 6%% range. Gain 1 %s unit."
+    },
+    ["hextech.rune.ultimate_creature.broadcast_ammo"] = { zh = "究极生物加成：%d血量%%,%d伤害%%,%d攻速%%,%d射程%%,%d弹药%%", en = "Ultimate Creature: %d hp%%, %d dmg%%, %d rof%%, %d rng%%, %d ammo%%" },
+    ["hextech.rune.dongfeng_express.name"] = { zh = "东风速递", en = "Dongfeng Express" },
+    ["hextech.rune.dongfeng_express.desc"] = { zh = "获得 1 辆东风洲际导弹发射车。", en = "Gain 1 Dongfeng ICBM Launcher." },
+    ["hextech.rune.ascension.name"] = { zh = "登神", en = "Ascension" },
+    ["hextech.rune.ascension.desc"] = { zh = "你的 %s 单位只保留 1 个，多余的会自动回收，每回收一个获得一次以下随机加成：+%d%%血量/+%d%%伤害/+%d%%攻速/+%d%%射程。", en = "Only 1 of your %s units is kept; every extra one is auto-recycled into one random bonus: +%d%% health / +%d%% damage / +%d%% attack speed / +%d%% range." },
+    ["hextech.rune.ascension.broadcast"] = { zh = "（%s）登神加成：%d血量%%,%d伤害%%,%d攻速%%,%d射程%%", en = "(%s) Ascension: %d hp%%, %d dmg%%, %d rof%%, %d rng%%" },
+    -- 带弹药的飞机把「伤害」的 10% 让给「弹药」：血量 40% / 伤害 20% / 攻速 20% / 射程 10% / 弹药 10%。
+    ["hextech.rune.ascension.desc_ammo"] = { zh = "你的 %s 单位只保留 1 个，多余的会自动回收，每回收一个获得一次以下随机加成：+%d%%血量/+%d%%伤害/+%d%%攻速/+%d%%射程/+%d%%弹药。", en = "Only 1 of your %s units is kept; every extra one is auto-recycled into one random bonus: +%d%% health / +%d%% damage / +%d%% attack speed / +%d%% range / +%d%% ammo." },
+    ["hextech.rune.ascension.broadcast_ammo"] = { zh = "（%s）登神加成：%d血量%%,%d伤害%%,%d攻速%%,%d射程%%,%d弹药%%", en = "(%s) Ascension: %d hp%%, %d dmg%%, %d rof%%, %d rng%%, %d ammo%%" },
+
+    -- 以下为新增符文：文案此前登记在 01_rune_pool.lua，现统一并到这里。
+    ["hextech.rune.banzai_charge.name"] = { zh = "万岁冲锋", en = "Banzai Charge" },
+    ["hextech.rune.banzai_charge.desc"] =
+        { zh = "你的帝国武士升级为狂热帝国武士。",
+            en = "Your Imperial Warriors are upgraded to Fanatic Imperial Warriors." },
+    ["hextech.rune.ragnarok.name"] = { zh = "诸神黄昏", en = "Ragnarok" },
+    ["hextech.rune.ragnarok.desc"] =
+        { zh = "回合开始时，你的 %s 单位血量降为 50%%，伤害增加 90%%。",
+            en = "At the start of each round, your %s units have their health reduced to 50%% but deal 90%% more damage." },
+    ["hextech.rune.goliath.name"] = { zh = "歌莉娅巨人", en = "Goliath Giant" },
+    ["hextech.rune.goliath.desc"] =
+        { zh = "你的 %s 单位血量提高 90%%，伤害提高 25%%。",
+            en = "Your %s units gain 90%% health and 25%% damage." },
+    ["hextech.rune.shrink_ray.name"] = { zh = "天堂制造", en = "Made in Heaven" },
+    ["hextech.rune.shrink_ray.desc"] =
+        { zh = "每 %d 回合使敌方全体单位缩小一回合。",
+            en = "Every %d rounds, all enemy units are shrunk for one round." },
+    ["hextech.rune.recombobulator.name"] = { zh = "变形重组器", en = "Recombobulator" },
+    ["hextech.rune.recombobulator.desc"] =
+        { zh = "将你当前单位池中的全部单位随机重组为同一阶的单位。",
+            en = "Reassemble every unit in your pool into a random unit of the same tier." },
+    ["hextech.rune.upgrade_recombobulator.name"] =
+        { zh = "升级重组器", en = "Upgrade Recombobulator" },
+    ["hextech.rune.upgrade_recombobulator.desc"] =
+        { zh = "将你当前单位池中的全部单位随机重组为高一阶的单位。T4单位为随机T4单位。",
+            en = "Reassemble every unit in your pool into a random unit one tier higher. T4 units are reassembled into random T4 units." },
+    ["hextech.rune.poach.name"] = { zh = "挖角", en = "Poach" },
+    ["hextech.rune.poach.desc"] =
+        { zh = "回合结束时，你随机生成 1 个敌方拥有的单位。",
+            en = "At the end of each round, you randomly generate 1 unit owned by the enemy." },
+    ["hextech.rune.poach.broadcast"] =
+        { zh = "挖角：本次获得一个 %s 单位。", en = "Poach: gained one %s this round." },
+    ["hextech.rune.investment.name"] = { zh = "投资", en = "Investment" },
+    ["hextech.rune.investment.desc"] =
+        { zh = "失去你当前所有的金钱，获得两倍的金钱。",
+            en = "Lose all of your current money and gain twice that amount." },
+    ["hextech.rune.investment.payout"] =
+        { zh = "投资：获得 %d 金。", en = "Investment: gained %d money." },
+    ["hextech.rune.ten_pull.name"] = { zh = "十连", en = "Ten-Pull" },
+    ["hextech.rune.ten_pull.desc"] =
+        { zh = "获得 10 个随机单位，其中 1 个必定为 T4 及以上单位。",
+            en = "Gain 10 random units, at least one of which is tier 4 or above." },
+    ["hextech.rune.lethal_tempo.name"] = { zh = "致命节奏", en = "Lethal Tempo" },
+    ["hextech.rune.lethal_tempo.desc"] =
+        { zh = "你的单位+40%%攻速，且攻击会越打越快。",
+            en = "Your units gain +40% attack speed, and keep attacking faster and faster." },
+    ["hextech.rune.poach.no_source"] =
+        { zh = "挖角：敌方卡池为空，本次未获得单位。",
+            en = "Poach: the enemy pool is empty, no unit gained." },
+    ["hextech.rune.drain.name"] = { zh = "吸星大法", en = "Star Drain" },
+    ["hextech.rune.drain.desc"] =
+        { zh = "随机获得敌对玩家的 10 个单位。",
+            en = "Randomly gain 10 units from enemy players." },
+    ["hextech.rune.prepare_backpack.name"] = { zh = "准备背包", en = "Backpack Ready" },
+    ["hextech.rune.prepare_backpack.desc"] =
+        { zh = "你下次符文选择会整体升一阶。",
+            en = "Your next rune selection is raised one full tier." },
+    ["hextech.rune.easy_does_it.name"] = { zh = "顺手的事", en = "While I'm At It" },
+    ["hextech.rune.easy_does_it.desc"] =
+        { zh = "你下次符文选择可以多拿一张。",
+            en = "Your next rune selection lets you take one extra card." },
+    ["hextech.rune.tulip_mortar.name"] = { zh = "花来！", en = "Bring Flowers!" },
+    ["hextech.rune.tulip_mortar.desc"] =
+        { zh = "你的V4导弹发射车单位会升级为郁金香自行迫击炮。",
+            en = "Your V4 rocket launchers are upgraded to Tulip self-propelled mortars." },
+    ["hextech.rune.back_to_basics.name"] = { zh = "回归基本功", en = "Back to Basics" },
+    ["hextech.rune.back_to_basics.desc"] = {
+        zh = "你的T1/T2 %s 单位血量、伤害提高90%%，攻速、射程提高50%%；你的T3/T4 %s 单位血量、伤害降低90%%，攻速、射程降低50%%。",
+        en = "Your T1/T2 %s units gain 90%% health and damage, and 50%% attack speed and range; your T3/T4 %s units lose 90%% health and damage, and 50%% attack speed and range."
+    },
+    -- 兵种对在候选生成时随机定好，见 01_rune_pool.lua 的 CreateRuneCandidateForPlayer。
+    ["hextech.rune.equivalent_exchange.name"] = { zh = "等价交换", en = "Equivalent Exchange" },
+    ["hextech.rune.equivalent_exchange.desc"] = {
+        zh = "你的%s单位血量提高90%%、伤害和攻速和射程提高25%%；你的%s单位血量降低90%%、伤害和攻速和射程降低50%%。",
+        en = "Your %s units gain 90%% health and 25%% damage, attack speed and range; your %s units lose 90%% health and 50%% damage, attack speed and range."
+    },
+    ["hextech.rune.soul_interlock.name"] = { zh = "元神互锁", en = "Soul Interlock" },
+    ["hextech.rune.soul_interlock.desc"] = {
+        zh = "你的 %s 与 %s 的海克斯符文数值BUFF会同步生效。",
+        en = "Your %s and %s units' Hextech rune stat buffs take effect on both."
+    },
+
+    -- === 重随、广播与提示 ===
+    ["hextech.reroll.available"] = { zh = "重随该符文（本次选择限用一次）", en = "Reroll this rune (once per selection)" },
+    ["hextech.reroll.used"] = { zh = "本次重随机会已使用", en = "Reroll already used for this selection" },
+    -- 单人游玩（全场只有 1 名真人）时按钮文案换成这条：不限次数，见 IsUnlimitedReroll。
+    ["hextech.reroll.available_solo"] = { zh = "重随该符文（单人游玩·不限次数）", en = "Reroll this rune (solo play, unlimited)" },
+    -- 房主把重随次数设成 3 次时：每张卡各一次。
+    ["hextech.reroll.available_three"] = { zh = "重随该符文（本次每张卡各限一次）", en = "Reroll this rune (once per card this selection)" },
+    -- 房主选项页（选海克斯符文数量那一页）的「重随次数」开关。
+    -- 值只留「1次 / 3次」：对话框按钮是单行文字，长文案会溢出。
+    ["hextech.reroll_mode.label"] = { zh = "重随次数：", en = "Rerolls: " },
+    ["hextech.reroll_mode.1"] = { zh = "1次", en = "1" },
+    ["hextech.reroll_mode.3"] = { zh = "3次", en = "3" },
+    ["hextech.solo.unlimited_reroll"] = { zh = "检测到单人游玩，开启无限重随符文", en = "Single-player detected: unlimited rune rerolls enabled" },
+    -- 单人局里房主点了「重随次数」那一行：无限重随关掉，改按 1 / 3 次走。
+    ["hextech.solo.unlimited_reroll_off"] = { zh = "已改为按次重随：无限重随关闭", en = "Switched to per-selection rerolls: unlimited rerolls off" },
+    ["hextech.reroll.failed"] = { zh = "当前没有可替换的同阶符文。", en = "No eligible replacement rune is available in this tier." },
+    ["hextech.bonus.broadcast"] = { zh = "$p%dName通过【%s】获得了符文：%s", en = "$p%dName gained a rune from [%s]: %s" },
+    -- 赌怪一次给两张，合成一条播报，避免同一句话连刷两遍。
+    ["hextech.gambling_addict.broadcast"] = { zh = "$p%dName通过【%s】获得了符文：%s 和符文：%s", en = "$p%dName gained runes from [%s]: %s and %s" },
+    -- 准备背包兑现时播报，%s 为升上去的那一阶（黄金 / 棱彩）。
+    ["hextech.ascend.broadcast"] = { zh = "$p%dName准备背包符文生效：本次符文升到%s", en = "$p%dName's Backpack Ready took effect: this selection is raised to %s" },
+    -- 顺手的事兑现时播报：多拿的那一张由玩家自己在下一次选择里点。
+    ["hextech.easy_does_it.broadcast"] = { zh = "$p%dName顺手的事符文生效：本次符文可以多拿一张", en = "$p%dName's While I'm At It: you may take one extra rune this selection" },
+    ["hextech.selection.hidden_hint"] = { zh = "当前有未选择的海克斯，按'J'键展开面板", en = "You have an unselected Hextech rune. Press 'J' to open the panel." },
+    -- 符文事件到点后不再自动弹面板，改为全图播报一次，提醒玩家按 J 查收。
+    ["hextech.selection.ready_broadcast"] = { zh = "获得一个海克斯符文，请查收~", en = "A Hextech rune is ready, press J to claim it~" },
+
+    -- === 顶部按钮 ===
+    ["button.hextech_panel.title"] = { zh = "海克斯面板", en = "Hextech Panel" },
+    ["button.hextech_panel.description"] = { zh = "查看上三/下三玩家的海克斯符文", en = "View all players' Hextech runes" },
+}

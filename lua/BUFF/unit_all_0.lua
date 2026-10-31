@@ -1,26 +1,20 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.90
 
--- 达摩剑的常规随机目标池：只允许非建筑单位。
--- 最前方防御塔仅由达摩剑首轮逻辑单独指定一次，不进入本过滤器。
-unitall = CreateObjectFilter({
-  Rule="ANY",
-  Relationship="SAME_PLAYER",
-  ExcludeThing={
-    "JapanFortressShip",
-    "Overlordtank",
-    "JapanLightTransportVehicle",
-    "AlliedNightinaleHelicopter",
-    "AlliedMCV",
-    -- 青龙战斗核心舰的普通、强化以及陆海空全部形态。
-    "CelestialMCV",
-    "CelestialMCV_Ground",
-    "CelestialMCV_Naval",
-    "CelestialMCV_Air",
-    "CelestialMCV_Enhanced",
-    "CelestialMCV_Enhanced_Ground",
-    "CelestialMCV_Enhanced_Naval",
-    "CelestialMCV_Enhanced_Air",
-  },
-  Include="SELECTABLE",
-  -- 所有防御塔和其他建筑都排除，单位不足时也不会拿塔补位。
-  Exclude="STRUCTURE",
-})
+unitall = nil
+
+function g_GetDamoclesUnitFilter()
+    if unitall == nil then
+        local excluded = g_CollectTargetNames({"AIAnchorMCV", "DragonShip", "Nightingale"})
+        -- 旧口径只排除基础运兵车，保持不变。
+        tinsert(excluded, "JapanLightTransportVehicle")
+        unitall = CreateObjectFilter({
+            Rule="ANY",
+            Relationship="SAME_PLAYER",
+            ExcludeThing=excluded,
+            Include="SELECTABLE",
+            -- 所有防御塔和其他建筑都排除，单位不足时也不会拿塔补位。
+            Exclude="STRUCTURE",
+        })
+    end
+    return unitall
+end

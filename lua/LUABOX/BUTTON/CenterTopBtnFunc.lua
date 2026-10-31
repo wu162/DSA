@@ -1,3 +1,5 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.10、A.51
+
 angel_money = 0
 devil_money = 0
 devil_surrender = 0
@@ -30,6 +32,105 @@ g_ProductionBonus_SovietGet = {
     [6] = 0,
 }
 
+-- 回收倍率由经济倍率决定；苏联大生产按本队已获得协议的人数统一折算。
+-- 这样即使队内最低生产成本降至 65%，回收仍只返还该成本的基础比例。
+g_RecycleEconomicRate = {
+    [0.5] = 0.9,
+    [1] = 0.7,
+    [1.5] = 0.5,
+    [2] = 0.35,
+}
+g_DefaultRecycleRate = 0.7
+
+g_SovietProductionCostFactor = {
+    [0] = 1,
+    [1] = 0.75,
+    [2] = 0.7,
+    [3] = 0.65,
+}
+
+function GetBaseRecycleRate(economicMultiplier)
+    economicMultiplier = economicMultiplier or exModeGetCheatMultiplier()
+    local matchedRate = g_RecycleEconomicRate[economicMultiplier]
+    if matchedRate ~= nil then
+        return matchedRate
+    end
+    return g_DefaultRecycleRate
+end
+
+-- 符文数值同样按经济倍率缩放，避免高倍经济下符文收益相对造价缩水。
+g_HextechRecycleBonusRate = {
+    [0.5] = 0.1,
+    [1] = 0.2,
+    [1.5] = 0.3,
+    [2] = 0.4,
+}
+g_DefaultHextechRecycleBonusRate = 0.2
+
+g_CombustionInterestMoney = {
+    [0.5] = 2,
+    [1] = 3,
+    [1.5] = 4,
+    [2] = 6,
+}
+g_DefaultCombustionInterestMoney = 3
+
+g_StartingFundsMoney = {
+    [0.5] = 5000,
+    [1] = 10000,
+    [1.5] = 15000,
+    [2] = 20000,
+}
+g_DefaultStartingFundsMoney = 10000
+
+function GetStartingFundsMoney()
+    local matchedMoney = g_StartingFundsMoney[exModeGetCheatMultiplier()]
+    if matchedMoney ~= nil then
+        return matchedMoney
+    end
+    return g_DefaultStartingFundsMoney
+end
+
+function GetHextechRecycleBonusRate()
+    local matchedRate = g_HextechRecycleBonusRate[exModeGetCheatMultiplier()]
+    if matchedRate ~= nil then
+        return matchedRate
+    end
+    return g_DefaultHextechRecycleBonusRate
+end
+
+function GetCombustionInterestMoney()
+    local matchedMoney = g_CombustionInterestMoney[exModeGetCheatMultiplier()]
+    if matchedMoney ~= nil then
+        return matchedMoney
+    end
+    return g_DefaultCombustionInterestMoney
+end
+
+function GetTeamSovietProductionBonusCount(playerIndex)
+    local firstPlayerIndex = 1
+    if playerIndex >= 4 then
+        firstPlayerIndex = 4
+    end
+
+    local count = 0
+    for i = firstPlayerIndex, firstPlayerIndex + 2, 1 do
+        if g_ProductionBonus_SovietGet[i] == 1 then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+function GetRecycleRate(playerIndex)
+    -- 纯抽卡模式有生产余额限制，不应用大生产削减。
+    if g_DrawMode == 2 then
+        return GetBaseRecycleRate()
+    end
+    local productionBonusCount = GetTeamSovietProductionBonusCount(playerIndex)
+    return GetBaseRecycleRate() * g_SovietProductionCostFactor[productionBonusCount]
+end
+
 g_ProductionBonus_JapanWeaponEnable = {
     [1] = 1,
     [2] = 1,
@@ -39,10 +140,11 @@ g_ProductionBonus_JapanWeaponEnable = {
     [6] = 1,
 }
 
+-- 全体护盾的目标：载具 / 大型载具 / 舰船（原口径只有 VEHICLE，实测套盾武器对舰船同样生效，
 g_VehicleFilter = CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
-    Include="VEHICLE",
+    Include="VEHICLE HUGE_VEHICLE SHIP",
 })
 
 g_MoneyBonusTargetFilter = CreateObjectFilter({
@@ -112,10 +214,6 @@ function CenterTopBtnFunc_InitializeAutoSurrender()
                 -- 自动发起一次投降
                 if g_AutoSurrender.DidPlayerAutoSurrender[i] ~= 1 then
                     g_AutoSurrender.DidPlayerAutoSurrender[i] = 1
-                    -- 但假如是游戏即将正常结束那就不投降了
-                    -- 检查 PlyrCivilian 和 PlyrCreeps 里是否还有建筑
-                    -- 如果没有了说明游戏即将结束了，就不投降了
-                    -- 只有在它们都还有建筑的情况下才自动投降
                     local previous2 = SetWorldBuilderThisPlayer(1)
                     local civilianStructures, civilianStructureCount = CopyPlayerRegisteredObjectSet("PlyrCivilian", "STRUCTURES")
                     local creepStructures, creepStructureCount = CopyPlayerRegisteredObjectSet("PlyrCreeps", "STRUCTURES")
@@ -156,7 +254,13 @@ end
 function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
     local playerName = "Player_" .. playerIndex
     local buttons = {}
-    local preselectedPlayerSkillKind = g_PreselectedSkillIndices[playerIndex]
+    -- 技能组按「本边第几个真人」压缩发放（1v1 = 2 项、2v2 = 4 项、满 6 人 = 6 项），
+    -- 不能直接用 playerIndex 取值，否则空位会把后面玩家的技能组挤到另一项上。
+    local preselectedSkillIndex = BtnChoiceDialogEventFunc_GetSkillIndexForPlayer(playerIndex)
+    local preselectedPlayerSkillKind = nil
+    if preselectedSkillIndex ~= nil then
+        preselectedPlayerSkillKind = g_PreselectedSkillIndices[preselectedSkillIndex]
+    end
     if preselectedPlayerSkillKind ~= nil then
         CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, preselectedPlayerSkillKind)
     else
@@ -175,13 +279,9 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             end
         })
     end
-    if g_PlayerSide[playerIndex] == 1 then
-        buttons[3] = CreateChronosphereButton(playerIndex)
-    elseif g_PlayerSide[playerIndex] == 3 then
-        buttons[3] = CreateJapanShieldButton(playerIndex)
-    elseif g_PlayerSide[playerIndex] == 4 then
-        buttons[3] = CreateCelestialMoraleButton(playerIndex)
-    end
+    -- 第三个阵营技能按钮不再强制自身阵营：按已拥有的技能决定（见
+    -- CenterTopBtnFunc_CreateFactionSkillButton）。开局未解锁时留空，解锁后出现。
+    buttons[3] = CenterTopBtnFunc_CreateFactionSkillButton(playerIndex)
     buttons[4] = CreateButton({
         PlayerName = playerName,
         PlayerIndex = playerIndex,
@@ -195,6 +295,8 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
             return true
         end
     })
+    -- 按钮 5：海克斯面板（仅在启用海克斯符文时启用；未启用时禁用显示）
+    buttons[5] = CenterTopBtnFunc_CreateHextechPanelButton(playerIndex)
     buttons[6] = CreateButton({
         PlayerName = playerName,
         PlayerIndex = playerIndex,
@@ -222,6 +324,42 @@ function CenterTopBtnFunc_CreateInitialButtons(playerIndex)
     CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
 end
 
+-- 创建海克斯面板按钮（按钮 5）。仅在启用海克斯符文（g_EnableHextechRune == 1）时启用。
+-- 点击后展开/收起海克斯面板（显示上三/下三玩家拥有的海克斯符文）。
+function CenterTopBtnFunc_CreateHextechPanelButton(playerIndex)
+    local playerName = "Player_" .. playerIndex
+    local enabled = 0
+    if g_EnableHextechRune == 1 then
+        enabled = 1
+    end
+    local button = CreateButton({
+        PlayerName = playerName,
+        PlayerIndex = playerIndex,
+        ButtonIndex = 5,
+        IconId = 'Button_SovietChiefScientist',
+        Title = Localization.get("button.hextech_panel.title"),
+        Description = Localization.get("button.hextech_panel.description"),
+        IsEnabled = (enabled == 1),
+        OnClick = function(self)
+            HextechRune:TogglePanel(self.PlayerIndex)
+            return true
+        end
+    })
+    return button
+end
+
+-- 按当前 g_EnableHextechRune 刷新 6 个玩家的海克斯面板按钮（启用/禁用）。
+-- 在地图加载后（g_EnableHextechRune 由开局配置决定）调用，使按钮 5 状态与配置一致。
+function CenterTopBtnFunc_UpdateHextechPanelButton()
+    for i = 1, 6, 1 do
+        local button = CenterTopBtnFunc_CreateHextechPanelButton(i)
+        if button then
+            button:FormatText()
+            ButtonManager:SetButton(button)
+        end
+    end
+end
+
 function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
     local buttons = {}
     if kind == 1 then
@@ -237,6 +375,9 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
         buttons[1] = CreateSpawnArmyImmediatelyButton(playerIndex)
         buttons[2] = CreateNanoMaintainHiveButton(playerIndex)
     elseif kind == 5 then
+        buttons[1] = CreateHydraButton(playerIndex)
+        buttons[2] = CreateSnowstormButton(playerIndex)
+    elseif kind == 6 then
         buttons[1] = CreateRepeatEnemySpecialPowerButton(playerIndex)
         buttons[2] = CreateRepeatSelfSpecialPowerButton(playerIndex)
     else
@@ -255,21 +396,41 @@ function CenterTopBtnFunc_CreatePlayerSkillButtons(playerIndex, kind)
         end
     end
 
+    -- “终极刷新”可能早于技能组选择获得；创建技能时补上此前累计的次数。
+    if HextechRune ~= nil and HextechRune.ApplyUltimateRefreshToButtons ~= nil then
+        HextechRune:ApplyUltimateRefreshToButtons(playerIndex, buttons)
+    end
     ButtonManager:SetButton(buttons[1])
     ButtonManager:SetButton(buttons[2])
 end
 
+function CenterTopBtnFunc_CreateFactionSkillButton(playerIndex)
+    local playerSide = g_PlayerSide[playerIndex]
+    local hasAllied = g_AlliedSuperWeaponBuilt[playerIndex] == 1
+    local hasJapan = g_ProductionBonus_JapanGet[playerIndex] == 1
+    local hasCelestial = g_CelestialSuperWeapon_Get[playerIndex] == 1
+    -- 拥有多个技能时以自身阵营为主
+    if playerSide == 1 and hasAllied then
+        return CreateChronosphereButton(playerIndex)
+    elseif playerSide == 3 and hasJapan then
+        return CreateJapanShieldButton(playerIndex)
+    elseif playerSide == 4 and hasCelestial then
+        return CreateCelestialMoraleButton(playerIndex)
+    end
+    -- 自身阵营技能未解锁时，先使用其它已拥有的技能
+    if hasAllied then
+        return CreateChronosphereButton(playerIndex)
+    elseif hasJapan then
+        return CreateJapanShieldButton(playerIndex)
+    elseif hasCelestial then
+        return CreateCelestialMoraleButton(playerIndex)
+    end
+    return nil
+end
+
 function CenterTopBtnFunc_UpdatePlayer3rdButton(playerIndex)
     local playerName = "Player_" .. playerIndex
-    local button = nil
-    local playerSide = g_PlayerSide[playerIndex]
-    if playerSide == 1 and g_AlliedSuperWeaponBuilt[playerIndex] == 1 then
-        button = CreateChronosphereButton(playerIndex)
-    elseif playerSide == 3 and g_ProductionBonus_JapanGet[playerIndex] == 1 then
-        button = CreateJapanShieldButton(playerIndex)
-    elseif playerSide == 4 and g_CelestialSuperWeapon_Get[playerIndex] == 1 then
-        button = CreateCelestialMoraleButton(playerIndex)
-    end
+    local button = CenterTopBtnFunc_CreateFactionSkillButton(playerIndex)
     if button then
         button.Description = button.UnlockedDescription
         button.IsLocked = false
@@ -469,25 +630,6 @@ function CreateRepeatEnemySpecialPowerButton(playerIndex)
     return CreateButton(buttonData)
 end
 
---function CreateBuyOverButton(playerIndex)
---    local buttonData = {
---        PlayerName = "Player_" .. playerIndex,
---        PlayerIndex = playerIndex,
---        ButtonIndex = 1,
---        IconId = 'Button_AlliedInfiltrationInfantry_on',
---        Title = '策反',
---        Description = '策反中间区域附近的陆军和空军',
---        IsEnabled = true,
---        MaxUseCount = 1,
---        SharedCooldownId = "buyover",
---        SharedCooldownSeconds = 10,
---        OnClick = function(self)
---            return RequestBuyOver(self.PlayerIndex)
---        end,
---    }
---    return CreateButton(buttonData)
---end
-
 function CreateNanoMaintainHiveButton(playerIndex)
     local buttonData = {
         PlayerName = "Player_" .. playerIndex,
@@ -630,22 +772,6 @@ function RequestDestruction(playerIndex)
     return true
 end
 
-function RequestBuyOver(playerIndex)
-    local sideName = Localization.get("side.devil")
-    if playerIndex >= 4 then
-        sideName = Localization.get("side.angel")
-    end
-    exMessageAppendToMessageArea(Localization.get("center_top.used.bribe", sideName))
-    --ExecuteAction("PLAY_SOUND_EFFECT", "A01_CoastalGun_ImpactExplosion")
-
-    if playerIndex <= 3 then
-        tinsert(g_evilButtonClickHistory, RequestDestruction)
-    else
-        tinsert(g_angelButtonClickHistory, RequestDestruction)
-    end
-    return true
-end
-
 function RequestDamoclesSword(playerIndex)
     local sideName = Localization.get("side.devil")
     local sideScript = "devil_nemesisplay"
@@ -664,6 +790,150 @@ function RequestDamoclesSword(playerIndex)
     return true
 end
 
+g_IronCurtainExpireFrame = g_IronCurtainExpireFrame or {}
+
+-- 符文释放前先按这两个函数过滤：已经有同类效果的单位直接跳过，由原来那条更长的租约负责到期解除。
+function g_IsIronCurtainActive(unit)
+    local objectId = ObjectGetId(unit)
+    return objectId ~= nil
+        and (g_IronCurtainExpireFrame[objectId] or 0) > GetFrame()
+end
+
+function g_ApplyIronCurtain(unit, duration)
+    local objectId = ObjectGetId(unit)
+    local now = GetFrame()
+    if (g_IronCurtainExpireFrame[objectId] or 0) - now >= duration then
+        return
+    end
+    ObjectLoadAttributeModifier(objectId, "AttributeModifier_IronCurtain", duration)
+    g_IronCurtainExpireFrame[objectId] = now + duration
+end
+
+g_TimeStopHolders = g_TimeStopHolders or {}
+g_TimeStopWatchedList = g_TimeStopWatchedList or {}
+g_TimeStopWatchedMark = g_TimeStopWatchedMark or {}
+g_TimeStopSweepSchedulerId = g_TimeStopSweepSchedulerId or nil
+
+-- 时停是否还在生效：native（技能组）与 rift（时间裂隙）任一租约未到期即算持有。
+function g_IsTimeStopActive(unit)
+    local objectId = ObjectGetId(unit)
+    if objectId == nil then
+        return false
+    end
+    local holders = g_TimeStopHolders[objectId]
+    if holders == nil then
+        return false
+    end
+    local now = GetFrame()
+    return (holders.native or 0) > now or (holders.rift or 0) > now
+end
+
+-- 把单位真正放开：清掉 PARALYZED，并让施放时挂的裂缝特效（原生写的是 1e8 帧）立刻过期。
+-- 句柄一律按 id 现取，不缓存：单位阵亡后旧句柄会让引擎拿 nil 去索引它内部的表。
+function g_ReleaseTimeStop(objectId, holders)
+    ExecuteAction("SET_UNIT_REFERENCE", holders.ref, GetObjectById(objectId))
+    ExecuteAction("NAMED_SET_DISABLED", holders.ref, "PARALYZED", "false")
+    ObjectLoadAttributeModifier(objectId, "AttributeMod_ChronoRiftEffect", 1)
+    holders.frozen = nil
+    holders.fx = nil
+end
+
+-- holderKind 只有 native（技能组时停）与 rift（时间裂隙）两种，两个持有者都到期
+-- 才真正放开 PARALYZED，避免任何一方把自己的短时长到期算到对方头上。
+function g_SetTimeStopFrozen(unit, refName, holderKind, frozen, duration, fxDuration)
+    if unit == nil then
+        return
+    end
+    local objectId = ObjectGetId(unit)
+    if objectId == nil then
+        return
+    end
+    local holders = g_TimeStopHolders[objectId]
+    if holders == nil then
+        holders = {}
+        g_TimeStopHolders[objectId] = holders
+    end
+    -- 解除靠调用方自己记得回来补，PARALYZED 却没有定时器，所以每个被冻过的对象
+    -- 都要留下引用名给 sweep 兜底。
+    holders.ref = refName
+    if g_TimeStopWatchedMark[objectId] == nil then
+        g_TimeStopWatchedMark[objectId] = 1
+        tinsert(g_TimeStopWatchedList, objectId)
+    end
+    g_EnsureTimeStopSweep()
+    local now = GetFrame()
+    if frozen then
+        ExecuteAction("SET_UNIT_REFERENCE", refName, unit)
+        if now + duration > (holders[holderKind] or 0) then
+            holders[holderKind] = now + duration
+        end
+        ExecuteAction("NAMED_SET_DISABLED", refName, "PARALYZED", "true")
+        holders.frozen = 1
+        -- 裂隙特效同名也只有一份，只在能延长它的时候才重新加载。
+        if fxDuration > 0 and (holders.fx == nil or fxDuration > holders.fx - now) then
+            ObjectLoadAttributeModifier(objectId, "AttributeMod_ChronoRiftEffect", fxDuration)
+            holders.fx = now + fxDuration
+        end
+    else
+        holders[holderKind] = 0
+        if (holders.native or 0) <= now and (holders.rift or 0) <= now then
+            g_ReleaseTimeStop(objectId, holders)
+        end
+    end
+end
+
+function g_SweepStuckTimeStopFreeze()
+    local now = GetFrame()
+    local list = g_TimeStopWatchedList
+    local kept = 0
+    for i = 1, getn(list), 1 do
+        local objectId = list[i]
+        local holders = nil
+        if objectId ~= nil then
+            holders = g_TimeStopHolders[objectId]
+        end
+        local keep = false
+        if holders ~= nil then
+            -- 存活判断只认 id，句柄等真要解除时再按 id 现取。
+            if ObjectIsAlive(objectId) then
+                if (holders.native or 0) > now or (holders.rift or 0) > now then
+                    keep = true
+                elseif holders.frozen ~= nil then
+                    g_ReleaseTimeStop(objectId, holders)
+                end
+            end
+            if not keep then
+                g_TimeStopHolders[objectId] = nil
+                g_TimeStopWatchedMark[objectId] = nil
+            end
+        end
+        if keep then
+            kept = kept + 1
+            list[kept] = objectId
+        end
+    end
+    for i = getn(list), kept + 1, -1 do
+        list[i] = nil
+    end
+end
+
+function g_EnsureTimeStopSweep()
+    if g_TimeStopSweepSchedulerId ~= nil then
+        return
+    end
+    g_TimeStopSweepSchedulerId = SchedulerModule.call_every_x_frame(function()
+        g_SweepStuckTimeStopFreeze()
+    end, 30, nil, {})
+end
+
+-- 技能组时停的三段（施放/周期续租/解除）都只差参数，统一收在这里。
+function g_TimeStopFreezeSide(referenceObject, refPrefix, frozen, duration, fxDuration)
+    local units, count = ObjectFindObjects(referenceObject, nil, FilterALLUNIT)
+    for i = 1, count, 1 do
+        g_SetTimeStopFrozen(units[i], refPrefix .. i, "native", frozen, duration, fxDuration)
+    end
+end
+
 function RequestIronCurtain(playerIndex)
     local sideName = Localization.get("side.devil")
     local referenceObject = T74
@@ -675,7 +945,7 @@ function RequestIronCurtain(playerIndex)
     ExecuteAction("PLAY_SOUND_EFFECT", "SOV_IronCurtain_Cast")
     local units, count = ObjectFindObjects(referenceObject, nil, FilterALLUNIT)
     for i = 1, count, 1 do
-        ObjectLoadAttributeModifier(units[i], "AttributeModifier_IronCurtain", 196)
+        g_ApplyIronCurtain(units[i], 196)
     end
     if playerIndex <= 3 then
         tinsert(g_evilButtonClickHistory, RequestIronCurtain)
@@ -753,7 +1023,7 @@ function RequestDragonShip(playerIndex, count)
     if round > 18 then
         round = 18
     end
-    local maxHealth = 8000 + max(round - 10, 0) * 3000
+    local maxHealth = 8000 + max(round - 10, 0) * 5000
     local dragonships, dragonshipCount = ObjectFindObjects(tower, nil, CelestialMCV)
     for i = 1, count do
         local index = dragonshipCount - count + i
@@ -762,7 +1032,12 @@ function RequestDragonShip(playerIndex, count)
         local str = "UnitStrRef" .. id
         local previousHp = ObjectGetCurrentHealth(dragonship)
         ExecuteAction("SET_UNIT_REFERENCE", str, dragonship)
+        -- 阵营 AI 生成的定制单位，登记后符文按阵营扫描时不会把它当成玩家卡池单位。
+        RegisterSkillSummonedUnit(dragonship)
         ExecuteAction("NAMED_SET_MAX_HEALTH", str, maxHealth, 'true')
+        for levelindex = 1, 5, 1 do
+            ExecuteAction("UNIT_GAIN_LEVEL", dragonship, 1)
+        end
         local currentHp = ObjectGetCurrentHealth(dragonship)
         exMessageAppendToMessageArea(Localization.get("center_top.dragonship.hp_change", id, previousHp, currentHp))
     end
@@ -795,9 +1070,69 @@ function RequestAirMarshal(playerIndex)
     return true
 end
 
+-- 纳米维修的统一回血口径：按当前上限的 30% 治疗（NAMED_DAMAGE 传负值）。
+-- 塔的血量被地图改过，所以只能用 exObjectGetMaxHealth，不能用 ObjectGetInitialHealth。
+g_NanoRepairHealRate = 0.30
+
+function g_NanoRepairHealTower(tower)
+    if tower == nil or not ObjectIsAlive(tower) then
+        return
+    end
+    local maxHp = exObjectGetMaxHealth(ObjectGetId(tower))
+    if maxHp == nil or maxHp <= 0 then
+        return
+    end
+    ExecuteAction("NAMED_DAMAGE", tower, -(maxHp * g_NanoRepairHealRate))
+end
+
+-- 地编塔按 ID 剔掉：陆地塔 T71~T74 明确不回血（立场本来就盖着它们），海塔已按脚本名单独回血。
+g_NanoRepairTowerTypes = {
+    "JapanPointShieldControlTower",
+    "SovietHeavyAntiAirMissileTurret",
+    "JapanKamikazeCommandTower",
+    "AlliedAegisLargeDefenseBase",
+    "CelestialEnergyRailgunBase",
+}
+g_NanoRepairMapTowerNames = {
+    "T71", "T72", "T73", "T74", "T81", "T82", "T83", "T84",
+    "T71F", "T72F", "T73F", "T81F", "T82F", "T83F",
+}
+
+function g_NanoRepairIsMapTower(objectId)
+    for i = 1, getn(g_NanoRepairMapTowerNames), 1 do
+        local mapTower = GetObjectByScriptName(g_NanoRepairMapTowerNames[i])
+        if mapTower ~= nil and ObjectGetId(mapTower) == objectId then
+            return true
+        end
+    end
+    return false
+end
+
+-- 按模板扫本方全部同类建筑塔，比"购买时登记台账"更稳：符文免费送的、塔防专家的复数塔
+function g_NanoRepairHealSideTowers(sideIndex)
+    if P == nil or P[sideIndex] == nil then
+        return
+    end
+    if g_NanoRepairTowerFilter == nil then
+        g_NanoRepairTowerFilter = CreateObjectFilter({
+            Rule = "ANY",
+            Relationship = "SAME_PLAYER",
+            IncludeThing = g_NanoRepairTowerTypes,
+        })
+    end
+    local towers, count = ObjectFindObjects(P[sideIndex], nil, g_NanoRepairTowerFilter)
+    for i = 1, count, 1 do
+        local tower = towers[i]
+        if tower ~= nil and not g_NanoRepairIsMapTower(ObjectGetId(tower)) then
+            g_NanoRepairHealTower(tower)
+        end
+    end
+end
+
 function RequestNanoMaintainHive(playerIndex)
     local sideName = Localization.get("side.devil")
     local sideAIPlayer = "PlyrCivilian"
+    local sideIndex = 7
     local tower = T74
     local seaTowers = { "T71F", "T72F", "T73F" }
     local seaSupportDirection = 1
@@ -811,6 +1146,7 @@ function RequestNanoMaintainHive(playerIndex)
     if playerIndex >= 4 then
         sideName = Localization.get("side.angel")
         sideAIPlayer = "PlyrCreeps"
+        sideIndex = 8
         tower = T84
         seaTowers = { "T81F", "T82F", "T83F" }
         seaSupportDirection = -1
@@ -826,15 +1162,10 @@ function RequestNanoMaintainHive(playerIndex)
     exMessageAppendToMessageArea(Localization.get("center_top.used.nano_repair", sideName))
     -- 给海塔回血 30%
     for i = 1, getn(seaTowers), 1 do
-        local seaTower = GetObjectByScriptName(seaTowers[i])
-        if ObjectIsAlive(seaTower) then
-            local currentHp = ObjectGetCurrentHealth(seaTower)
-            -- 塔的血量被改过因此不适用 ObjectGetInitialHealth
-            local maxHp = exObjectGetMaxHealth(ObjectGetId(seaTower))
-            local healAmount = maxHp * 0.30
-            ExecuteAction("NAMED_DAMAGE", seaTower, -healAmount)
-        end
+        g_NanoRepairHealTower(GetObjectByScriptName(seaTowers[i]))
     end
+    -- 立场覆盖之外的本方建筑塔（买的、符文免费送的）一并回血
+    g_NanoRepairHealSideTowers(sideIndex)
 
     ExecuteAction("CREATE_OBJECT", 'JapanNanoMaintainHive', sideAIPlayer .. "/team" .. sideAIPlayer, positions, 0)
     for j = 1, 4, 1 do
@@ -962,6 +1293,8 @@ function RequestSpawnArmyImmediately(playerIndex)
             UNITSPST_left (step5+1,step6,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
             exEnableWBScript('PlyrCivilian/attackAIR__7')
             exEnableWBScript('BUFFACTONCE__AIR')
+            -- 海克斯由 ShrinkMode_Trigger 统一延迟 45 帧后扫描，
+            -- 此时两段补充出兵都已完成，无需再提前登记后半段单位。
         end, 5)
     else
         SchedulerModule.delay_call(function()
@@ -983,6 +1316,7 @@ function RequestSpawnArmyImmediately(playerIndex)
             UNITSPST_right (step5+1,step6,LIGHTVEHSP,LIGHTVEHTEAM,LIGHTVEHATTACK,LIGHTVEHSPCH)
             exEnableWBScript('PlyrCreeps/attackAIR__8')
             exEnableWBScript('BUFFACTONCE__AIR')
+            -- 海克斯延迟扫描会在两段补充出兵完成后统一处理。
         end, 5)
     end
 

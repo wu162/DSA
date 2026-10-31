@@ -1,14 +1,32 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.27、A.34、A.57、A.76
+
 devil_max = 200
 angel_max = 200
 
 g_GameMode = 1;
 g_EnableDeathModeEffect = 0;
+g_EnableShrinkMode = 0;
 g_DisableSeaArmy = 0;
+g_DrawMode = 0; -- 0: disabled, 1: original lucky crate, 2: pure draw
+g_LuckyCrateMode = 0; -- compatibility flag used by the existing lucky-crate implementation
+g_HextechCount = 0; -- 海克斯符文发放次数：可选 0~4，默认随局外“开启随机箱子”配置选择 0 或 3
+g_HextechCountManuallySet = false; -- 房主是否在选项 5 手动设置过海克斯次数（设置过就不再被随机箱子默认值覆盖）
+g_EnableHextechRune = 0; -- 海克斯符文系统是否启用（g_HextechCount > 0 时置 1）
+
+function BtnChoiceDialogEventFunc_ApplyHostHextechSetting()
+    g_EnableHextechRune = 0
+    if g_HextechCount ~= nil and g_HextechCount > 0 then
+        g_EnableHextechRune = 1
+    end
+    if CenterTopBtnFunc_UpdateHextechPanelButton ~= nil then
+        CenterTopBtnFunc_UpdateHextechPanelButton()
+    end
+end
 
 g_GameModeName = {
     [1] = Localization.get("game_mode.name.1"),
     [2] = Localization.get("game_mode.name.2"),
-    [3] = Localization.get("game_mode.name.3"),
+    [4] = Localization.get("game_mode.name.4"),
 }
 
 g_GameModeOptions = {
@@ -19,10 +37,12 @@ g_GameModeOptions = {
     { Name = Localization.get("game_mode.option.5.name") },
     { Name = Localization.get("game_mode.option.6.name") },
 }
-
 MARKET_DIALOG_ID_OFFSET = 100
 
 GAMEMODE_DIALOG_ID = 201
+DRAW_MODE_DIALOG_ID = 202
+HEXTECH_MODE_DIALOG_ID = 203
+MORE_OPTIONS_DIALOG_ID = 204
 
 SKILL_DIALOG_ID_OFFSET = 1000
 SKILL_DIALOG_ID_OFFSET2 = 2000
@@ -34,12 +54,13 @@ g_SkillNames = {
     Localization.get("skill.name.3"),
     Localization.get("skill.name.4"),
     Localization.get("skill.name.5"),
+    Localization.get("skill.name.6"),
 }
 Localization.on_language_changed(function()
     g_GameModeName = {
         [1] = Localization.get("game_mode.name.1"),
         [2] = Localization.get("game_mode.name.2"),
-        [3] = Localization.get("game_mode.name.3"),
+        [4] = Localization.get("game_mode.name.4"),
     }
     g_GameModeOptions[1].Name = Localization.get("game_mode.option.1.name")
     g_GameModeOptions[2].Name = Localization.get("game_mode.option.2.name")
@@ -53,9 +74,66 @@ Localization.on_language_changed(function()
         Localization.get("skill.name.3"),
         Localization.get("skill.name.4"),
         Localization.get("skill.name.5"),
+        Localization.get("skill.name.6"),
     }
 end)
 g_PreselectedSkillIndices = {}
+
+-- 本方实际占用的玩家槽位，按 Player_i 升序。真人、电脑都算（电脑也吃技能组），只有空位/关闭位不算：
+-- 1v1 = 每边 1 个、2v2 = 每边 2 个、满 6 位 = 每边 3 个。
+function BtnChoiceDialogEventFunc_GetSideOccupiedPlayerIndices(sideStartIndex)
+    local playerIndices = {}
+    for playerIndex = sideStartIndex, sideStartIndex + 2, 1 do
+        -- P[i] 是本图 6 个玩家对象（UNITCOUNTERINI_0.lua 里 GetObjectByScriptName("P"..i)），空位为 nil。
+        local isHuman = EvaluateCondition("PLAYER_IS_HUMAN_OR_AI_PERSONALITY",
+            "Player_" .. playerIndex, "Human")
+        if isHuman or (P ~= nil and P[playerIndex] ~= nil) then
+            tinsert(playerIndices, playerIndex)
+        end
+    end
+    return playerIndices
+end
+
+-- 玩家 → 技能组数组下标：按「本边第几个占位玩家」压缩编号（1..3 魔鬼、4..6 天使）。
+-- 满 6 位时与 playerIndex 完全一致；有空位时不留洞 —— 1v1 用 1 / 4，2v2 用 1、2 / 4、5。
+-- 空位因此不再占掉一项，对称模式两边同一序号必然抽到同一组。
+function BtnChoiceDialogEventFunc_GetSkillIndexForPlayer(playerIndex)
+    local sideStartIndex = 1
+    if playerIndex >= 4 then
+        sideStartIndex = 4
+    end
+    local playerIndices = BtnChoiceDialogEventFunc_GetSideOccupiedPlayerIndices(sideStartIndex)
+    for i = 1, getn(playerIndices), 1 do
+        if playerIndices[i] == playerIndex then
+            return sideStartIndex - 1 + i
+        end
+    end
+    return nil
+end
+
+-- 房主预选/随机要定义几项技能组：按两边实到玩家数的多者（满 6 位 = 3 项、2v2 = 2 项、1v1 = 1 项），
+-- 一个都认不出来（编辑器/回放）时退回 3 项。
+function BtnChoiceDialogEventFunc_GetPreselectSlotCount()
+    local sideCount = max(
+        getn(BtnChoiceDialogEventFunc_GetSideOccupiedPlayerIndices(1)),
+        getn(BtnChoiceDialogEventFunc_GetSideOccupiedPlayerIndices(4)))
+    if sideCount < 1 then
+        return 3
+    end
+    if sideCount > 3 then
+        return 3
+    end
+    return sideCount
+end
+
+-- 氪金塔通用收尾，五座市场塔都走这里：
+--   ① IN_SHIELD_SPHERE —— 护盾球内，塔免疫冷冻（与 TowerFreeOfFreeze.lua 给 T71~T84 挂的是同一位）；
+--   ② UNPACKING 清 0 —— 引擎给脚本新建的建筑挂建造期状态位，清掉后购买当帧即可用，不必等展开动画。
+function BtnChoiceDialogEventFunc_FinishMarketTower(objectId)
+    local tower = GetObjectById(objectId)
+    ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower, "IN_SHIELD_SPHERE", 1)
+    ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower, "UNPACKING", 0)
+end
 
 g_BuyTowerId = {
     ["JapanPointShieldControlTower"] = {
@@ -70,11 +148,31 @@ g_BuyTowerId = {
         ["angel"] = 0,
         ["evil"] = 0,
     },
+    ["CelestialEnergyRailgunBase"] = {
+        ["angel"] = 0,
+        ["evil"] = 0,
+    },
     ["AlliedAegisLargeDefenseBase"] = {
         ["angel"] = { 0, 0 },
         ["evil"] = { 0, 0 },
     }
 }
+g_MarketTowerBasePrice = {
+    shield = 10000, sakura = 10000, poplar = 10000, aegis = 12000, railgun = 15000,
+}
+g_HextechTowerDefenseExpert = g_HextechTowerDefenseExpert or { false, false, false, false, false, false }
+
+function BtnChoiceDialogEventFunc_HasTowerDefenseExpert(playerIndex)
+    return g_HextechTowerDefenseExpert ~= nil
+        and g_HextechTowerDefenseExpert[playerIndex] == true
+end
+
+function BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, basePrice)
+    if BtnChoiceDialogEventFunc_HasTowerDefenseExpert(playerIndex) then
+        return floor(basePrice * 0.5)
+    end
+    return basePrice
+end
 
 -- 返回本方当前最前排的存活陆地防御塔；前排损失后自动依次后退到下一座塔。
 function BtnChoiceDialogEventFunc_GetFrontDefenseTower(playerIndex)
@@ -89,6 +187,96 @@ function BtnChoiceDialogEventFunc_GetFrontDefenseTower(playerIndex)
         end
     end
     return nil
+end
+
+-- 从内圈往外找第一个空槽；scanLimit 以外的外圈槽位只允许塔防专家使用。
+function BtnChoiceDialogEventFunc_AllocateAegisSlot(slots, scanLimit)
+    for i = 1, scanLimit, 1 do
+        if not ObjectIsAlive(slots[i]) then
+            return i
+        end
+    end
+    return nil
+end
+
+-- 槽位索引 → 相对走廊中心点的横向偏移：奇数索引在 +Y 侧、偶数索引在 -Y 侧，每外扩一环距离加 60。
+function BtnChoiceDialogEventFunc_GetAegisLateralOffset(slotIndex)
+    local ringCount = floor((slotIndex - 1) / 2)
+    local lateralDirection = 1
+    if slotIndex - ringCount * 2 == 2 then
+        lateralDirection = -1
+    end
+    return lateralDirection * (126.75 + ringCount * 60)
+end
+
+g_CelestialTowerShadowFilter = nil
+
+function BtnChoiceDialogEventFunc_GetCelestialTowerShadowFilter()
+    if g_CelestialTowerShadowFilter == nil then
+        g_CelestialTowerShadowFilter = CreateObjectFilter({
+            Rule = "ANY",
+            Relationship = "SAME_PLAYER",
+            IncludeThing = { "CC_ShadowObject", "CC_ShadowParalyzer" },
+        })
+    end
+    return g_CelestialTowerShadowFilter
+end
+
+-- 延迟回调只收 objectId（跨帧不缓存单位句柄）；这几帧里塔被打掉就跳过。
+function BtnChoiceDialogEventFunc_ClearCelestialTowerCore(objectId)
+    if not ObjectIsAlive(objectId) then
+        return
+    end
+    local object = GetObjectById(objectId)
+    local x, y, z = ObjectGetPosition(object)
+    local shadows, count = ObjectFindObjects(object,
+        {X = x, Y = y, Z = z, Radius = 5, DistType = "CENTER_2D"},
+        BtnChoiceDialogEventFunc_GetCelestialTowerShadowFilter())
+    for i = 1, count, 1 do
+        if shadows[i] ~= nil then
+            ExecuteAction("NAMED_DELETE", shadows[i])
+        end
+    end
+end
+
+function BtnChoiceDialogEventFunc_FinishCelestialTower(objectId)
+    ObjectSetObjectStatus(GetObjectById(objectId), "POINT_DEFENSE_DRONE_ATTACHED")
+    SchedulerModule.delay_call(BtnChoiceDialogEventFunc_ClearCelestialTowerCore,
+        3, {objectId})
+end
+
+-- 天门神弓的取位与加成，市场购买与符文赠送共用：站在樱花井再往后一格（253.5），
+-- 血量与埃奎斯同款 9000，只加射程 ×1.75、不带视野（带视野会使天弓推塔）。
+function BtnChoiceDialogEventFunc_CreateCelestialRailgun(playerIndex)
+    local behindDirection = -1;
+    local playerOwn = "PlyrCivilian";
+    local pos = {X = 2646.5, Y = 3102.5, Z = 210};
+    if playerIndex >= 4 then
+        behindDirection = 1;
+        playerOwn = "PlyrCreeps";
+        pos = {X = 4403.5, Y = 3102.5, Z = 210};
+    end
+    local frontTower = BtnChoiceDialogEventFunc_GetFrontDefenseTower(playerIndex)
+    if ObjectIsAlive(frontTower) then
+        local towerX, towerY, towerZ = ObjectGetPosition(frontTower);
+        pos = {X = towerX + behindDirection * 253.5, Y = towerY, Z = towerZ};
+    end
+    local id = exCreateObject({
+        ObjectType = FastHash("CelestialEnergyRailgunBase"),
+        TeamName = playerOwn.."/team"..playerOwn,
+        Position = pos,
+        Angle = 0,
+        Health = 9000
+    });
+    if not g_CelestialEnergyRailgunBaseRangeX175Modifier then
+        g_CelestialEnergyRailgunBaseRangeX175Modifier = exAttributeModifierCreate(
+            { RANGE = 1.75 }, 1)
+    end
+    ObjectLoadAttributeModifier(GetObjectById(id), g_CelestialEnergyRailgunBaseRangeX175Modifier)
+    -- 与其余氪金塔同款收尾：免疫冷冻 + 购买当帧即可用（见 FinishMarketTower）。
+    BtnChoiceDialogEventFunc_FinishMarketTower(id)
+    BtnChoiceDialogEventFunc_FinishCelestialTower(id)
+    return id
 end
 
 
@@ -152,12 +340,18 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
         nextInvestmentText = nextInvestmentText .. Localization.get("market.next_investment.benefit")
 
         if self.Page == 2 then
+            local shieldTowerPrice = BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, g_MarketTowerBasePrice.shield)
+            local sakuraWellPrice = BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, g_MarketTowerBasePrice.sakura)
+            local poplarTowerPrice = BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, g_MarketTowerBasePrice.poplar)
+            local aegisPrice = BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, g_MarketTowerBasePrice.aegis)
+            local tianmenBowPrice = BtnChoiceDialogEventFunc_GetTowerPrice(playerIndex, g_MarketTowerBasePrice.railgun)
             self.Choices = {
-                Localization.get("market.buy_shield_tower", 10000), -- 1
-                Localization.get("market.buy_sakura_well", 10000), -- 2
-                Localization.get("market.buy_poplar_tower", 12000), -- 3
-                Localization.get("market.buy_aegis_shield_generator", 15000), -- 4
-                Localization.get("market.back_to_main_page"), -- 5
+                Localization.get("market.buy_shield_tower", shieldTowerPrice), -- 1
+                Localization.get("market.buy_sakura_well", sakuraWellPrice), -- 2
+                Localization.get("market.buy_poplar_tower", poplarTowerPrice), -- 3
+                Localization.get("market.buy_aegis_shield_generator", aegisPrice), -- 4
+                Localization.get("market.buy_tianmen_bow", tianmenBowPrice), -- 5
+                Localization.get("market.back_to_main_page"), -- 6
             }
         else
             self.Choices = {
@@ -190,6 +384,9 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
                 self:BuyAlliedAegisLargeDefenseBase()
                 return
             elseif buttonIndex == 5 then
+                self:BuyCelestialEnergyRailgunBase()
+                return
+            elseif buttonIndex == 6 then
                 self.Page = 1
             end
             self:RefreshData()
@@ -279,12 +476,14 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             pos = {X = 4150, Y = 3187};
         end
         local objectId = g_BuyTowerId["JapanPointShieldControlTower"][sideName];
-        if ObjectIsAlive(objectId) then
+        local ignoresLimit = BtnChoiceDialogEventFunc_HasTowerDefenseExpert(self.PlayerIndex)
+        if ObjectIsAlive(objectId) and not ignoresLimit then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
             return;
         end
+        local price = BtnChoiceDialogEventFunc_GetTowerPrice(self.PlayerIndex, g_MarketTowerBasePrice.shield)
         local money = exPlayerGetCurrentMoney(self.PlayerName)
-        if money < 10000 then
+        if money < price then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
@@ -295,14 +494,15 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             Angle = 0,
             Health = 5500
         });
-        g_BuyTowerId["JapanPointShieldControlTower"][sideName] = id;
+        if not ignoresLimit then
+            g_BuyTowerId["JapanPointShieldControlTower"][sideName] = id;
+        end
         local tower = GetObjectById(id);
         ObjectLoadAttributeModifier(tower,'AttributeModifier_BoxRateOfFireUp', 999999)
         ObjectLoadAttributeModifier(tower,'AttributeModifier_BoxRangeUp', 999999)
-        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"IN_SHIELD_SPHERE", 1)
-        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"UNPACKING", 0)
+        BtnChoiceDialogEventFunc_FinishMarketTower(id)
 
-        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -10000);
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -price);
 
     end
     dialogData.BuySovietHeavyAntiAirMissileTurret = function(self)
@@ -315,12 +515,14 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             pos = {X = 4150, Y = 3018};
         end
         local objectId = g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName];
-        if ObjectIsAlive(objectId) then
+        local ignoresLimit = BtnChoiceDialogEventFunc_HasTowerDefenseExpert(self.PlayerIndex)
+        if ObjectIsAlive(objectId) and not ignoresLimit then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
             return;
         end
+        local price = BtnChoiceDialogEventFunc_GetTowerPrice(self.PlayerIndex, g_MarketTowerBasePrice.poplar)
         local money = exPlayerGetCurrentMoney(self.PlayerName)
-        if money < 12000 then
+        if money < price then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
@@ -331,14 +533,21 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             Angle = 0,
             Health = 9000
         });
-        g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName] = id;
+        if not ignoresLimit then
+            g_BuyTowerId["SovietHeavyAntiAirMissileTurret"][sideName] = id;
+        end
         local tower = GetObjectById(id);
         ObjectLoadAttributeModifier(tower,'AttributeModifier_MAP_Area_FireSpeed_Up', 999999)
         ObjectLoadAttributeModifier(tower,'AttributeModifier_JapanNanoEnhanceDroneReinforcement', 999999)
-        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"IN_SHIELD_SPHERE", 1)
-        ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", tower,"UNPACKING", 0)
+        -- 胡杨塔射程增加 50%，最终为基础射程的 1.5 倍；塔不会移动，视野必须同步放大才能真正打到。
+        if not g_SovietHeavyAntiAirMissileTurretRangeX15Modifier then
+            g_SovietHeavyAntiAirMissileTurretRangeX15Modifier = exAttributeModifierCreate(
+                { RANGE = 1.5, VISION = 1.5 }, 1)
+        end
+        ObjectLoadAttributeModifier(tower, g_SovietHeavyAntiAirMissileTurretRangeX15Modifier)
+        BtnChoiceDialogEventFunc_FinishMarketTower(id)
 
-        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -12000);
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -price);
 
     end
     dialogData.BuyJapanKamikazeCommandTower = function(self)
@@ -360,12 +569,14 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             pos = {X = towerX + behindDirection * behindDistance, Y = towerY, Z = towerZ};
         end
         local objectId = g_BuyTowerId["JapanKamikazeCommandTower"][sideName];
-        if ObjectIsAlive(objectId) then
+        local ignoresLimit = BtnChoiceDialogEventFunc_HasTowerDefenseExpert(self.PlayerIndex)
+        if ObjectIsAlive(objectId) and not ignoresLimit then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
             return;
         end
+        local price = BtnChoiceDialogEventFunc_GetTowerPrice(self.PlayerIndex, g_MarketTowerBasePrice.sakura)
         local money = exPlayerGetCurrentMoney(self.PlayerName)
-        if money < 10000 then
+        if money < price then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
@@ -374,15 +585,45 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             TeamName = playerOwn.."/team"..playerOwn,
             Position = {X = pos.X, Y = pos.Y, Z = pos.Z},
             Angle = 0,
-            Health = 5500
+            -- 与埃奎斯护盾发生器使用相同的 9000 生命值。
+            Health = 9000
         });
-        -- 樱花井射程增加 150%，最终为基础射程的 2.5 倍。
-        if not g_JapanKamikazeCommandTowerRangeX25Modifier then
-            g_JapanKamikazeCommandTowerRangeX25Modifier = exAttributeModifierCreate({ RANGE = 2.5 }, 1)
+        -- 樱花井射程增加 50%，最终为基础射程的 1.5 倍；塔不会移动，视野必须同步放大才能真正打到。
+        if not g_JapanKamikazeCommandTowerRangeX15Modifier then
+            g_JapanKamikazeCommandTowerRangeX15Modifier = exAttributeModifierCreate(
+                { RANGE = 1.5, VISION = 1.5 }, 1)
         end
-        ObjectLoadAttributeModifier(GetObjectById(id), g_JapanKamikazeCommandTowerRangeX25Modifier)
-        g_BuyTowerId["JapanKamikazeCommandTower"][sideName] = id;
-        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -10000);
+        ObjectLoadAttributeModifier(GetObjectById(id), g_JapanKamikazeCommandTowerRangeX15Modifier)
+        -- 与其余氪金塔同款收尾：免疫冷冻 + 购买当帧即可用（见 FinishMarketTower）。
+        BtnChoiceDialogEventFunc_FinishMarketTower(id)
+        if not ignoresLimit then
+            g_BuyTowerId["JapanKamikazeCommandTower"][sideName] = id;
+        end
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -price);
+    end
+    -- 天门神弓（神州防御塔）：限购 1 座，塔防专家半价且无视数量限制。
+    dialogData.BuyCelestialEnergyRailgunBase = function(self)
+        local sideName = "evil";
+        if self.PlayerIndex >= 4 then
+            sideName = "angel";
+        end
+        local objectId = g_BuyTowerId["CelestialEnergyRailgunBase"][sideName];
+        local ignoresLimit = BtnChoiceDialogEventFunc_HasTowerDefenseExpert(self.PlayerIndex)
+        if ObjectIsAlive(objectId) and not ignoresLimit then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
+            return;
+        end
+        local price = BtnChoiceDialogEventFunc_GetTowerPrice(self.PlayerIndex, g_MarketTowerBasePrice.railgun)
+        local money = exPlayerGetCurrentMoney(self.PlayerName)
+        if money < price then
+            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
+            return;
+        end
+        local id = BtnChoiceDialogEventFunc_CreateCelestialRailgun(self.PlayerIndex)
+        if not ignoresLimit then
+            g_BuyTowerId["CelestialEnergyRailgunBase"][sideName] = id;
+        end
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -price);
     end
     dialogData.BuyAlliedAegisLargeDefenseBase = function(self)
         local sideName = "evil";
@@ -400,32 +641,35 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             local towerX, towerY, towerZ = ObjectGetPosition(frontTower);
             towerPos = {X = towerX + behindDirection * 126.75, Y = towerY, Z = towerZ};
         end
+        local ignoresLimit = BtnChoiceDialogEventFunc_HasTowerDefenseExpert(self.PlayerIndex)
+        -- 同阵营三名玩家取的是同一组前排塔（T71~T74 / T81~T84），走廊是共享的，所以槽位表按 sideName 存。
         local slots = g_BuyTowerId["AlliedAegisLargeDefenseBase"][sideName];
-        local slotIndex = nil;
-        for i = 1, 2, 1 do
-            if not ObjectIsAlive(slots[i]) then
-                slotIndex = i;
-                break;
-            end
+        -- 常规配额只有内圈这两个槽，向外扩出去的槽位属于塔防专家专用，否则队友用专家扩出的外圈空位
+        -- 会让没有专家的玩家也突破 2 座上限制。
+        local scanLimit = getn(slots);
+        if not ignoresLimit then
+            scanLimit = 2;
         end
+        local slotIndex = BtnChoiceDialogEventFunc_AllocateAegisSlot(slots, scanLimit)
         if slotIndex == nil then
-            exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
-            return;
+            if not ignoresLimit then
+                exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.tower.already_exists"), 10);
+                return;
+            end
+            -- 所有槽位都被占用时才向外扩一环（塔防专家无视数量限制）。
+            slotIndex = getn(slots) + 1;
+            slots[slotIndex] = 0;
         end
+        local price = BtnChoiceDialogEventFunc_GetTowerPrice(self.PlayerIndex, g_MarketTowerBasePrice.aegis)
         local money = exPlayerGetCurrentMoney(self.PlayerName)
-        if money < 15000 then
+        if money < price then
             exAddTextToPublicBoardForPlayer(self.PlayerName, Localization.get("market.funds.insufficient"), 10);
             return;
         end
-        -- 先取当前最前排存活塔的后方，再在该中心点上下两侧对称填充两个槽位。
-        local lateralDistance = 126.75;
-        local lateralDirection = 1;
-        if slotIndex == 2 then
-            lateralDirection = -1;
-        end
+        -- 先取当前最前排存活塔的后方作为走廊中心，再按槽位索引对称填充左右两侧。
         local pos = {
             X = towerPos.X,
-            Y = towerPos.Y + lateralDirection * lateralDistance,
+            Y = towerPos.Y + BtnChoiceDialogEventFunc_GetAegisLateralOffset(slotIndex),
             Z = towerPos.Z
         };
         local id = exCreateObject({
@@ -436,7 +680,8 @@ function BtnChoiceDialogEventFunc_ShowMarketDialog(playerIndex)
             Health = 9000
         });
         slots[slotIndex] = id;
-        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -15000);
+        BtnChoiceDialogEventFunc_FinishMarketTower(id)
+        ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, -price);
     end
 
     dialogData:RefreshData()
@@ -535,13 +780,32 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         local hasSelected = false
         for i = 1, getn(g_GameModeOptions) do
             local option = g_GameModeOptions[i]
-            if i == 6 and not self._initialized then
-                -- 假如随机宝箱模式已经开启，则默认选中抽卡模式
-                if g_LuckyCrateMode and g_LuckyCrateMode ~= 0 then
-                    option.IsSelected = true
+            if i == 4 then
+                -- 抽卡模式选择：显示当前状态
+                local drawModeName = Localization.get("draw_mode.disabled")
+                if g_DrawMode == 1 then
+                    drawModeName = Localization.get("draw_mode.original")
+                elseif g_DrawMode == 2 then
+                    drawModeName = Localization.get("draw_mode.pure")
                 end
-            end
-            if option.IsSelected then
+                tinsert(self.Choices, Localization.get("draw_mode.open", drawModeName))
+            elseif i == 5 then
+                -- 海克斯符文设置：显示当前状态
+                local hextechName = Localization.get("hextech.option.0")
+                if g_HextechCount ~= nil then
+                    if g_HextechCount >= 1 and g_HextechCount <= 4 then
+                        hextechName = Localization.get("hextech.option." .. tostring(g_HextechCount))
+                    end
+                end
+                tinsert(self.Choices, Localization.get("hextech.entry", hextechName))
+            elseif i == 6 then
+                -- 更多选项：首页条目只显示缩小模式状态。禁用摘要不放这里：
+                local moreOptionsName = ""
+                if g_EnableShrinkMode == 1 then
+                    moreOptionsName = moreOptionsName .. Localization.get("game_mode.shrink_suffix")
+                end
+                tinsert(self.Choices, Localization.get("more_options.entry") .. moreOptionsName)
+            elseif option.IsSelected then
                 tinsert(self.Choices, option.Name .. Localization.get("game_mode.selected_suffix"))
                 hasSelected = true
             else
@@ -556,33 +820,46 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
     dialogData.OnChoice = function(self, buttonIndex)
         local normalGameOption = g_GameModeOptions[1]
         local deathGameOption = g_GameModeOptions[2]
-        local shrinkGameOption = g_GameModeOptions[3]
-        local purchaseTechMode = g_GameModeOptions[4]
-        local banSeaGameOption = g_GameModeOptions[5]
-        local luckyCrateGameOption = g_GameModeOptions[6]
+        local purchaseTechMode = g_GameModeOptions[3]
         -- 是否选择了确认按钮
         if buttonIndex == getn(g_GameModeOptions) + 1 then
             -- 假如选择了确认按钮，设置游戏模式
             g_EnableDeathModeEffect = self:BooleanToNumber(deathGameOption.IsSelected)
-            g_DisableSeaArmy = self:BooleanToNumber(banSeaGameOption.IsSelected)
-            g_LuckyCrateMode = self:BooleanToNumber(luckyCrateGameOption.IsSelected)
+            g_LuckyCrateMode = 0
+            if g_DrawMode == 1 or g_DrawMode == 2 then
+                g_LuckyCrateMode = 1
+            end
+            BtnChoiceDialogEventFunc_ApplyHostHextechSetting()
             if g_DisableSeaArmy == 1 then
-                -- 火炮机车同款开局限制：禁海军时磁暴快艇到第 3 回合才允许生产。
+                -- 火炮机车同款开局限制：禁海军时磁暴快艇（陆地形态）到第 3 回合才允许生产。
                 g_NoNavyTeslaBoatUnlocked = 0
                 for i = 1, 6 do
                     ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_" .. i, "SovietAntiNavyShipTech1", 0)
                 end
             end
-            if shrinkGameOption.IsSelected then
-                g_GameMode = 3
-            elseif purchaseTechMode.IsSelected then
+            if purchaseTechMode.IsSelected then
                 g_GameMode = 4
             elseif g_EnableDeathModeEffect == 1 then
                 g_GameMode = 2
             else
-                g_GameMode = 1 -- 默认正常模式
+                g_GameMode = 1 -- 默认标准模式
             end
             BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillModeDialog(self.PlayerName)
+            return
+        end
+        -- 抽卡模式选择入口（选项 4）
+        if buttonIndex == 4 then
+            BtnChoiceDialogEventFunc_ShowDrawModeDialog(self.PlayerName)
+            return
+        end
+        -- 海克斯符文设置入口（选项 5）
+        if buttonIndex == 5 then
+            BtnChoiceDialogEventFunc_ShowHextechModeDialog(self.PlayerName)
+            return
+        end
+        -- 更多选项入口（选项 6：缩小/禁止海军）
+        if buttonIndex == 6 then
+            BtnChoiceDialogEventFunc_ShowMoreOptionsDialog(self.PlayerName)
             return
         end
         local option = g_GameModeOptions[buttonIndex]
@@ -598,12 +875,15 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
             exMessageAppendToMessageArea(Localization.get("game_mode.host.canceled", option.Name))
         end
         if option == normalGameOption then
-            -- 假如选择了正常模式，取消选择死亡模式和缩小模式
+            -- 标准、死亡、升本是互斥的基础模式。
             deathGameOption.IsSelected = nil
-            shrinkGameOption.IsSelected = nil
-        elseif option == deathGameOption or option == shrinkGameOption then
-            -- 假如选择了死亡模式或缩小模式，取消选择正常模式
+            purchaseTechMode.IsSelected = nil
+        elseif option == deathGameOption then
             normalGameOption.IsSelected = nil
+            purchaseTechMode.IsSelected = nil
+        elseif option == purchaseTechMode then
+            normalGameOption.IsSelected = nil
+            deathGameOption.IsSelected = nil
         end
         -- 重新刷新数据并显示对话框
         self:RefreshData()
@@ -615,6 +895,139 @@ function BtnChoiceDialogEventFunc_ShowGameModeDialog(playerName)
         else
             return 0
         end
+    end
+    dialogData:RefreshData()
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+-- 更多选项对话框（缩小模式 / 禁用模式）
+function BtnChoiceDialogEventFunc_ShowMoreOptionsDialog(playerName)
+    local dialogData = {
+        DialogId = MORE_OPTIONS_DIALOG_ID,
+        PlayerName = playerName,
+        Title = Localization.get("more_options.dialog.title"),
+        Choices = {},
+    }
+    dialogData.RefreshData = function(self)
+        self.Choices = {
+            Localization.get("more_options.shrink") .. (g_EnableShrinkMode == 1 and Localization.get("game_mode.selected_suffix") or ""),
+            Localization.get("more_options.ban_mode") .. BanModeGetSummarySuffix(),
+            Localization.get("more_options.back"),
+        }
+    end
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex == 1 then
+            if g_EnableShrinkMode == 1 then
+                g_EnableShrinkMode = 0
+                exMessageAppendToMessageArea(Localization.get("game_mode.host.canceled", Localization.get("more_options.shrink")))
+            else
+                g_EnableShrinkMode = 1
+                exMessageAppendToMessageArea(Localization.get("game_mode.host.selected", Localization.get("more_options.shrink")))
+            end
+            self:RefreshData()
+            ButtonChoiceDialogManager:ShowDialog(self)
+            return
+        elseif buttonIndex == 2 then
+            BtnChoiceDialogEventFunc_ShowBanModeDialog(self.PlayerName)
+            return
+        elseif buttonIndex == 3 then
+            BtnChoiceDialogEventFunc_ShowGameModeDialog(self.PlayerName)
+            return
+        end
+        exMessageAppendToMessageArea(Localization.get("game_mode.error.invalid_button", self.PlayerName, buttonIndex))
+    end
+    dialogData:RefreshData()
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+function BtnChoiceDialogEventFunc_ShowDrawModeDialog(playerName)
+    local dialogData = {
+        DialogId = DRAW_MODE_DIALOG_ID,
+        PlayerName = playerName,
+        Title = Localization.get("draw_mode.dialog.title"),
+        Choices = {},
+    }
+    dialogData.RefreshData = function(self)
+        self.Choices = {
+            Localization.get("draw_mode.disabled"),
+            Localization.get("draw_mode.original"),
+            Localization.get("draw_mode.pure"),
+            Localization.get("draw_mode.back"),
+        }
+        if g_DrawMode >= 0 and g_DrawMode <= 2 then
+            self.Choices[g_DrawMode + 1] = self.Choices[g_DrawMode + 1]
+                .. Localization.get("game_mode.selected_suffix")
+        end
+    end
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex >= 1 and buttonIndex <= 3 then
+            g_DrawMode = buttonIndex - 1
+            g_LuckyCrateMode = 0
+            if g_DrawMode ~= 0 then
+                g_LuckyCrateMode = 1
+            end
+            -- 抽卡模式与海克斯符文是两个独立选项：这里只改抽卡，绝不联动 g_HextechCount。
+            local selectedDrawModeName = Localization.get("draw_mode.disabled")
+            if g_DrawMode == 1 then
+                selectedDrawModeName = Localization.get("draw_mode.original")
+            elseif g_DrawMode == 2 then
+                selectedDrawModeName = Localization.get("draw_mode.pure")
+            end
+            exMessageAppendToMessageArea(
+                Localization.get("game_mode.host.selected", selectedDrawModeName))
+            self:RefreshData()
+            ButtonChoiceDialogManager:ShowDialog(self)
+            return
+        elseif buttonIndex == 4 then
+            BtnChoiceDialogEventFunc_ShowGameModeDialog(self.PlayerName)
+            return
+        end
+        exMessageAppendToMessageArea(Localization.get("game_mode.error.invalid_button", self.PlayerName, buttonIndex))
+    end
+    dialogData:RefreshData()
+    ButtonChoiceDialogManager:ShowDialog(dialogData)
+end
+
+function BtnChoiceDialogEventFunc_ShowHextechModeDialog(playerName)
+    local dialogData = {
+        DialogId = HEXTECH_MODE_DIALOG_ID,
+        PlayerName = playerName,
+        Title = Localization.get("hextech.dialog.title"),
+        Choices = {},
+    }
+    dialogData.RefreshData = function(self)
+        self.Choices = {
+            Localization.get("hextech.option.0"),
+            Localization.get("hextech.option.1"),
+            Localization.get("hextech.option.2"),
+            Localization.get("hextech.option.3"),
+            Localization.get("hextech.option.4"),
+            HextechRerollModeLabel(),
+            Localization.get("hextech.back"),
+        }
+        if g_HextechCount >= 0 and g_HextechCount <= 4 then
+            self.Choices[g_HextechCount + 1] = self.Choices[g_HextechCount + 1]
+                .. Localization.get("game_mode.selected_suffix")
+        end
+    end
+    dialogData.OnChoice = function(self, buttonIndex)
+        if buttonIndex >= 1 and buttonIndex <= 5 then
+            g_HextechCount = buttonIndex - 1
+            g_HextechCountManuallySet = true
+            local selectedHextechName = Localization.get("hextech.option." .. g_HextechCount)
+            exMessageAppendToMessageArea(
+                Localization.get("game_mode.host.selected", selectedHextechName))
+            self:RefreshData()
+            ButtonChoiceDialogManager:ShowDialog(self)
+            return
+        elseif buttonIndex == 6 then
+            HextechRerollModeApply(self)
+            return
+        elseif buttonIndex == 7 then
+            BtnChoiceDialogEventFunc_ShowGameModeDialog(self.PlayerName)
+            return
+        end
+        exMessageAppendToMessageArea(Localization.get("game_mode.error.invalid_button", self.PlayerName, buttonIndex))
     end
     dialogData:RefreshData()
     ButtonChoiceDialogManager:ShowDialog(dialogData)
@@ -666,53 +1079,64 @@ function BtnChoiceDialogEventFunc_ShowHostChoosePlayerSkillModeDialog(playerName
         end
 
     end
-    dialogData.EnsureSideHasNonCopySkill = function(self, playerIndexStart, skillIndexOffset, copySkillIndex)
-        local humanPlayerIndices = {}
+    -- 本方占位玩家（真人或电脑）全都抽到「复制技能」时随机改掉其中一个。下标按压缩编号取（见
+    -- BtnChoiceDialogEventFunc_GetSkillIndexForPlayer）；poolOffset 供对称模式把天使侧折回共用池子。
+    dialogData.EnsureSideHasNonCopySkill = function(self, sideStartIndex, copySkillIndex, poolOffset)
+        local playerIndices = BtnChoiceDialogEventFunc_GetSideOccupiedPlayerIndices(sideStartIndex)
+        if getn(playerIndices) < 1 then
+            return
+        end
+        local skillIndices = {}
         local allCopy = 1
-        for playerIndex = playerIndexStart, playerIndexStart + 2 do
-            local playerName = "Player_" .. playerIndex
-            if EvaluateCondition("PLAYER_IS_HUMAN_OR_AI_PERSONALITY", playerName, "Human") then
-                tinsert(humanPlayerIndices, playerIndex)
-                if g_PreselectedSkillIndices[playerIndex + skillIndexOffset] ~= copySkillIndex then
-                    allCopy = nil
-                end
+        for i = 1, getn(playerIndices), 1 do
+            local skillIndex = sideStartIndex - 1 + i - poolOffset
+            tinsert(skillIndices, skillIndex)
+            if g_PreselectedSkillIndices[skillIndex] ~= copySkillIndex then
+                allCopy = nil
             end
         end
-        if getn(humanPlayerIndices) > 0 and allCopy then
-            local humanListIndex = self:RandomInteger(1, getn(humanPlayerIndices))
-            local playerIndex = humanPlayerIndices[humanListIndex]
-            g_PreselectedSkillIndices[playerIndex + skillIndexOffset] = self:RandomInteger(1, copySkillIndex - 1)
+        if allCopy then
+            local targetIndex = skillIndices[self:RandomInteger(1, getn(skillIndices))]
+            g_PreselectedSkillIndices[targetIndex] = self:RandomInteger(1, copySkillIndex - 1)
+        end
+    end
+
+    -- （见 analysis/地图注释说明文档.md §5.3）。
+    dialogData.AppendRandomSkillSide = function(self, baseIndex, sideCount, skillNamesCount)
+        for i = 1, 3, 1 do
+            if i <= sideCount then
+                tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
+            else
+                tinsert(g_PreselectedSkillIndices,
+                    g_PreselectedSkillIndices[baseIndex + i - sideCount])
+            end
         end
     end
 
     dialogData.RandomSkill = function(self, isSymmetric)
-        -- 复制技能需要队友先释放其他技能才有效。
-        -- 因此每边至少要有一名真人玩家抽到非复制技能：
-        -- 单人时不会抽到复制，多人时不会全是复制。
-        local copySkillIndex = 5
+        -- 复制组固定在技能选择的最后一行，随机要避开它（1..copySkillIndex-1 才是可选组）。
+        local copySkillIndex = 6
         g_PreselectedSkillIndices = {}
         g_PreselectedSkillIndices.IsRandom = true
         local skillNamesCount = getn(g_SkillNames)
-        tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
-        tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
-        tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
+        -- 只按场上实际占用的槽位抽：满 6 位 = 3 项、2v2 = 2 项、1v1 = 1 项（空位不再占一项）。
+        -- 电脑占的槽位也算一项（电脑同样吃技能组）；两边取人数多的那侧，对称模式两边共用同一序号池。
+        local sideCount = BtnChoiceDialogEventFunc_GetPreselectSlotCount()
+        self:AppendRandomSkillSide(0, sideCount, skillNamesCount)
         if isSymmetric then
             g_PreselectedSkillIndices.IsSymmetric = true
-            -- 两边都映射到前 3 个随机结果，修正后再复制以保持对称。
-            self:EnsureSideHasNonCopySkill(1, 0, copySkillIndex)
-            self:EnsureSideHasNonCopySkill(4, -3, copySkillIndex)
-            -- 对称的随机技能组，复制前 3 个技能组
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[1])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[2])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[3])
+            -- 两边共用 1..sideCount 这个池子：先在池子里修正，再整体复制到 4..6 保持对称。
+            self:EnsureSideHasNonCopySkill(1, copySkillIndex, 0)
+            self:EnsureSideHasNonCopySkill(4, copySkillIndex, 3)
+            for i = 1, 3, 1 do
+                tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[i])
+            end
         else
             g_PreselectedSkillIndices.IsSymmetric = false
-            -- 不对称的随机技能组
-            tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
-            tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
-            tinsert(g_PreselectedSkillIndices, self:RandomInteger(1, skillNamesCount))
-            self:EnsureSideHasNonCopySkill(1, 0, copySkillIndex)
-            self:EnsureSideHasNonCopySkill(4, 0, copySkillIndex)
+            -- 不对称：天使侧独立再抽一整边（可以抽到和魔鬼侧相同的组，这是本模式的定义）。
+            self:AppendRandomSkillSide(3, sideCount, skillNamesCount)
+            self:EnsureSideHasNonCopySkill(1, copySkillIndex, 0)
+            self:EnsureSideHasNonCopySkill(4, copySkillIndex, 0)
         end
     end
     dialogData.RandomInteger = function(self, min, max)
@@ -745,12 +1169,14 @@ function BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(playerName)
     }
     dialogData.RefreshData = function(self)
         self.Choices = {}
+        -- 需要定义几项按实到人数算（1v1 = 1 项、2v2 = 2 项、满 6 人 = 3 项）。
+        local requiredCount = BtnChoiceDialogEventFunc_GetPreselectSlotCount()
         local preselectedSkillCount = getn(g_PreselectedSkillIndices)
         if preselectedSkillCount > 0 then
             tinsert(self.Choices, Localization.get("skill_mode.cancel"))
-            if preselectedSkillCount < 3 then
-                -- 假如预选技能组少于 3 个，继续选择
-                self.Title = Localization.get("skill_mode.continue", 3 - preselectedSkillCount)
+            if preselectedSkillCount < requiredCount then
+                -- 假如预选技能组还不够，继续选择
+                self.Title = Localization.get("skill_mode.continue", requiredCount - preselectedSkillCount)
             end
         else
             self.Title = Localization.get("skill_mode.all.title")
@@ -799,12 +1225,14 @@ function BtnChoiceDialogEventFunc_ShowHostChooseSkillForAllDialog(playerName)
             tinsert(g_PreselectedSkillIndices, skillIndex)
         end
 
-        if getn(g_PreselectedSkillIndices) == 3 then
-            -- 已经选择了 3 个技能组，可以开始游戏了
-            -- 复制、补全到 6 个技能组
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[1])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[2])
-            tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[3])
+        if getn(g_PreselectedSkillIndices) >= BtnChoiceDialogEventFunc_GetPreselectSlotCount() then
+            -- 已按实到人数选够技能组，可以开始游戏了。
+            for i = getn(g_PreselectedSkillIndices) + 1, 3, 1 do
+                tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[1])
+            end
+            for i = 1, 3, 1 do
+                tinsert(g_PreselectedSkillIndices, g_PreselectedSkillIndices[i])
+            end
             -- 开始游戏
             BtnChoiceDialogEventFunc_InvokeStartGame()
             return
@@ -822,24 +1250,42 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
     -- 这里可以添加一些额外的逻辑，比如检查玩家是否准备好等
     local gameModeText = ''
     local skillText = ''
+    -- 基础模式
     if g_GameMode == 1 then
-        gameModeText = Localization.get("game_mode.normal")
+        gameModeText = Localization.get("game_mode.standard")
     elseif g_GameMode == 2 then
         gameModeText = Localization.get("game_mode.death")
-    elseif g_GameMode == 3 then
-        if g_EnableDeathModeEffect == 1 then
-            gameModeText = Localization.get("game_mode.shrink_with_effect")
-        else
-            gameModeText = Localization.get("game_mode.shrink")
-        end
     elseif g_GameMode == 4 then
         gameModeText = Localization.get("game_mode.level_up")
     end
-    if g_DisableSeaArmy == 1 then
-        gameModeText = gameModeText .. Localization.get("game_mode.no_navy_suffix")
+    -- 括号内并列功能：海克斯符文排最前，缩小/禁海随后（参考缩小模式/禁海的开局播报）
+    local featureText = ''
+    if g_EnableHextechRune == 1 then
+        featureText = Localization.get("game_mode.hextech_name")
     end
-    if g_LuckyCrateMode == 1 then
-        gameModeText = gameModeText .. Localization.get("game_mode.lucky_crate_suffix")
+    if g_EnableShrinkMode == 1 then
+        if featureText ~= '' then
+            featureText = featureText .. Localization.get("game_mode.feature_separator")
+        end
+        featureText = featureText .. Localization.get("game_mode.shrink_name")
+    end
+    if g_BanModeOrder ~= nil and BanModeNameOf ~= nil then
+        for banIndex = 1, getn(g_BanModeOrder), 1 do
+            if featureText ~= '' then
+                featureText = featureText .. Localization.get("game_mode.feature_separator")
+            end
+            featureText = featureText .. BanModeNameOf(g_BanModeOrder[banIndex])
+        end
+    end
+    if featureText ~= '' then
+        gameModeText = gameModeText .. Localization.get("game_mode.feature_bracket", featureText)
+    end
+    -- 抽卡播报（括号外）：模式名本身已经很长，再拼上抽卡后缀会被消息区挤掉，
+    local drawModeText = ''
+    if g_DrawMode == 1 then
+        drawModeText = Localization.get("game_mode.lucky_crate_suffix")
+    elseif g_DrawMode == 2 then
+        drawModeText = Localization.get("game_mode.pure_draw_suffix")
     end
     local preselectedSkillCount = getn(g_PreselectedSkillIndices)
     if preselectedSkillCount == 6 then
@@ -858,10 +1304,12 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
             --     end
             -- end
         else
+            -- 播报只报实际生效的那几组（1v1 就 1 组、2v2 就 2 组）。
+            local preselectCount = BtnChoiceDialogEventFunc_GetPreselectSlotCount()
             skillText = Localization.get("game.start.skill_prefix")
-            for i = 1, 3 do
+            for i = 1, preselectCount do
                 skillText = skillText .. g_SkillNames[g_PreselectedSkillIndices[i]]
-                if i < preselectedSkillCount then
+                if i < preselectCount then
                     skillText = skillText .. ','
                 end
             end
@@ -872,9 +1320,22 @@ function BtnChoiceDialogEventFunc_InvokeStartGame()
         exMessageAppendToMessageArea(Localization.get("skill_mode.error.preselected_count", preselectedSkillCount))
         return
     end
-    exMessageAppendToMessageArea(Localization.get("game.start.begin", gameModeText))
-    exMessageAppendToMessageArea(skillText)
-    exAddTextToPublicBoard(format("%s\n%s\n%s", Localization.get("game.start.begin", gameModeText), skillText, Localization.get("game.start.economic_multiplier", exModeGetCheatMultiplier())), 15)
+    local beginLines = { Localization.get("game.start.begin", gameModeText) }
+    if drawModeText ~= '' then
+        tinsert(beginLines, drawModeText)
+    end
+    tinsert(beginLines, skillText)
+    for i = 1, getn(beginLines), 1 do
+        exMessageAppendToMessageArea(beginLines[i])
+    end
+    local economicMultiplier = exModeGetCheatMultiplier()
+    tinsert(beginLines, Localization.get("game.start.economic_multiplier",
+        economicMultiplier, GetBaseRecycleRate(economicMultiplier) * 100))
+    local boardText = beginLines[1]
+    for i = 2, getn(beginLines), 1 do
+        boardText = boardText .. "\n" .. beginLines[i]
+    end
+    exAddTextToPublicBoard(boardText, 15)
     exEnableWBScript("readyForStartCam")
 end
 
@@ -989,39 +1450,38 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
 
             -- TODO 自定义文本更新   解锁科技，解锁电厂数量
 
-            local powerNum = 5;
-            local celestialPowerNum = 4;
             if g_angelTechLevel == 2 then
                 exEnableWBScript('Player_4/UNLOCK1__4')
                 exEnableWBScript('Player_5/UNLOCK1__5')
                 exEnableWBScript('Player_6/UNLOCK1__6')
                 LIMITPOWERC = 6
-                powerNum = 7;
-                celestialPowerNum = 6;
                 g_angelTechBuyRound[2] = exCounterGetByName("lvc")
             elseif g_angelTechLevel == 3 then
                 exEnableWBScript('Player_4/UNLOCK2__4')
                 exEnableWBScript('Player_5/UNLOCK2__5')
                 exEnableWBScript('Player_6/UNLOCK2__6')
                 LIMITPOWERC = 8
-                powerNum = 9;
-                celestialPowerNum = 8;
                 g_angelTechBuyRound[3] = exCounterGetByName("lvc")
             elseif g_angelTechLevel == 4 then
                 exEnableWBScript('Player_4/UNLOCK3__4')
                 exEnableWBScript('Player_5/UNLOCK3__5')
                 exEnableWBScript('Player_6/UNLOCK3__6')
                 LIMITPOWERC = 10
-                powerNum = 11;
-                celestialPowerNum = 10;
             end
 
             ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
 
             for i = 4, 6 do
+                -- 第 2 行恒为非神州值、第 3 行恒为神州值；份数跟实际控制的席位走。
+                local nonCelestialLimit = 5
+                local celestialLimit = 4
+                if GetPlayerPowerPlantReferenceLimit ~= nil then
+                    nonCelestialLimit = GetPlayerPowerPlantReferenceLimit(i, 0)
+                    celestialLimit = GetPlayerPowerPlantReferenceLimit(i, 1)
+                end
                 exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, Localization.get("purchase_tech.level", g_angelTechLevel))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", powerNum))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialPowerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", nonCelestialLimit))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialLimit))
             end
 
 
@@ -1049,41 +1509,49 @@ function BtnChoiceDialogEventFunc_ShowPurchaseTechDialog(playerName)
             end
 
             LIMITPOWERC = LIMITPOWERC  + 2
-            local powerNum = 5;
-            local celestialPowerNum = 4;
             if g_evilTechLevel == 2 then
                 exEnableWBScript('Player_1/UNLOCK1__1')
                 exEnableWBScript('Player_2/UNLOCK1__2')
                 exEnableWBScript('Player_3/UNLOCK1__3')
                 LIMITPOWERC = 6
-                powerNum = 7;
-                celestialPowerNum = 6;
                 g_evilTechBuyRound[2] = exCounterGetByName("lvc")
             elseif g_evilTechLevel == 3 then
                 exEnableWBScript('Player_1/UNLOCK2__1')
                 exEnableWBScript('Player_2/UNLOCK2__2')
                 exEnableWBScript('Player_3/UNLOCK2__3')
                 LIMITPOWERC = 8
-                powerNum = 9;
-                celestialPowerNum = 8;
                 g_evilTechBuyRound[3] = exCounterGetByName("lvc")
             elseif g_evilTechLevel == 4 then
                 exEnableWBScript('Player_1/UNLOCK3__1')
                 exEnableWBScript('Player_2/UNLOCK3__2')
                 exEnableWBScript('Player_3/UNLOCK3__3')
                 LIMITPOWERC = 10
-                powerNum = 11;
-                celestialPowerNum = 10;
             end
 
             ExecuteAction("PLAY_SOUND_EFFECT", "MAP_Rescue");
 
             for i = 1, 3 do
+                -- 第 2 行恒为非神州值、第 3 行恒为神州值；份数跟实际控制的席位走。
+                local nonCelestialLimit = 5
+                local celestialLimit = 4
+                if GetPlayerPowerPlantReferenceLimit ~= nil then
+                    nonCelestialLimit = GetPlayerPowerPlantReferenceLimit(i, 0)
+                    celestialLimit = GetPlayerPowerPlantReferenceLimit(i, 1)
+                end
                 exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 1, Localization.get("purchase_tech.level", g_evilTechLevel))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", powerNum))
-                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialPowerNum))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2, Localization.get("purchase_tech.power_plants", nonCelestialLimit))
+                exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3, Localization.get("purchase_tech.celestial_plants", celestialLimit))
             end
 
+        end
+        if PureDrawReapplyPlayerQuota ~= nil then
+            local firstPlayer = 1
+            if pIndex >= 4 then
+                firstPlayer = 4
+            end
+            for i = firstPlayer, firstPlayer + 2, 1 do
+                PureDrawReapplyPlayerQuota(i)
+            end
         end
     end
 
@@ -1105,7 +1573,11 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
         Choices = {},
     }
 
-    dialogData.Title = Localization.get("recycle.dialog.title", g_CurrentClickRecycleUnit[playerIndex].Name)
+    local clickedUnitInfo = g_CurrentClickRecycleUnit[playerIndex]
+    if clickedUnitInfo == nil then
+        return
+    end
+    dialogData.Title = Localization.get("recycle.dialog.title", clickedUnitInfo.Name)
 
     dialogData.OnChoice = function(self, buttonIndex)
         if buttonIndex <= 4 then
@@ -1115,20 +1587,17 @@ function BtnChoiceDialogEventFunc_RecycleUnitDialog(playerName)
             local playerIndex2 = g_PlayerNameToIndex[self.PlayerName]
 
             local recycleUnitInfo = g_CurrentClickRecycleUnit[playerIndex2]
+            if recycleUnitInfo == nil then
+                SetWorldBuilderThisPlayer(previous)
+                return
+            end
             local availableCount = GetRecycleUnitCount(playerIndex2, recycleUnitInfo)
 
             if availableCount > 0 then
                 local count = g_RecycleUnitCount[buttonIndex];
                 local leftCount = 0
                 count, leftCount = RemoveRecycleUnitCount(playerIndex2, recycleUnitInfo, count)
-                -- 苏联拿到大生产之后需要乘一个系数  可能会导致苏联后期回收亏钱，不过也很难管了
-                local getSovietBonus = g_ProductionBonus_SovietGet[playerIndex2];
-                -- 只给90%回收
-                local discount = 0.9;
-                if getSovietBonus then
-                    discount = 0.72;
-                end
-                ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, count * recycleUnitInfo.Money * discount) ;
+                ExecuteAction('PLAYER_GIVE_MONEY', self.PlayerName, count * recycleUnitInfo.Money * GetRecycleRate(playerIndex2)) ;
                 -- 同时也要告诉盟友
                 local msg = Localization.get("recycle.message", tostring(playerIndex2), count, recycleUnitInfo.Name, tostring(leftCount));
                 if playerIndex2 >= 4 then

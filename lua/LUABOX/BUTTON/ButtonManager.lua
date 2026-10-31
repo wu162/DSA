@@ -1,3 +1,5 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.55
+
 ButtonManager = {
     _data = {},
     _sharedCooldown = {}, -- 用于存储共享冷却时间
@@ -56,9 +58,6 @@ function ButtonManager.SetButton(self, buttonData)
 
     exCenterTopBtnShowForPlayer(playerName, buttonIndex, buttonData.IconId, buttonData.Text)
     
-    -- 目前 EnhancerCorona 会在设置按钮的时候自动（在 50 毫秒后）将按钮启用。
-    -- 因此，直接把按钮禁用是没有用的，会在约 50 毫秒后被覆盖。
-    -- 这里使用延时调用来确保按钮状态被正确设置。
     SchedulerModule.delay_call(function(buttonData)
         local isButtonEnabled = 1
         if not buttonData.IsEnabled or buttonData.IsEnabled == 0 then
@@ -168,6 +167,9 @@ function CreateButton(buttonData)
 
     buttonData._usedCount = 0
     buttonData._cooldownCount = 0
+    -- 冷却回调的代际号：外部强制清掉冷却（终极刷新）时 +1，让已经排队的旧回调失效，
+    -- 避免它在下一段冷却期间把按钮提前点亮。
+    buttonData._cooldownGeneration = 0
     buttonData._multipleUseOnClick = buttonData.OnClick
 
     buttonData.FormatText = function(self)
@@ -213,9 +215,10 @@ function CreateButton(buttonData)
             self.IsEnabled = false
             self:FormatText()
             ButtonManager:SetButton(self)
-            SchedulerModule.delay_call(function(self)
-                self:_reActivate()
-            end, self.CooldownSeconds * 15, { self })
+            local generation = self._cooldownGeneration
+            SchedulerModule.delay_call(function(self, generation)
+                self:_reActivate(generation)
+            end, self.CooldownSeconds * 15, { self, generation })
             return
         end
 
@@ -224,9 +227,10 @@ function CreateButton(buttonData)
             self.IsEnabled = false
             self:FormatText()
             ButtonManager:SetButton(self)
-            RoundLuaManager.DelayCallOnRoundBegin(function(self)
-                self:_reActivate()
-            end, { self }, self.CooldownRounds)
+            local generation = self._cooldownGeneration
+            RoundLuaManager.DelayCallOnRoundBegin(function(self, generation)
+                self:_reActivate(generation)
+            end, { self, generation }, self.CooldownRounds)
             return
         end
 
@@ -240,27 +244,34 @@ function CreateButton(buttonData)
             self.IsEnabled = false
             self:FormatText()
             ButtonManager:SetButton(self)
-            SchedulerModule.delay_call(function(self)
-                self:_reActivate()
-            end, self.SharedCooldownSeconds * 15, { self })
+            local generation = self._cooldownGeneration
+            SchedulerModule.delay_call(function(self, generation)
+                self:_reActivate(generation)
+            end, self.SharedCooldownSeconds * 15, { self, generation })
             return
         end
     end
-    buttonData._reActivate = function(self)
+    buttonData._reActivate = function(self, generation)
         if ButtonManager:GetButton(self.PlayerName, self.ButtonIndex) ~= self then
             exMessageAppendToMessageArea(Localization.get("button_manager.error.overwritten_cannot_restore", self.PlayerName or "?", self.Title or Localization.get("button.default.unknown")))
             return
         end
-        if self.MaxUseCount ~= nil and self._usedCount >= self.MaxUseCount then
-            -- exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 已经使用完毕，无法恢复", self.PlayerName or "?", self.Title))
+        if generation ~= nil and generation ~= self._cooldownGeneration then
+            -- 冷却已经被外部清掉（终极刷新补次数），这次回调作废。
             return
         end
-        if self.IsLocked then
-            -- exMessageAppendToMessageArea(format("玩家 %s 的按钮 %s 已经被锁定，无法恢复", self.PlayerName or "?", self.Title))
-            return
+        if (self._cooldownCount or 0) > 0 then
+            self._cooldownCount = self._cooldownCount - 1
+        else
+            self._cooldownCount = 0
         end
-        self._cooldownCount = self._cooldownCount - 1
         if self._cooldownCount > 0 then
+            return
+        end
+        if (self.MaxUseCount ~= nil and self._usedCount >= self.MaxUseCount) or self.IsLocked then
+            -- 冷却已走完但按钮仍不可用（次数用尽 / 未解锁）：只刷新标题，保持禁用。
+            self:FormatText()
+            ButtonManager:SetButton(self)
             return
         end
         self.IsEnabled = true

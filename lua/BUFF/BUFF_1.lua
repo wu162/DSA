@@ -1,12 +1,4 @@
-
---- 浪人鬼王HP*1.5，浪人去除无限弹匣
---- 忍者岚影刺鬼王X攻速射程增加
----雅典娜攻速*1.4
----重锤计蒙伤害75%
----剃刀太刀攻击*1.2
-
-
-
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.21
 
 FilterJapanSentinelVehicle=CreateObjectFilter({
     Rule="ANY",
@@ -80,23 +72,6 @@ function JapanAntiStructureVehicleBUFF ()
     for i = 1 , COUNTX ,1 do
         ObjectLoadAttributeModifier(TAR[i], "AttributeModifier_BoxDamageMultDown",9999)
         -- ObjectLoadAttributeModifier(TAR[i], "HardAISinglePlayer_Bonus",9999)
-    end
-end
-
-FilterJapanShip=CreateObjectFilter({
-    Rule="ANY",
-
-    IncludeThing = {
-        "JapanAntiNavyShipTech3","JapanAntiVehicleShip"
-    }
-})
-
-
-
-function JapanShipBUFF ()
-    local TAR , COUNTX = ObjectFindObjects(nil, nil, FilterJapanShip)
-    for i = 1 , COUNTX ,1 do
-        ObjectLoadAttributeModifier(TAR[i], "AttributeMod_CenturionUpgradeLv1",9999)
     end
 end
 
@@ -226,14 +201,6 @@ FilterSovietBomberAircraft=CreateObjectFilter({
     }
 })
 
-FilterSovietHeavyTankTech4=CreateObjectFilter({
-    Rule="ANY",
-    IncludeThing = {
-        "SovietAntiVehicleVehicleTech4",
-        "SovietAntiVehicleVehicleTech4_Enhanced"
-    }
-})
-
 -- 先锋武装炮艇机的普通、强化、AC-130 和信标形态统一计算。
 FilterAlliedGunshipAircraftAll=CreateObjectFilter({
     Rule="ANY",
@@ -317,12 +284,6 @@ function LARGEENHANCEBUFF ()
     for i = 1 , KirovCount ,1 do
         ObjectLoadAttributeModifier(Kirov[i], "AttributeModifier_JapanAntiVehicleVehicleTech3RushAttack",9999)
         ObjectLoadAttributeModifier(Kirov[i], "AttributeMod_JapanScoutInfantrySlowAttached",9999)
-    end
-
-    -- 联盟重型坦克：在现有属性基础上再叠加 1.25 倍生命。
-    local HeavyTank , HeavyTankCount = ObjectFindObjects(nil, nil, FilterSovietHeavyTankTech4)
-    for i = 1 , HeavyTankCount ,1 do
-        ObjectLoadAttributeModifier(HeavyTank[i], "AttributeMod_CenturionUpgradeLeaderLv1",9999)
     end
 
     -- 先锋全部形态加载 2 倍生命 Buff；标准型还会与上方原有 1.5 倍 Buff 叠加至 3 倍。

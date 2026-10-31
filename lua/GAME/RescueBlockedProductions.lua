@@ -1,3 +1,5 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.2、A.64
+
 RescueBlockedProductions_UnitList = {
     'JapanPowerPlantEgg',
     'CelestialDF41',
@@ -23,13 +25,6 @@ RescueBlockedProductions_PlayerCanBuildUnitsTables = {
     [5] = {},
     [6] = {},
 }
--- 自动检测并拯救任意被卡住的建造序列（比如说帝国卡电厂，或者神州卡东风导弹车）
--- 但是，这需要遍历玩家所有建造序列里的所有内容，假如频繁调用，我怕有性能问题。
--- 但是！！！！实际上完全没必要每一帧都去检测建造序列：
--- 首先，假如某个单位一直都是可以造的，那么它不可能卡住生产建筑，我们自然没必要为了它去检测各个建造序列
--- 假如某个单位一直都不允许建造，玩家从来没有造它的机会，那它照样无法卡住生产建筑，我们也没必要为了它去检测各个建造序列
--- 只有一种情况需要检测：有单位刚刚从可建造的状态变成了不可建造的状态，此时假如玩家正在生产该单位，生产建筑就会卡住。
--- 所以，只需要在上述的特定情况发生时，再去检测，就可以了~
 SchedulerModule.call_every_x_frame(function()
     for p = 1, 6, 1 do
         local unitHashsNeedUnblock = nil
@@ -56,9 +51,6 @@ SchedulerModule.call_every_x_frame(function()
     end
 end, 75, nil)
 
--- 关于检测单位是否禁用的代码。。。有点屎山代码，很多关于单位禁止建造的脚本依然在地编脚本里而不是 lua 脚本里
--- 所以这里只能靠这个函数重新检测一下
--- 希望有一天能把下面这个函数 以及其他代码 重新重构成更加优雅的形式
 function RescueBlockedProductions_CheckUnitCanBuild(playerIndex, unitType)
     if unitType == 'JapanPowerPlantEgg' then
         local units, count = ObjectFindObjects(P[playerIndex], nil, FilterAnyPowerPlantOrEgg)
@@ -68,14 +60,29 @@ function RescueBlockedProductions_CheckUnitCanBuild(playerIndex, unitType)
         -- FLAGENPOWER 这玩意在 lua\LUABOX\moneysys\MONEYINI_3.lua 里面
         return FLAGENPOWER[playerIndex] == 1
     elseif unitType == 'CelestialDF41' then
-        if EvaluateCondition('PLAYER_HAS_OBJECT_COMPARISON', 'Player_'..playerIndex, '==', 0, 'CelestialDF41') then
-            return true
-        else
-            return false
+        -- 东风上限 = 1 + 东风速递额外额度；继承队友的额度继续累加。
+        local extraQuota = 0
+        if g_HextechDF41ExtraQuota ~= nil then
+            extraQuota = g_HextechDF41ExtraQuota[playerIndex]
+            if extraQuota == true then
+                extraQuota = 1
+            end
+            extraQuota = tonumber(extraQuota) or 0
         end
+        local maxBuildableCount = extraQuota
+        if GetPlayerDF41BuildLimit ~= nil then
+            maxBuildableCount = GetPlayerDF41BuildLimit(playerIndex) - 1
+        end
+        for ownedCount = 0, maxBuildableCount, 1 do
+            if EvaluateCondition('PLAYER_HAS_OBJECT_COMPARISON',
+                'Player_'..playerIndex, '==', ownedCount, 'CelestialDF41') then
+                return true
+            end
+        end
+        return false
     elseif unitType == 'CelestialAdvanceAircraftTech4'
         or unitType == 'CelestialAdvanceAircraftTech4_Enhanced' then
-        return GetPlayerYaoguangCount(playerIndex) < YAOGUANG_LIMIT
+        return GetPlayerYaoguangRemainingProductionQuota(playerIndex) > 0
     elseif unitType == 'AlliedAntiVehicleVehicleTech1'
         or unitType == 'AlliedAntiVehicleVehicleTech1_Enhanced' then
         return GetPlayerGuardianTankCount(playerIndex) < GUARDIAN_TANK_LIMIT
@@ -108,10 +115,6 @@ function RescueBlockedProductions_DoRescue(playerName, disallowedUnitHashes)
                         -- exMessageAppendToMessageArea(format("Blocked unit %s detected in factory %s for player %s. Attempting rescue.", tostring(item.InstanceId), tostring(factory), tostring(playerName)))
                         -- 正在建造的单位是被禁用的，序列将会卡住!
 
-                        -- 让敌对工程师占领它，这样就能触发建造取消
-                        -- 之后再让它恢复归属
-                        -- 必须是先让敌对工程师占领，再重新改成己方归属。
-                        -- 假如是先把建筑归属改为敌方、用己方工程师占领回来，那么建筑里取消的单位的资金将会归为敌方。
                         local x, y, z = ObjectGetPosition(factory)
                         local engineerName = RescueBlockedProductions_CreateEnemyEngineer(playerName, x, y, z)
                         -- ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", engineerName, "UNSELECTABLE", true)

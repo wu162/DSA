@@ -39,9 +39,12 @@ function PurchaseTechMode_Setting()
     ExecuteAction("NAMED_SET_MAX_HEALTH", "T83", 30000, 1)
     ExecuteAction("NAMED_SET_MAX_HEALTH", "T84", 140000, 1)
 
+    -- 删除展示体前必须解除守护者登记：引擎复用对象 id 后，新单位会被当成守护神。
     local object = GetObjectByScriptName("overlord7")
+    UnregisterTowerGuardian(object)
     ExecuteAction("NAMED_DELETE", object);
     object = GetObjectByScriptName("overlord8")
+    UnregisterTowerGuardian(object)
     ExecuteAction("NAMED_DELETE", object);
 
     exDisableWBScript("NATURALUNLOCK__1")
@@ -93,6 +96,20 @@ function PurchaseTechMode_Setting()
         AlignX = "left",
         AlignY = "top",
     })
+
+    -- 两行恒为参照值：第 2 行按非神州、第 3 行按神州；份数跟实际控制的席位走，不再写死 5/4。
+    for i = 1, 6, 1 do
+        local nonCelestialLimit = 5
+        local celestialLimit = 4
+        if GetPlayerPowerPlantReferenceLimit ~= nil then
+            nonCelestialLimit = GetPlayerPowerPlantReferenceLimit(i, 0)
+            celestialLimit = GetPlayerPowerPlantReferenceLimit(i, 1)
+        end
+        exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 2,
+            Localization.get("purchase_tech.power_plants", nonCelestialLimit))
+        exCustomTextUpdateTextForPlayer("Player_" .. tostring(i), 3,
+            Localization.get("purchase_tech.celestial_plants", celestialLimit))
+    end
 
 end
 

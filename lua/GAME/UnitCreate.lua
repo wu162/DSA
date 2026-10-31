@@ -1,7 +1,25 @@
+-- 讲解见 analysis/地图注释说明文档.md 附录 A.37
+
 g_UnitCreateEventFunc = {}
 
--- 东风虽然已有建造限制，这里仍每 10 秒按实际归属兜底检查一次。
--- Player_1 至 Player_6 各自只保留找到的第一辆，多出的直接摧毁。
+-- A unit template may participate in several independent systems. Keep every callback
+-- instead of letting the last registration silently replace earlier behaviour.
+function RegisterUnitCreateCallback(unitType, callback)
+    local unitHash = unitType
+    if type(unitType) == "string" then
+        exObjectRegisterCreateEvent(unitType)
+        unitHash = FastHash(unitType)
+    end
+    local registered = g_UnitCreateEventFunc[unitHash]
+    if registered == nil then
+        g_UnitCreateEventFunc[unitHash] = callback
+    elseif type(registered) == "function" then
+        g_UnitCreateEventFunc[unitHash] = { registered, callback }
+    else
+        tinsert(registered, callback)
+    end
+end
+
 g_CelestialDF41LimitFilter = CreateObjectFilter({
     Rule = "ANY",
     IncludeThing = { "CelestialDF41" },
@@ -9,21 +27,163 @@ g_CelestialDF41LimitFilter = CreateObjectFilter({
 
 function EnforceCelestialDF41PerPlayerLimit()
     local units, count = ObjectFindObjects(nil, nil, g_CelestialDF41LimitFilter)
-    local playerHasDF41 = {}
+    local playerDF41Count = {}
     for i = 1, count, 1 do
         local unit = units[i]
         local ownerPlayerName = ObjectPlayerScriptName(unit)
-        if g_PlayerNameToIndex[ownerPlayerName] ~= nil then
-            if playerHasDF41[ownerPlayerName] then
-                ExecuteAction("NAMED_KILL", unit)
+        local playerIndex = g_PlayerNameToIndex[ownerPlayerName]
+        if playerIndex ~= nil then
+            local limit = 1
+            if GetPlayerDF41BuildLimit ~= nil then
+                limit = GetPlayerDF41BuildLimit(playerIndex)
             else
-                playerHasDF41[ownerPlayerName] = true
+                local extraQuota = 0
+                if g_HextechDF41ExtraQuota ~= nil then
+                    extraQuota = g_HextechDF41ExtraQuota[playerIndex]
+                    if extraQuota == true then
+                        extraQuota = 1
+                    end
+                    extraQuota = tonumber(extraQuota) or 0
+                end
+                limit = 1 + extraQuota
             end
+            playerDF41Count[ownerPlayerName] = (playerDF41Count[ownerPlayerName] or 0) + 1
+            if playerDF41Count[ownerPlayerName] > limit then
+                ExecuteAction("NAMED_KILL", unit)
+            end
+        end
+    end
+    if GetPlayerDF41BuildLimit == nil and g_HextechDF41ExtraQuota == nil then
+        return
+    end
+    -- 地编的限造脚本（DF 触发器）只认第一辆东风就会永久禁造，符文赠送的那辆
+    -- 会让符文拥有者再也造不出自己的东风，因此这里按上限重新同步建造按钮。
+    for playerIndex = 1, 6, 1 do
+        local limit = 1
+        if GetPlayerDF41BuildLimit ~= nil then
+            limit = GetPlayerDF41BuildLimit(playerIndex)
+        elseif g_HextechDF41ExtraQuota ~= nil then
+            local extraQuota = g_HextechDF41ExtraQuota[playerIndex]
+            if extraQuota == true then
+                extraQuota = 1
+            end
+            extraQuota = tonumber(extraQuota) or 0
+            limit = 1 + extraQuota
+        end
+        if limit > 1 then
+            local allowBuild = 0
+            if (playerDF41Count["Player_" .. playerIndex] or 0) < limit then
+                allowBuild = 1
+            end
+            ExecuteAction("ALLOW_DISALLOW_ONE_BUILDING", "Player_" .. playerIndex,
+                "CelestialDF41", allowBuild)
         end
     end
 end
 
 SchedulerModule.call_every_x_frame(EnforceCelestialDF41PerPlayerLimit, 15 * 10, nil)
+
+-- 玩家获得青龙核心舰后不能将其作为战斗单位使用：每名玩家第一次获得时转换成伏龙殿，
+-- 第二次及以后自动按现有回收规则返款。电脑所属的技能龙船不受影响。
+-- 名单统一取自 BasicVar 的 DragonShip 群体。
+g_PlayerDragonShipTypes = g_TargetGroupNames.DragonShip
+g_PlayerDragonShipRecyclePrice = 5000
+-- 伏龙殿落点相对基地出生点的偏移：出生点正好压在右下方帝国 MCV 的出口上，
+-- 所以生成后统一往地图右上方（世界坐标 +X/+Y，六名玩家方向一致）挪开。
+g_PlayerDragonShipYardOffsetX = 100
+g_PlayerDragonShipYardOffsetY = 100
+g_PendingPlayerDragonShips = {}
+g_PlayerDragonShipAcquireCount = { 0, 0, 0, 0, 0, 0 }
+
+function GetPlayerDragonShipRecycleMoney(playerIndex)
+    return g_PlayerDragonShipRecyclePrice * GetRecycleRate(playerIndex)
+end
+
+function GivePlayerDragonShipRecycleMoney(ownerPlayerName, refundMoney, messageKey)
+    -- 与玩家主动回收使用相同的 WorldBuilder 执行上下文，确保加钱动作实际落地。
+    local previous = SetWorldBuilderThisPlayer(1)
+    ExecuteAction("PLAYER_GIVE_MONEY", ownerPlayerName, refundMoney)
+    SetWorldBuilderThisPlayer(previous)
+    exAddTextToPublicBoardForPlayer(ownerPlayerName,
+        Localization.get(messageKey, refundMoney), 8)
+end
+
+function RecyclePlayerDragonShip(dragonShip, ownerPlayerName, playerIndex, messageKey)
+    if not ObjectIsAlive(dragonShip) then
+        return
+    end
+    local refundMoney = GetPlayerDragonShipRecycleMoney(playerIndex)
+    if PureDrawRemoveKnownPlayerUnit ~= nil then
+        PureDrawRemoveKnownPlayerUnit(ObjectGetId(dragonShip))
+    end
+    ExecuteAction("NAMED_DELETE", dragonShip)
+    -- 生成事件可能早于引擎的购买费用结算；延迟返钱，避免退款随后被扣除。
+    SchedulerModule.delay_call(GivePlayerDragonShipRecycleMoney, 2,
+        { ownerPlayerName, refundMoney, messageKey })
+end
+
+function GetPlayerCelestialConstructionYardName(playerIndex)
+    return "PlayerDragonShipConstructionYard_" .. playerIndex
+end
+
+function OffsetPlayerDragonShipYard(playerIndex)
+    local yard = GetObjectByScriptName(GetPlayerCelestialConstructionYardName(playerIndex))
+    if yard == nil then
+        return
+    end
+    local x, y, z = ObjectGetPosition(yard)
+    ObjectSetPosition(yard, x + g_PlayerDragonShipYardOffsetX,
+        y + g_PlayerDragonShipYardOffsetY, z)
+end
+
+function ProcessPlayerDragonShip(createdObjId, ownerPlayerName)
+    g_PendingPlayerDragonShips[createdObjId] = nil
+    if not ObjectIsAlive(createdObjId) then
+        return
+    end
+    local dragonShip = GetObjectById(createdObjId)
+    ownerPlayerName = ObjectPlayerScriptName(dragonShip)
+    local playerIndex = g_PlayerNameToIndex[ownerPlayerName]
+    if playerIndex == nil then
+        return
+    end
+
+    g_PlayerDragonShipAcquireCount[playerIndex] =
+        (g_PlayerDragonShipAcquireCount[playerIndex] or 0) + 1
+    if g_PlayerDragonShipAcquireCount[playerIndex] > 1 then
+        RecyclePlayerDragonShip(dragonShip, ownerPlayerName, playerIndex,
+            "player_dragonship.recycled")
+        return
+    end
+
+    local previous = SetWorldBuilderThisPlayer(1)
+    if PureDrawRemoveKnownPlayerUnit ~= nil then
+        PureDrawRemoveKnownPlayerUnit(createdObjId)
+    end
+    ExecuteAction("NAMED_DELETE", dragonShip)
+    -- 复用已验证的建筑生成通道，直接在对应玩家的基地出生点生成伏龙殿。
+    ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT_WITH_ORIENTATION",
+        GetPlayerCelestialConstructionYardName(playerIndex),
+        "CelestialConstructionYard",
+        ownerPlayerName .. "/team" .. ownerPlayerName,
+        "Player_" .. playerIndex .. "_Start",
+        -3.1415926 / 4)
+    OffsetPlayerDragonShipYard(playerIndex)
+    SetWorldBuilderThisPlayer(previous)
+    exAddTextToPublicBoardForPlayer(ownerPlayerName,
+        Localization.get("player_dragonship.converted"), 8)
+end
+
+function PlayerDragonShipBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    if g_PlayerNameToIndex[ownerPlayerName] == nil
+        or g_PendingPlayerDragonShips[createdObjId] ~= nil then
+        return
+    end
+    g_PendingPlayerDragonShips[createdObjId] = 1
+    -- 等对象归属与形态完成结算后，再计入对应玩家的获得次数。
+    SchedulerModule.delay_call(ProcessPlayerDragonShip, 2,
+        { createdObjId, ownerPlayerName })
+end
 
 -- 守护者坦克只能使用激光指示器：禁用玩家和 AI 的模式切换，出生脚本仍可强制切换一次。
 -- 地编动作不能在 Lua 块加载时立即执行，否则桥接层尚未注册当前的 Fname 函数。
@@ -45,9 +205,6 @@ function ShowTimedHelp(ownerPlayerName, name, localizedText, x, y, z)
     }, 0)
     TextDoActionLocalizedOnce("NAMED_SHOW_INFOBOX", name, localizedText, 0, "")
     SchedulerModule.delay_call(function(id)
-        -- 这里使用 id 而不是 name 是因为 name 有可能被重复利用
-        -- 我们并不希望删除新的同名对象
-        -- 我们只需要删除之前的这个 id 对应的对象就行了
         if ObjectIsAlive(id) then
             ExecuteAction("NAMED_DELETE", GetObjectById(id))
         end
@@ -70,14 +227,19 @@ end
 function CelestialLaserTowerBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     local x, y, z = ObjectGetPosition(createdObjId)
     ShowTimedHelp(ownerPlayerName, "CelestialLaserTowerHelp", "SCRIPT:CelestialLaserTowerHelp", x, y, z)
-    SchedulerModule.delay_call(function(id)
+    SchedulerModule.delay_call(function(id, playerName)
         if ObjectIsAlive(id) then
-            local teamName = ObjectTeamName(GetObjectById(id))
-            local playerName = g_objectTeamNameToPlayerName[teamName]
-            ExecuteAction("NAMED_DELETE", GetObjectById(id));
+            local unit = GetObjectById(id)
+            if playerName == nil or g_PlayerNameToIndex[playerName] == nil then
+                playerName = ObjectPlayerScriptName(unit)
+            end
+            ExecuteAction("NAMED_DELETE", unit);
+            if playerName == nil or g_PlayerNameToIndex[playerName] == nil then
+                return
+            end
             ExecuteAction("CREATE_NAMED_ON_TEAM_AT_WAYPOINT", playerName, 'CelestialAntiVehicleInfantry', playerName .. '/team' .. playerName, 'commonSpawn')
         end
-    end, 5, {createdObjId})
+    end, 5, {createdObjId, ownerPlayerName})
 end
 
 function CelestialSpaceReinforceMarkerBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
@@ -88,16 +250,24 @@ end
 function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     -- 每当百夫长物体出生之后，先等一会（等百夫长机制初始化完毕），之后再看看是不是该给千夫长/万夫长了
     local round = exCounterGetByName("lvc")
-    if round < 9 then
-        -- 前面几个回合不给你用千夫长
-        return
-    end
-    SchedulerModule.delay_call(function(id)
+    SchedulerModule.delay_call(function(id, bornRound)
         if ObjectIsAlive(id) then
             -- 获取拥有百夫长的步兵
             local table, count = ObjectGetAttachees(id)
             if count > 0 and ObjectIsAlive(table[1]) then
                 local centurion = table[1]
+                -- “百虎上将”复用原生百夫长协议来保留完整附着物和视觉效果，
+                -- 但只授予基础百夫长，不参与本项目第 9 回合后的自动晋升。
+                local centurionId = ObjectGetId(centurion)
+                if g_HextechFiveTigerPendingTargets ~= nil
+                    and g_HextechFiveTigerPendingTargets[centurionId] then
+                    g_HextechFiveTigerPendingTargets[centurionId] = nil
+                    return
+                end
+                if bornRound < 9 then
+                    -- 前面几个回合不给你用千夫长
+                    return
+                end
                 -- 看看他是不是已经是千夫长
                 local attachers, attachersCount = ObjectGetAttachers(centurion)
                 for i = 1, attachersCount do
@@ -121,7 +291,7 @@ function CelestialCenturionUpgradeBorn(createdObjId, createdObjInstanceId, owner
                 ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", centurion, "EXITING_COMBINED", 0);
             end
         end
-    end, 20, {createdObjId})
+    end, 20, {createdObjId, round})
 end
 
 function AlliedSuperWeaponBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
@@ -188,16 +358,15 @@ function JapanPointDefenseDroneBorn(createdObjId, createdObjInstanceId, ownerPla
 end
 
 function JapanKamikazeInfantryBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
-    -- 已停用：电脑的狂热武士出生 5 秒后无条件开 F。
-    -- 改为出生时配置引擎索敌；Lua 只读取引擎选中的目标并触发 F。
-    -- if ownerPlayerName == "PlyrCreeps"
-    --     or ownerPlayerName == "PlyrCivilian" then
-    --     SchedulerModule.delay_call(function(id)
-    --         if ObjectIsAlive(id) then
-    --             ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", GetObjectById(id), "Command_SpecialPowerJapanKamikazeBonzai")
-    --         end
-    --     end, 15 * 5, {createdObjId})
-    -- end
+    -- 电脑的狂热武士出生 5 秒后无条件开一次 F（开局板载冲锋）。
+    if ownerPlayerName == "PlyrCreeps"
+        or ownerPlayerName == "PlyrCivilian" then
+        SchedulerModule.delay_call(function(id)
+            if ObjectIsAlive(id) then
+                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", GetObjectById(id), "Command_SpecialPowerJapanKamikazeBonzai")
+            end
+        end, 15 * 5, {createdObjId})
+    end
     if not IsAutoChessAIPlayer(ownerPlayerName) then
         return
     end
@@ -219,34 +388,7 @@ function JapanKamikazeInfantryBorn(createdObjId, createdObjInstanceId, ownerPlay
     end, 1, {createdObjId})
 end
 
--- 空军元帅使用双方现有的 BASE 编队作为专用飞行编队，避开普通 AIR/AIRATTACK 编队 AI。
--- 命名检测作为后备；GetObjectByScriptName 查询单位命名空间，不会与同名路径点冲突。
-g_AirMarshalTeamNames = {
-    ["BASE"] = true,
-    ["PlyrCivilian/BASE"] = true,
-    ["PlyrCreeps/BASE"] = true,
-}
-
-function IsAirMarshalAircraft(unit)
-    if unit == nil then
-        return false
-    end
-    if g_AirMarshalTeamNames[ObjectTeamName(unit)] then
-        return true
-    end
-    local unitId = ObjectGetId(unit)
-    for i = 1, 8, 1 do
-        local angelUnit = GetObjectByScriptName("angel" .. i)
-        if angelUnit ~= nil and ObjectGetId(angelUnit) == unitId then
-            return true
-        end
-        local devilUnit = GetObjectByScriptName("devil" .. i)
-        if devilUnit ~= nil and ObjectGetId(devilUnit) == unitId then
-            return true
-        end
-    end
-    return false
-end
+-- 空军元帅的编队/脚本名判定与技能召唤登记统一在 BasicVar（IsAirMarshalAircraft）。
 
 g_TanyaTowerBombState = g_TanyaTowerBombState or {}
 g_TanyaBombTowerScriptNames = g_TanyaBombTowerScriptNames or {
@@ -363,8 +505,6 @@ function JapanAIAirFormVehicleBorn(createdObjId, createdObjInstanceId, ownerPlay
     end, 1, {createdObjId, commandName})
 end
 
--- 索敌优化全部交给引擎 TargetChooser。
--- 只有白虎、V4、波能炮和雅典娜额外使用 坦克 > 步兵 > 建筑 的类别优先级。
 g_FilterOptimizedGroundEnemy = CreateObjectFilter({
     Rule = "ANY",
     Relationship = "ENEMIES",
@@ -786,6 +926,16 @@ function UnitCountFunc(createdObjId, createdObjInstanceId, ownerPlayerName)
 
 end
 
+-- 自走棋不需要史普尼克勘查车（磁暴突袭的附带产物），出生时立即删除。
+function SovietSurveyorBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    if PureDrawRemoveKnownPlayerUnit ~= nil then
+        PureDrawRemoveKnownPlayerUnit(createdObjId)
+    end
+    if ObjectIsAlive(createdObjId) then
+        ExecuteAction("NAMED_DELETE", GetObjectById(createdObjId))
+    end
+end
+
 g_UnitCreateEventFunc[FastHash("CelestialElectricitySale_ForCelestialPower")] = limitCelestialBattery
 g_UnitCreateEventFunc[FastHash("CelestialElectricitySale_ForCelestialAdvancedPower")] = limitCelestialBattery
 g_UnitCreateEventFunc[FastHash("CelestialAlliesElectricitySale_ForCelestialAdvancedPower")] = limitCelestialBattery
@@ -814,8 +964,9 @@ function SovietCommandoBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
 end
 g_UnitCreateEventFunc[FastHash("SovietCommandoTech1")] = SovietCommandoBorn
 -- g_AlliedCommandoLimitBorn = GetLimitCommandoUnitCreateFunc("AlliedCommandoTech1", 2)
+-- 射程加成必须同步加索敌视野，否则单位会在射程边缘停下却看不见目标。
 if not g_TanyaRangeX125Modifier then
-    g_TanyaRangeX125Modifier = exAttributeModifierCreate({ RANGE = 1.25 }, 1)
+    g_TanyaRangeX125Modifier = exAttributeModifierCreate({ RANGE = 1.25, VISION = 1.25 }, 1)
 end
 function AlliedCommandoBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     -- g_AlliedCommandoLimitBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
@@ -828,15 +979,15 @@ function AlliedCommandoBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
 end
 g_UnitCreateEventFunc[FastHash("AlliedCommandoTech1")] = AlliedCommandoBorn
 -- g_JapanCommandoLimitBorn = GetLimitCommandoUnitCreateFunc("JapanCommandoTech1", 2)
-if not g_YurikoRangeX25Modifier then
-    g_YurikoRangeX25Modifier = exAttributeModifierCreate({ RANGE = 2.5 }, 1)
+if not g_YurikoRangeX22Modifier then
+    g_YurikoRangeX22Modifier = exAttributeModifierCreate({ RANGE = 2.2, VISION = 2.2 }, 1)
 end
 function JapanCommandoBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     -- g_JapanCommandoLimitBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     SchedulerModule.delay_call(function(id)
         if ObjectIsAlive(id) then
             local yuriko = GetObjectById(id)
-            ObjectLoadAttributeModifier(yuriko, g_YurikoRangeX25Modifier)
+            ObjectLoadAttributeModifier(yuriko, g_YurikoRangeX22Modifier)
         end
     end, 1, {createdObjId})
     YurikoPriorityTargetChooserBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
@@ -848,19 +999,15 @@ g_UnitCreateEventFunc[FastHash("JapanPointDefenseDrone")] = JapanPointDefenseDro
 
 g_UnitCreateEventFunc[FastHash("JapanKamikazeInfantry")] = JapanKamikazeInfantryBorn
 
--- 鬼樱特攻机出生后永久获得 3 倍生命和 100% 移速加成。
+-- 鬼樱特攻机出生后永久获得 3 倍生命。
 if not g_JapanInterceptorHealthX3Modifier then
     g_JapanInterceptorHealthX3Modifier = exAttributeModifierCreate({ HEALTH_MULT = 3.0 }, 1)
-end
-if not g_JapanSakuraAttackRocketSpeedX2Modifier then
-    g_JapanSakuraAttackRocketSpeedX2Modifier = exAttributeModifierCreate({ SPEED = 2.0 }, 1)
 end
 function JapanSakuraAttackRocketBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
     SchedulerModule.delay_call(function(id, playerName)
         if ObjectIsAlive(id) then
             local rocket = GetObjectById(id)
             ObjectLoadAttributeModifier(rocket, g_JapanInterceptorHealthX3Modifier)
-            ObjectLoadAttributeModifier(rocket, g_JapanSakuraAttackRocketSpeedX2Modifier)
             ConfigureSakuraPriorityTargetChooser(rocket)
             -- 鬼樱脱离樱花井的默认待命队伍，加入对应阵营现有的 AI 进攻队列。
             if playerName == "PlyrCivilian" then
@@ -914,11 +1061,47 @@ g_UnitCreateEventFunc[FastHash("SovietSledgehammerSPG")] = FarthestTargetChooser
 g_UnitCreateEventFunc[FastHash("SovietSledgehammerSPG_Enhanced")] = FarthestTargetChooserBorn
 g_UnitCreateEventFunc[FastHash("SovietSPG")] = FarthestTargetChooserBorn
 
--- 仅四类 T3 攻城单位叠加 坦克 > 步兵 > 建筑 的优先级。
+-- 海军优先索敌：名单取 UNITLIST 的海军段（LandArmySpawn 用 UNITSPSHIP 生成 step35+1..step4），
+-- 滤网与出生钩子在 MICROINI_0.lua，讲解见 analysis/地图注释说明文档.md 附录 A.84。
+if g_NavalPriorityUnitHashes ~= nil and UNITLIST ~= nil and step35 ~= nil and step4 ~= nil then
+    for unitIndex = step35 + 1, step4, 1 do
+        local unitType = UNITLIST[unitIndex]
+        if unitType ~= nil then
+            g_NavalPriorityUnitHashes[FastHash(unitType)] = true
+            RegisterUnitCreateCallback(unitType, NavalPriorityTargetChooserBorn)
+        end
+    end
+end
+
+g_ScatterShellBornChance = 0.5
+
+function ScatterShellFormBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    -- 只处理双方 AI 部署到战场的载具，玩家自己获得的单位不动。
+    if ownerPlayerName ~= "PlyrCreeps" and ownerPlayerName ~= "PlyrCivilian" then
+        return
+    end
+    if GetRandomNumber() >= g_ScatterShellBornChance then
+        return
+    end
+    -- 等技能组件初始化完成后切换；Command_ToggleMIRVSpecialPower = 切换到散射炮弹。
+    SchedulerModule.delay_call(function(id)
+        if ObjectIsAlive(id) then
+            ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", GetObjectById(id),
+                "Command_ToggleMIRVSpecialPower")
+        end
+    end, 1, {createdObjId})
+end
+
+-- 阵营攻城车与箱子炮车（郁金香、菊花）叠加 坦克 > 步兵 > 建筑 的优先级。
 g_UnitCreateEventFunc[FastHash("CelestialAntiStructureVehicle")] = PrioritySiegeTargetChooserBorn
 g_UnitCreateEventFunc[FastHash("CelestialAntiStructureVehicle_Enhanced")] = PrioritySiegeTargetChooserBorn
-g_UnitCreateEventFunc[FastHash("SovietAntiStructureVehicle")] = PrioritySiegeTargetChooserBorn
-g_UnitCreateEventFunc[FastHash("SovietAntiStructureVehicle_Enhanced")] = PrioritySiegeTargetChooserBorn
+g_UnitCreateEventFunc[FastHash("SovietAntiStructureVehicle")] =
+    { PrioritySiegeTargetChooserBorn, ScatterShellFormBorn }
+g_UnitCreateEventFunc[FastHash("SovietAntiStructureVehicle_Enhanced")] =
+    { PrioritySiegeTargetChooserBorn, ScatterShellFormBorn }
+g_UnitCreateEventFunc[FastHash("SovietHeavyMortarVehicle")] =
+    { PrioritySiegeTargetChooserBorn, ScatterShellFormBorn }
+g_UnitCreateEventFunc[FastHash("VUMissileAntiVehicleVehicleTech1")] = PrioritySiegeTargetChooserBorn
 g_UnitCreateEventFunc[FastHash("JapanAntiStructureVehicle")] = PrioritySiegeTargetChooserBorn
 g_UnitCreateEventFunc[FastHash("JapanAntiStructureVehicle_Enhanced")] = PrioritySiegeTargetChooserBorn
 g_UnitCreateEventFunc[FastHash("AlliedAntiStructureVehicle")] = PrioritySiegeTargetChooserBorn
@@ -996,6 +1179,8 @@ exObjectRegisterCreateEvent("CelestialAntiStructureVehicle")
 exObjectRegisterCreateEvent("CelestialAntiStructureVehicle_Enhanced")
 exObjectRegisterCreateEvent("SovietAntiStructureVehicle")
 exObjectRegisterCreateEvent("SovietAntiStructureVehicle_Enhanced")
+exObjectRegisterCreateEvent("SovietHeavyMortarVehicle")
+exObjectRegisterCreateEvent("VUMissileAntiVehicleVehicleTech1")
 exObjectRegisterCreateEvent("JapanAntiStructureVehicle")
 exObjectRegisterCreateEvent("JapanAntiStructureVehicle_Enhanced")
 exObjectRegisterCreateEvent("AlliedAntiStructureVehicle")
@@ -1014,6 +1199,176 @@ exObjectRegisterCreateEvent("SovietInterceptorAircraft_Enhanced")
 exObjectRegisterCreateEvent("JapanSakuraAttackRocket")
 exObjectRegisterCreateEvent("JapanKamikazeCommandTower")
 
+g_PlayerDragonShipHashes = {}
+for i = 1, getn(g_PlayerDragonShipTypes), 1 do
+    g_PlayerDragonShipHashes[FastHash(g_PlayerDragonShipTypes[i])] = true
+    RegisterUnitCreateCallback(g_PlayerDragonShipTypes[i], PlayerDragonShipBorn)
+end
+RegisterUnitCreateCallback("SovietSurveyor", SovietSurveyorBorn)
+RegisterUnitCreateCallback("SovietSurveyor_Naval", SovietSurveyorBorn)
+
+g_BattleUnitLifetimeDefaultRounds = 4
+
+-- 覆盖默认寿命的模板（键为模板哈希）。奥林匹斯 2 回合（2026-10-11 由 1 回合延长，原版特判为 1），
+-- 忒提斯与千鸟 2 回合。
+g_BattleUnitLifetimeRounds = {
+    [FastHash("AlliedGaintAirCraftCarrier_B")] = 2,
+    [FastHash("AlliedThetisBattleShip")] = 2,
+    [FastHash("JapanYumiAircraftCarrier")] = 2,
+}
+
+-- 不参与存活周期清理的非战斗模板。
+g_BattleUnitLifetimeExcludedTypes = {
+    [FastHash("CelestialLaserTower")] = true,
+    [FastHash("CelestialBattery")] = true,
+    [FastHash("CelestialSpaceReinforceMarker")] = true,
+    [FastHash("CelestialCenturionUpgradeObject")] = true,
+    [FastHash("AlliedSuperWeapon")] = true,
+    [FastHash("JapanGigaFortressShipEgg")] = true,
+    [FastHash("JapanKamikazeCommandTower")] = true,
+    [FastHash("JapanPointDefenseDrone")] = true,
+    [FastHash("LuckyUnitCrateSeed")] = true,
+    [FastHash("UnitCrateNew")] = true,
+    [FastHash("UnitCrate")] = true,
+}
+
+-- 摇光：T4 解锁前只保留当前回合部署的批次，解锁后回到默认寿命。
+g_YaoguangUnitTypeHashes = {
+    [FastHash("CelestialAdvanceAircraftTech4")] = true,
+    [FastHash("CelestialAdvanceAircraftTech4_Enhanced")] = true,
+}
+
+g_PlayerT4TechUnlocked = g_PlayerT4TechUnlocked
+    or { false, false, false, false, false, false }
+
+function IsYaoguangBattleSideT4Unlocked(ownerPlayerName)
+    local firstPlayerIndex = nil
+    if ownerPlayerName == "PlyrCivilian" then
+        firstPlayerIndex = 1
+    elseif ownerPlayerName == "PlyrCreeps" then
+        firstPlayerIndex = 4
+    else
+        return false
+    end
+    -- 六个 Player_N/UNLOCK3__N 脚本是所有模式最终的 T4 科技解封入口：
+    -- 标准模式的推塔/自然解锁、死亡模式的开局推塔及升本模式均会执行它。
+    for playerIndex = firstPlayerIndex, firstPlayerIndex + 2, 1 do
+        if g_PlayerT4TechUnlocked[playerIndex] then
+            return true
+        end
+    end
+    return false
+end
+
+-- 存活周期豁免：六个预设守护神（名单见 BasicVar 的 PresetGuardian）与技能召唤的龙船。
+function IsBattleUnitLifetimeExempt(objectId, unit)
+    if unit == nil then
+        return false
+    end
+    if IsTowerGuardian ~= nil and IsTowerGuardian(unit) then
+        return true
+    end
+    for i = 1, getn(g_TargetGroupNames.PresetGuardian), 1 do
+        local guard = GetObjectByScriptName(g_TargetGroupNames.PresetGuardian[i])
+        if guard ~= nil and ObjectGetId(guard) == objectId then
+            return true
+        end
+    end
+    -- 龙船家族 + 电脑方自己的攻击队 = 技能「龙行天下」召唤的船（同 IsSkillDragonShip 口径）。
+    if g_PlayerDragonShipHashes[ObjectGetInstanceId(unit)] then
+        local ownerName = ObjectPlayerScriptName(unit)
+        local teamName = ObjectTeamName(unit)
+        if (ownerName == "PlyrCivilian" or ownerName == "PlyrCreeps")
+            and (teamName == "ATTACK" or teamName == ownerName .. "/ATTACK") then
+            return true
+        end
+    end
+    return false
+end
+
+-- 到期清除。引擎会回收对象 id，回调里用模板哈希和归属复核，
+-- 避免误杀复用了同一 id 的新单位。
+function ScheduleBattleUnitLifetimeKill(objectId, expectedInstanceId,
+    ownerPlayerName, rounds, preT4Rule)
+    if RoundLuaManager == nil or RoundLuaManager.DelayCallOnRoundBegin == nil then
+        return
+    end
+    RoundLuaManager.DelayCallOnRoundBegin(
+        function(id, expectedHash, sideOwnerName, isPreT4)
+            if not ObjectIsAlive(id) then
+                return
+            end
+            if ObjectGetInstanceId(id) ~= expectedHash then
+                return
+            end
+            if ObjectPlayerScriptName(id) ~= sideOwnerName then
+                return
+            end
+            -- 寿命到期前刚好解锁 T4 时，摇光转为默认寿命而不是被清除。
+            if isPreT4 and IsYaoguangBattleSideT4Unlocked(sideOwnerName) then
+                ScheduleBattleUnitLifetimeKill(id, expectedHash, sideOwnerName,
+                    g_BattleUnitLifetimeDefaultRounds, false)
+                return
+            end
+            -- 守护神与技能龙船到点也不清（永久存活）。
+            local unit = GetObjectById(id)
+            if IsBattleUnitLifetimeExempt(id, unit) then
+                return
+            end
+            ExecuteAction("NAMED_KILL", unit)
+        end, { objectId, expectedInstanceId, ownerPlayerName, preT4Rule }, rounds)
+end
+
+-- 只登记双方 AI 部署到战场的单位，玩家实际生产/被赠送的单位不处理。
+function RegisterBattleUnitLifetime(createdObjId, createdObjInstanceId, ownerPlayerName)
+    if ownerPlayerName ~= "PlyrCreeps"
+        and ownerPlayerName ~= "PlyrCivilian" then
+        return
+    end
+    if g_BattleUnitLifetimeExcludedTypes[createdObjInstanceId] then
+        return
+    end
+    -- 守护神与技能龙船根本不登记（到期回调里还有一次判定兜底）。
+    if IsBattleUnitLifetimeExempt(createdObjId, GetObjectById(createdObjId)) then
+        return
+    end
+    if g_YaoguangUnitTypeHashes[createdObjInstanceId] then
+        -- 摇光在 T4 解锁前只保留当前回合部署的批次；玩家实际生产摇光的
+        -- 独立 3 个限额不受影响。
+        if IsYaoguangBattleSideT4Unlocked(ownerPlayerName) then
+            ScheduleBattleUnitLifetimeKill(createdObjId, createdObjInstanceId,
+                ownerPlayerName, g_BattleUnitLifetimeDefaultRounds, false)
+        else
+            ScheduleBattleUnitLifetimeKill(createdObjId, createdObjInstanceId,
+                ownerPlayerName, 1, true)
+        end
+        return
+    end
+    local rounds = g_BattleUnitLifetimeRounds[createdObjInstanceId]
+    if rounds == nil then
+        rounds = g_BattleUnitLifetimeDefaultRounds
+    end
+    ScheduleBattleUnitLifetimeKill(createdObjId, createdObjInstanceId,
+        ownerPlayerName, rounds, false)
+end
+
+-- 强化形态也能触发创建事件；普通形态已由 UNITLIST 统一注册。
+exObjectRegisterCreateEvent("CelestialAdvanceAircraftTech4_Enhanced")
+
 function onUnitCreateEvent(createdObjId, createdObjInstanceId, ownerPlayerName)
-    g_UnitCreateEventFunc[createdObjInstanceId](createdObjId, createdObjInstanceId, ownerPlayerName)
+    -- 存活周期是全模式底层规则，任何已注册模板的出生都要过一遍。
+    RegisterBattleUnitLifetime(createdObjId, createdObjInstanceId, ownerPlayerName)
+    local registered = g_UnitCreateEventFunc[createdObjInstanceId]
+    if type(registered) == "function" then
+        registered(createdObjId, createdObjInstanceId, ownerPlayerName)
+    elseif registered ~= nil then
+        for i = 1, getn(registered), 1 do
+            registered[i](createdObjId, createdObjInstanceId, ownerPlayerName)
+        end
+    end
+    -- PureDraw 使用已注册模板的统一出生观察器维护玩家单位登记。放在原有回调
+    -- 之后执行，既不改变旧功能顺序，也能看到前置回调留下的脚本生成标记。
+    if PureDrawOnAnyRegisteredUnitBorn ~= nil then
+        PureDrawOnAnyRegisteredUnitBorn(createdObjId, createdObjInstanceId, ownerPlayerName)
+    end
 end

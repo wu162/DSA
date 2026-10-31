@@ -64,6 +64,14 @@ FilterJapanTsunamiTank=CreateObjectFilter({
     }
 })
 
+FilterJapanAntiVehicleShip=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="SAME_PLAYER",
+    IncludeThing = {
+        "JapanAntiVehicleShip","JapanAntiVehicleShip_Enhanced"
+    }
+})
+
 FilterAntiAirHunterAircraft=CreateObjectFilter({
     Rule="ANY",
     Relationship="SAME_PLAYER",
@@ -87,6 +95,7 @@ FilterPrioritySiegeVehicle=CreateObjectFilter({
         "SovietAntiStructureVehicle","SovietAntiStructureVehicle_Enhanced",
         "JapanAntiStructureVehicle","JapanAntiStructureVehicle_Enhanced",
         "AlliedAntiStructureVehicle","AlliedAntiStructureVehicle_Enhanced",
+        "SovietHeavyMortarVehicle","VUMissileAntiVehicleVehicleTech1",
         "JapanGigaFortress_Land"
     }
 })
@@ -158,13 +167,14 @@ FilterCelestialAdvanceAircraftTech4=CreateObjectFilter({
     }
 })
 
-FilterJapanAntiNavyShipTech3=CreateObjectFilter({
-    Rule="ANY",
-    Relationship="SAME_PLAYER",
-    IncludeThing = {
-        "JapanAntiNavyShipTech3"
-    }
-})
+-- 太刀（JapanAntiNavyShipTech3）专用过滤器与微操已整体停用，见下方 JapanAntiNavyShipTech3MICROCONTROL。
+-- FilterJapanAntiNavyShipTech3=CreateObjectFilter({
+--     Rule="ANY",
+--     Relationship="SAME_PLAYER",
+--     IncludeThing = {
+--         "JapanAntiNavyShipTech3"
+--     }
+-- })
 
 FilterALLENEMYUNIT=CreateObjectFilter({
     Rule="ANY",
@@ -250,7 +260,39 @@ function JapanTsunamiTankShieldMICROCONTROL ()
     end
 end
 
+-- 剃刀巡洋舰：附近有非空中敌人时尝试开 F（五连装鱼雷散射）。
+-- AI 不会自己开 F，只能由这里周期触发；技能原生 40 秒 CD，这里用 20 秒间隔粗当冷却闸。
+g_TorpedoShipSpreadEnemyRange = 600
+g_TorpedoShipSpreadScanIntervalFrames = 15 * 20
+g_TorpedoShipSpreadNextScanFrame = g_TorpedoShipSpreadNextScanFrame or 0
+
+function JapanTorpedoShipSpreadMICROCONTROL ()
+    local frame = GetFrame()
+    if frame < g_TorpedoShipSpreadNextScanFrame then
+        return
+    end
+    g_TorpedoShipSpreadNextScanFrame = frame + g_TorpedoShipSpreadScanIntervalFrames
+
+    for playindex = 7, 8, 1 do
+        local units, count = ObjectFindObjects(P[playindex], nil, FilterJapanAntiVehicleShip)
+        for i = 1, count, 1 do
+            local self = units[i]
+            local x, y, z = ObjectGetPosition(self)
+            local enemies, enemyCount = ObjectFindObjects(self, {
+                X=x, Y=y, Z=z,
+                Radius=g_TorpedoShipSpreadEnemyRange,
+                DistType="CENTER_2D"
+            }, FilterLAND)
+            if enemyCount > 0 then
+                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", self,
+                    "Command_ActivateTorpedoSpread")
+            end
+        end
+    end
+end
+
 g_AirHunterReacquireRange = 500
+
 g_AirHunterTargetByUnitId = g_AirHunterTargetByUnitId or {}
 g_AirHunterTransformCommandByInstanceId = {
     [FastHash("JapanAntiInfantryVehicle")] = "Command_JAIV_Transform",
@@ -365,9 +407,11 @@ function AntiAirAircraftHunterMICROCONTROL ()
     end
 end
 
--- 百合子禁止攻击建筑：有敌方单位时追击最近单位，
--- 全地图没有合法单位目标时把自身设为非法攻击目标，打断攻击前进并原地待命。
+-- 百合子禁止攻击建筑：独立队列——被进攻编队收走就立刻抢回 idle 队，
 function CommandoNoStructureMICROCONTROL ()
+    if g_PrioritySiegeIdleTeam == nil or g_PrioritySiegeAttackWaypoint == nil then
+        return
+    end
     for playindex = 7, 8, 1 do
         local units, count = ObjectFindObjects(P[playindex], nil, FilterNoStructureCommando)
         for i = 1, count, 1 do
@@ -375,7 +419,10 @@ function CommandoNoStructureMICROCONTROL ()
             local selfId = ObjectGetId(self)
             -- 只在当前确实被放回进攻编队时分离，待命状态下不会重复换队。
             if IsCommandoInAttackTeam(self, playindex) then
-                ExecuteAction("UNIT_SET_TEAM", self, DEFAULTIDLETEAM[playindex])
+                ExecuteAction("UNIT_SET_TEAM", self, g_PrioritySiegeIdleTeam[playindex])
+                -- 离了主力编队就没人给她下推进命令，自己朝敌方 waypoints 攻击前进。
+                ExecuteAction("ATTACK_MOVE_NAMED_UNIT_TO", self,
+                    g_PrioritySiegeAttackWaypoint[playindex])
             end
             ObjectSetCustomTargetChooserData(self, {
                 CustomFilter = g_FilterYurikoEnemy,
@@ -388,30 +435,6 @@ function CommandoNoStructureMICROCONTROL ()
                 PreferTargetInsideRange = true
             })
             ObjectSetTargetChooserNextAutoAcquireDelay(selfId, 0)
-            local target = ObjectGetTarget(self)
-            local hasValidTarget = target ~= nil
-                and ObjectIsAlive(target)
-                and ObjectTestTargetObjectWithFilter(self, target, g_FilterYurikoEnemy)
-            if not hasValidTarget then
-                local replacement = FindNearestEnemyAnywhere(self, g_FilterPrioritySiegeEnemyTank)
-                if replacement == nil then
-                    replacement = FindNearestEnemyAnywhere(self, g_FilterYurikoEnemyAircraft)
-                end
-                if replacement == nil then
-                    replacement = FindNearestEnemyAnywhere(self, g_FilterPrioritySiegeEnemyInfantry)
-                end
-                if replacement ~= nil then
-                    ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", self, "NO_ATTACK", 0)
-                    ObjectSetAssignedTarget(self, replacement)
-                    ExecuteAction("NAMED_ATTACK_NAMED", self, replacement)
-                else
-                    -- 引擎层禁用武器，ATTACK 编队即使再次刷新命令也无法攻击建筑。
-                    ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", self, "NO_ATTACK", 1)
-                    ObjectSetAssignedTarget(self, self)
-                end
-            else
-                ExecuteAction("UNIT_CHANGE_OBJECT_STATUS", self, "NO_ATTACK", 0)
-            end
         end
     end
 end
@@ -737,34 +760,154 @@ function CelestialAdvanceAircraftTech4MICROCONTROL ()
     end
 end
 
-g_FilterOnlyOverWater = CreateObjectFilter({
-    Rule="ALL",
-    StatusBitFlags="OVER_WATER"
+-- 太刀微操已整体停用（2026-10-19）：自动施放 F 技能（Command_JANSTier3CombatMode）
+-- 与“只索敌水面目标”的自定义索敌逻辑全部注释，恢复时取消本段注释即可。
+-- g_FilterOnlyOverWater = CreateObjectFilter({
+--     Rule="ALL",
+--     StatusBitFlags="OVER_WATER"
+-- })
+-- g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = 0
+-- function JapanAntiNavyShipTech3MICROCONTROL ()
+--     for playindex = 7 , 8 , 1 do
+--         local SELF, count = ObjectFindObjects(P[playindex], nil, FilterJapanAntiNavyShipTech3)
+--         ----exMessageAppendToMessageArea("count"..count)
+--         for i = 1 , count , 1 do
+--             local selfId = ObjectGetId(SELF[i])
+--             local countdown = exObjectGetSpecialCountDownFrame(selfId, "SpecialPower_JANSTier3CombatMode")
+--             if countdown ~= nil and countdown > 750 then
+--                 -- 不能让太刀无限制使用技能，让它冷却一下吧
+--             else
+--                 ObjectUnloadAttributeModifier(selfId, "AttributeModifier_JANSTier3CombatMode")
+--                 ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode")
+--                 if selfId > g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData then
+--                     -- ID 是单调递增的，所以只要 ID 大于上次记录的 ID，就说明是新生成的单位
+--                     -- 为它设置索敌信息
+--                     ObjectSetCustomTargetChooserData(selfId, {
+--                         CustomFilter = g_FilterOnlyOverWater
+--                     })
+--                     -- 更新最后记录的 ID
+--                     g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = selfId
+--                 end
+--                 ObjectSetTargetChooserNextAutoAcquireDelay(selfId, 0)
+--             end
+--         end
+--     end
+-- end
+
+-- 海军优先索敌：敌舰 > 敌方建筑(海塔) > 其余默认
+-- 滤网与出生钩子在这里，出生登记在 UnitCreate.lua 的海军段循环里。
+g_FilterNavalPriorityEnemyShip=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="ENEMIES",
+    Include="SHIP",
+    Exclude="IGNORE_IN_AI_HUNT_TACTIC DEBRIS UNATTACKABLE NOT_AUTOACQUIRABLE"
 })
-g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = 0
-function JapanAntiNavyShipTech3MICROCONTROL ()
-    for playindex = 7 , 8 , 1 do
-        local SELF, count = ObjectFindObjects(P[playindex], nil, FilterJapanAntiNavyShipTech3)
-        ----exMessageAppendToMessageArea("count"..count)
-        for i = 1 , count , 1 do
-            local selfId = ObjectGetId(SELF[i])
-            local countdown = exObjectGetSpecialCountDownFrame(selfId, "SpecialPower_JANSTier3CombatMode")
-            if countdown ~= nil and countdown > 750 then
-                -- 不能让太刀无限制使用技能，让它冷却一下吧
-            else
-                ObjectUnloadAttributeModifier(selfId, "AttributeModifier_JANSTier3CombatMode")
-                ExecuteAction("NAMED_USE_COMMANDBUTTON_ABILITY", SELF[i], "Command_JANSTier3CombatMode")
-                if selfId > g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData then
-                    -- ID 是单调递增的，所以只要 ID 大于上次记录的 ID，就说明是新生成的单位
-                    -- 为它设置索敌信息
-                    ObjectSetCustomTargetChooserData(selfId, {
-                        CustomFilter = g_FilterOnlyOverWater
-                    })
-                    -- 更新最后记录的 ID
-                    g_LastJapanAntiNavyShipTech3Id_ForCustomTargetChooserData = selfId
-                end
-                ObjectSetTargetChooserNextAutoAcquireDelay(selfId, 0)
+
+-- 第二档：海塔。地编脚本名 T71F~T73F / T81F~T83F 只能按对象查，过滤器只认模板与 KindOf，
+g_FilterNavalPriorityEnemyStructure=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="ENEMIES",
+    Include="STRUCTURE",
+    Exclude="IGNORE_IN_AI_HUNT_TACTIC DEBRIS UNATTACKABLE NOT_AUTOACQUIRABLE"
+})
+
+g_NavalPriorityUnitHashes = {}
+
+function NavalPriorityTargetChooserBorn (createdObjId, createdObjInstanceId, ownerPlayerName)
+    SchedulerModule.delay_call(function(id)
+        if ObjectIsAlive(id) then
+            ObjectSetCustomTargetChooserData(GetObjectById(id), {
+                CompareFilterList = {
+                    g_FilterNavalPriorityEnemyShip,
+                    g_FilterNavalPriorityEnemyStructure
+                },
+                ReverseRangeCompare = false,
+                PreferTargetInsideRange = true
+            })
+            ObjectSetTargetChooserNextAutoAcquireDelay(id, 0)
+        end
+    end, 1, {createdObjId})
+end
+
+-- 登神/究极生物的目标单位：只打单位，不碰任何建筑。
+-- 滤网与百合子的 g_FilterYurikoEnemy 分开定义，两边的索敌调参互不影响。
+g_FilterNoStructureBuffedEnemy=CreateObjectFilter({
+    Rule="ANY",
+    Relationship="ENEMIES",
+    Include="INFANTRY VEHICLE HUGE_VEHICLE AIRCRAFT SHIP",
+    Exclude="STRUCTURE IGNORE_IN_AI_HUNT_TACTIC DEBRIS UNATTACKABLE NOT_AUTOACQUIRABLE"
+})
+
+-- 按对象 ID 登记，不写模板名：这两张符文的目标单位每局随机，列不出固定名单。
+g_NoStructureBuffUnitIds = g_NoStructureBuffUnitIds or {}
+-- 海军行军的终点路点，与 WB 脚本 ATTACKSHIP__7/__8 同源。
+-- 舰船被登神/究极生物圈中时不能按陆军那套推进到 TD7/TD8（陆上 waypoint），否则会半路拐向岸边。
+g_NavalPriorityAttackWaypoint = g_NavalPriorityAttackWaypoint or {
+    [7] = "PLANEREBORN8",
+    [8] = "PLANEREBORN7"
+}
+-- 同一只单位的索敌只能有一个主人，她若被圈中就整只交回她自己的微操。
+g_NoStructureBuffSkipInstanceIds = { [FastHash("JapanCommandoTech1")] = true }
+
+function RegisterNoStructureBuffUnit(unit, sideIndex)
+    if unit == nil or sideIndex == nil then
+        return
+    end
+    local objectId = ObjectGetId(unit)
+    if ObjectIsAlive(unit)
+        and g_NoStructureBuffSkipInstanceIds[ObjectGetInstanceId(objectId)] == nil then
+        g_NoStructureBuffUnitIds[objectId] = { SideIndex = sideIndex }
+    end
+end
+
+function NoStructureBuffedUnitMICROCONTROL ()
+    if g_PrioritySiegeIdleTeam == nil or g_PrioritySiegeAttackWaypoint == nil then
+        return
+    end
+    for objectId, entry in g_NoStructureBuffUnitIds do
+        local unit = GetObjectById(objectId)
+        if unit == nil or not ObjectIsAlive(unit) then
+            -- 引擎会复用对象 ID，登记不清理就会让新单位白拿免拆塔。
+            g_NoStructureBuffUnitIds[objectId] = nil
+        else
+            local sideIndex = entry.SideIndex
+            local idleTeamName = g_PrioritySiegeIdleTeam[sideIndex]
+            local idleTeamShortName = "teamPlyrCivilian"
+            if sideIndex == 8 then
+                idleTeamShortName = "teamPlyrCreeps"
             end
+            local teamName = ObjectTeamName(unit)
+            -- 舰船只换终点、不换待遇（讲解见附录 A.85.1b）：跟陆军登神单位/百合子同一套，
+            -- 退出进攻编队进 idle 队，否则队级 AttackMove 会绕过自定义索敌去打海塔。
+            local isNavalUnit = g_NavalPriorityUnitHashes ~= nil
+                and g_NavalPriorityUnitHashes[ObjectGetInstanceId(objectId)] == true
+            local wasReassigned = teamName ~= idleTeamName
+                and teamName ~= idleTeamShortName
+            if wasReassigned then
+                ExecuteAction("UNIT_SET_TEAM", unit, idleTeamName)
+                -- 离了主力编队就没人给它下推进命令，自己朝敌方 waypoints 攻击前进。
+                -- 舰船必须走海军路点（PLANEREBORN8/7），指到陆上的 TD7/TD8 就会拐向岸边。
+                local waypointName = g_PrioritySiegeAttackWaypoint[sideIndex]
+                if isNavalUnit then
+                    waypointName = g_NavalPriorityAttackWaypoint[sideIndex]
+                        or "PLANEREBORN8"
+                end
+                ExecuteAction("ATTACK_MOVE_NAMED_UNIT_TO", unit, waypointName)
+            end
+            local targetChooserData = {
+                CustomFilter = g_FilterNoStructureBuffedEnemy,
+                ReverseRangeCompare = false,
+                PreferTargetInsideRange = true
+            }
+            if g_NavalPriorityUnitHashes ~= nil and g_FilterNavalPriorityEnemyShip ~= nil
+                and g_NavalPriorityUnitHashes[ObjectGetInstanceId(objectId)] then
+                -- 登神 / 究极生物的舰船：只排「敌舰」一档，其余走默认（海军 > 其他）。
+                targetChooserData.CompareFilterList = {
+                    g_FilterNavalPriorityEnemyShip
+                }
+            end
+            ObjectSetCustomTargetChooserData(unit, targetChooserData)
+            ObjectSetTargetChooserNextAutoAcquireDelay(objectId, 0)
         end
     end
 end
